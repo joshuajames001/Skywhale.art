@@ -1,0 +1,429 @@
+{
+    "nav": {
+        "home": "Domů",
+        "encyclopedia": "Encyklopedie",
+        "library": "Knihovna",
+        "custom_book": "Vlastní Kniha",
+        "atelier": "Ateliér Přání",
+        "arcade": "Herna",
+        "feedback": "Nápady",
+        "story": "Příběh",
+        "badge_new": "NOVINKA",
+        "profile": "Profil",
+        "store": "Obchod",
+        "terms": "Podmínky",
+        "privacy": "Ochrana",
+        "back": "Zpět"
+    },
+    "discovery": {
+        "title": "Encyklopedie",
+        "loading_categories": "Načítám kategorie...",
+        "loading": "Obnovuji stránku...",
+        "loading_pages": "Načítám stránky...",
+        "no_books": "V této kategorii zatím nejsou žádné knihy.",
+        "no_pages": "Tato kniha zatím nemá žádné stránky.",
+        "skip_trailer": "Přeskočit",
+        "play_trailer": "Přehrát intro",
+        "browser_no_video": "Váš prohlížeč nepodporuje video.",
+        "categories_fallback_space": "Vesmír",
+        "categories_fallback_space_desc": "Nekonečný vesmír čeká! Odhal skryté krásy hvězd a vzdálených galaxií."
+    },
+    "tools": {
+        "templates": "Šablony",
+        "background": "Pozadí",
+        "stickers": "Nálepky",
+        "text": "Text",
+        "ai": "AI Kouzla",
+        "font": "Písmo",
+        "color": "Barva",
+        "text_placeholder": "Napiš přání...",
+        "insert": "Vložit",
+        "ai_placeholder": "Popiš, co chceš vytvořit (klidně česky)...",
+        "create_sticker": "Vytvořit nálepku",
+        "create_background": "Vytvořit pozadí",
+        "reset_black": "Reset (Černá)",
+        "category_other": "Ostatní"
+    },
+    "ai_studio": {
+        "title": "AI Studio",
+        "placeholder": "Popiš, co chceš vytvořit...",
+        "generate_sticker": "Vytvoř nálepku",
+        "generate_bg": "Vytvoř pozadí",
+        "translate": "Přeložit",
+        "translate_tooltip": "Přeložit automaticky",
+        "dictionary": "Magičtinář",
+        "dictionary_tooltip": "Magičtinář (Slovník)"
+    },
+    "dictionary": {
+        "title": "Magičtinář",
+        "subtitle": "Slovník pro malé umělce",
+        "placeholder": "Hledej slovo...",
+        "search_placeholder": "Co chceš přeložit?",
+        "no_results": "Slovo nenalezeno.",
+        "searching": "Hledám...",
+        "searching_hint": "Listuji v kouzelných svitcích...",
+        "synonyms": "Synonyma",
+        "help_text": "Zadej slovo česky a já ti ho pomůžu přeložit tak, aby mu AI lépe rozumělo."
+    },
+    "common": {
+        "loading": "Načítám...",
+        "close": "Zavřít",
+        "back": "Zpět",
+        "error_retry": "Zkusit znovu",
+        "confirm_delete": "Smazat",
+        "cancel": "Zrušit",
+        "soon": "BRZY",
+        "unknown_error": "Neznámá chyba",
+        "errors": {
+            "unexpected": "Něco se pokazilo :(",
+            "refresh_hint": "Refreshni stránku a zkus to znovu.",
+            "moderation_flagged": "Nevhodný obsah detekován: {{categories}}",
+            "moderation_failed": "Nepodařilo se ověřit bezpečnost obsahu",
+            "moderation_generic": "Obsah není vhodný pro děti",
+            "pdf_failed": "Nepodařilo se vytvořit PDF."
+        },
+        "notifications": {
+            "pdf_downloaded_title": "✨ Kniha stažena!",
+            "pdf_downloaded_desc": "Chcete zkopírovat odkaz na aplikaci a pochlubit se přátelům?",
+            "link_copied": "Odkaz zkopírován! 📋",
+            "save_success": "Přáníčko uloženo!",
+            "save_error": "Chyba při ukládání."
+        }
+    },
+    "muse": {
+        "welcome": "Ahoj! Jsem tvá Múza. ✨\n\nPojďme spolu vymyslet úžasný příběh. O čem by měl být?",
+        "architect_welcome": "Zdravím. Jsem Architekt projektu Skywhale. 🏗️\nZeptej se mě na cokoliv ohledně protokolů, databáze nebo pravidel světa.",
+        "placeholder": "Napiš svou myšlenku...",
+        "architect_placeholder": "Zadejte dotaz na systém...",
+        "cancel": "Zrušit",
+        "create_story": "Vytvořit příběh",
+        "error_connection": "Spojení přerušeno. Zkus to prosím znovu.",
+        "role_muse": "Múza",
+        "role_architect": "Architekt",
+        "subtitle_muse": "AI Spoluautor",
+        "subtitle_architect": "System Guide v1.0",
+        "ready_to_write": "Můžeme začít psát?"
+    },
+    "setup": {
+        "title": "Jak začne tvé dobrodružství?",
+        "subtitle": "Každá cesta začíná prvním krokem. Vyber si tu svou.",
+        "back_to_select": "Zpět na výběr",
+        "next": "Pokračovat",
+        "back": "Zpět",
+        "create": "Vyčarovat Knihu",
+        "new_book_default": "Nový Příběh",
+        "legend_hint": "Bude to legenda...",
+        "hero_preview_title": "Tvůj Hrdina",
+        "hero_preview_ready": "\"{{name}}\" zní skvěle! Už si ho představuji.",
+        "hero_preview_hint": "Napiš jméno hrdiny a sleduj, jak ožívá...",
+        "modes": {
+            "chat_title": "AI Vypravěč",
+            "chat_desc": "Chatuj s Múzou a vytvořte spolu unikátní příběh.",
+            "chat_badge": "AI Chat",
+            "magic_title": "Kouzelná hůlka",
+            "magic_desc": "Nech AI magii, ať za tebe vygeneruje kompletní nápad.",
+            "magic_badge": "Rychlé",
+            "hero_title": "Hero Mode",
+            "hero_desc": "Nahraj fotku svého dítěte a udělej z něj hvězdu příběhu!",
+            "hero_badge": "Hero Mode",
+            "custom_title": "Vlastní tvorba",
+            "custom_desc": "Napiš si vlastní příběh od nuly s naším editorem."
+        },
+        "fields": {
+            "title": "Název příběhu",
+            "title_placeholder": "např. Tajemství Starého Dubu",
+            "hero": "Hrdina (Hlavní postava)",
+            "hero_placeholder": "např. Eliška, statečná veverka",
+            "setting": "Svět (Prostředí)",
+            "setting_placeholder": "např. Kouzelný les plný světlušek",
+            "target_audience": "Pro koho to bude?",
+            "voice": "Hlas vypravěče",
+            "style": "Jak to má vypadat?",
+            "length": "Délka příběhu",
+            "hero_upload": "Kdo je hrdina? (Nahraj fotku)",
+            "hero_upload_select": "Vybrat fotku",
+            "hero_upload_done": "Fotka nahrána!",
+            "hero_upload_hint": "Klikni pro nahrání selfie",
+            "hero_upload_ok": "Můžeme pokračovat."
+        },
+        "ages": {
+            "toddler": "Batole",
+            "explorer": "Průzkumník",
+            "hero": "Hrdina",
+            "years_1_3": "1-3 roky",
+            "years_4_7": "4-7 let",
+            "years_8_11": "8-11 let"
+        },
+        "styles": {
+            "watercolor": "Akvarel",
+            "pixar_3d": "Pixar 3D",
+            "futuristic": "Futuristický",
+            "sketch": "Kresba",
+            "ghibli_anime": "Studio Ghibli",
+            "cyberpunk": "Cyberpunk",
+            "felted_wool": "Plstěný",
+            "paper_cutout": "Vystřihovánka",
+            "claymation": "Hliněný",
+            "pop_art": "Pop Art",
+            "dark_oil": "Temná malba",
+            "vintage_parchment": "Starý pergamen",
+            "pixel_art": "Pixel Art",
+            "frozen_crystal": "Ledové království",
+            "happy_cloud": "Veselý mráček"
+        },
+        "status": {
+            "calling_muses": "Vyvolávám Múzy...",
+            "dreaming": "Sním o novém světě...",
+            "binding_structure": "Vazba struktury příběhu...",
+            "preparing_canvas": "Připravuji plátno...",
+            "euphoria": "Eufórie...",
+            "failed": "Nepodařilo se vytvořit příběh."
+        },
+        "energy": {
+            "pages": "stran",
+            "insufficient": "Nedostatek ⚡",
+            "insufficient_energy": "Nedostatek Magické Energie",
+            "recharge": "Dobít Energii",
+            "must_recharge": "Musíš dobít energii"
+        }
+    },
+    "atelier": {
+        "title": "Ateliér",
+        "title_v2": "Ateliér Přání v2",
+        "new_project": "Nové přání (Smazat)",
+        "download_tooltip": "Stáhnout obrázek",
+        "save_tooltip": "Uložit do Knihovny",
+        "share_tooltip": "Sdílet Odkaz",
+        "pages": {
+            "front_cover": "Titulní strana",
+            "left_side": "Levá strana",
+            "right_side": "Pravá strana",
+            "back_side": "Zadní strana",
+            "inside_spread": "Vnitřek listu"
+        },
+        "templates": {
+            "space_party_label": "Vesmírná Párty",
+            "space_party_desc": "Pro malé astronauty a mimozemšťany.",
+            "fairy_celebration_label": "Pohádková Oslava",
+            "fairy_celebration_desc": "Draci, princezny a kouzelné dorty.",
+            "dino_ride_label": "Dinosauří Jízda",
+            "dino_ride_desc": "Roarrr! Oslava pro milovníky pravěku."
+        },
+        "default_greeting": "Všechno nejlepší!",
+        "default_birthday": "Všechno nejlepší k narozeninám!",
+        "moderation_retry": "Obsah není vhodný pro děti. Zkus jiný text.",
+        "status": {
+            "generating_image": "Kouzlím obrázek...",
+            "exporting": "Exportuji...",
+            "saving": "Ukládám...",
+            "capture_error": "Chyba: Nelze zachytit náhled. Zkuste kliknout na stránku, kterou chcete uložit jako náhled.",
+            "thumbnail_error": "Nepodařilo se vytvořit náhled.",
+            "inappropriate_content": "⚠️ Tento text není vhodný pro děti.\n\nZkus napsat něco jiného, prosím! 🌟",
+            "payment_wait": "💳 Platba přijata! Replicate systém však potřebuje 3-5 minut na připsání kreditu.\n\nZkuste to prosím za chvilku znovu.",
+            "magic_dust_error": "Došel kouzelný prach! Chyba:",
+            "share_confirm": "✨ Chceš zkopírovat odkaz na aplikaci pro kamarády?",
+            "share_ok": "Odkaz zkopírován! 📋",
+            "reset_confirm": "Opravdu chceš začít nové přání? Současný koncept bude smazán."
+        },
+        "viewer": {
+            "close": "Zavřít",
+            "not_found": "Přání nenalezeno nebo magie vyprchala...",
+            "return_home": "Zpět Domů",
+            "cover": "TITULKA",
+            "spread": "DVOJSTRANA",
+            "front_cover": "Přední strana"
+        },
+        "card_default_title": "Přáníčko"
+    },
+    "audio": {
+        "voices": {
+            "tante_label": "Laskavá teta",
+            "tante_desc": "Jemný, uklidňující hlas (Alice)",
+            "papa_label": "Klidný táta",
+            "papa_desc": "Hluboký a stabilní (Roger)",
+            "grandma_label": "Babička",
+            "grandma_desc": "Vypravěčský styl (Sarah)",
+            "friend_label": "Kamarád",
+            "friend_desc": "Hravý a veselý (Liam)"
+        }
+    },
+    "app": {
+        "notifications": {
+            "payment_success_title": "Platba úspěšná!",
+            "payment_success_desc": "Děkujeme za předplatné. Tvoje magie je doplněna."
+        },
+        "tooltips": {
+            "download_pdf": "Stáhnout PDF",
+            "save": "Uložit"
+        },
+        "pdf": {
+            "by_author": "napsal {{author}}"
+        },
+        "demo_mode": "Demo režim: Supabase není nakonfigurován. Zkontrolujte soubor .env."
+    },
+    "landing": {
+        "hero": {
+            "badge": "Nová generace vyprávění příběhů",
+            "subtitle": "\"Kde příběhy ožívají jediným dotykem...\"",
+            "learn_more": "Zjistit Více",
+            "cinematic_subtitle": "Vytvářejte filmové příběhy pomocí generativní umělé inteligence.",
+            "enter": "Vstoupit"
+        },
+        "nav": {
+            "back_to_intro": "Zpět na Intro",
+            "login": "Přihlásit se",
+            "enter_app": "Vstoupit do Aplikace",
+            "studio": "Studio",
+            "stories": "Příběhy",
+            "movies": "Filmy",
+            "sounds": "Zvuky",
+            "rules": "Pravidla",
+            "contact": "Kontakt",
+            "about": "O Nás",
+            "stories_desc": "Vytvořit ilustrovanou knihu",
+            "movies_desc": "Animovat postavy z knih",
+            "sounds_desc": "Generovat hudbu a efekty"
+        },
+        "carousel": {
+            "loading": "Přivolávám knihy...",
+            "recent_creations": "Poslední výtvory"
+        },
+        "usp": {
+            "title": "Proč Skywhale.?",
+            "consistency_title": "Vizuální Konzistence",
+            "consistency_desc": "Unikátní technologie Identity™ zajistí, že hrdina vaší knihy bude vypadat stejně na první i poslední stránce.",
+            "speed_title": "Blesková Tvorba",
+            "speed_desc": "Žádné zbytečné čekání. Od prvotního nápadu k plnohodnotné ilustrované knize během krátké chvíle.",
+            "safety_title": "Bezpečný Přístav",
+            "safety_desc": "Garantujeme 100% bezpečné prostředí pro děti. Každý příběh prochází naší etickou AI ochranou.",
+            "first_kind_title": "První Svého Druhu",
+            "first_kind_desc": "Jsme jediná platforma na světě spojující generování knih, filmů a audia do jednoho rodinného studia.",
+            "education_title": "Vzdělávání Budoucnosti",
+            "education_desc": "Rozvíjíme kreativitu a učíme děti komunikovat s technologií. Prompting je jazyk 21. století.",
+            "legacy_title": "Rodinné Dědictví",
+            "legacy_desc": "Tvořte příběhy, které zůstanou navždy. Od digitální podoby v cloudu až po možnost tisku fyzické knihy."
+        },
+        "about": {
+            "title": "Náš Příběh",
+            "text_p1": "Dnešní děti vnímají svět skrze digitální okna. Místo zákazů jsme zvolili jinou cestu – <0>dali jsme tomuto světu hlubší smysl.</0>",
+            "text_p2": "Skywhale. není jen aplikace, je to kreativní ateliér, který proměňuje pasivní čas u obrazovky v radost z tvoření. Spojujeme nejmodernější technologie s lidským citem, abychom vytvořili bezpečný prostor, kde se z malých konzumentů stávají velcí vypravěči.",
+            "text_p3": "Do každého detailu dáváme srdce, protože věříme, že technologie mají sloužit snům, ne je nahrazovat.",
+            "cinematic_text_p1": "Dnešní děti vnímají svět skrze digitální okna. Místo zákazů jsme zvolili jinou cestu – <0>dali jsme tomuto světu hlubší smysl.</0>",
+            "text_p2_cinematic": "Skywhale. proměňuje pasivní čas u obrazovky v radost z tvoření. Spojujeme nejmodernější technologie s lidským citem, abychom vytvořili bezpečný prostor, kde se z malých konzumentů stávají velcí vypravěči. Do každého detailu dáváme srdce, protože věříme, že technologie mají sloužit snům, ne je nahrazovat.",
+            "stats_stories": "Příběhů",
+            "stats_powered": "Powered"
+        },
+        "footer": {
+            "terms": "Podmínky služby",
+            "pricing": "Ceník",
+            "privacy": "Ochrana soukromí",
+            "rights": "All rights reserved."
+        }
+    },
+    "library": {
+        "title_public": "Veřejná Knihovna",
+        "title_private": "Moje Polička",
+        "title_favorites": "Oblíbené Příběhy",
+        "title_cards": "Moje Přáníčka",
+        "subtitle_public": "Objevujte příběhy ostatních tvůrců",
+        "subtitle_private": "Vaše soukromá sbírka magických knih",
+        "subtitle_favorites": "Příběhy, které vás chytily za srdce",
+        "subtitle_cards": "Vaše vytvořená přáníčka a pohlednice",
+        "tabs": {
+            "public": "Veřejná",
+            "favorites": "Oblíbené",
+            "private": "Moje",
+            "cards": "Přáníčka"
+        },
+        "actions": {
+            "deep_clean": "Hloubkové čištění",
+            "create_card": "Vytvořit Přáníčko",
+            "create_book": "Vytvořit Vlastní Knihu",
+            "magic_story": "Zkusit Magický Příběh",
+            "load_more": "Načíst další ({{count}})"
+        },
+        "empty": {
+            "title": "Tvoje police zeje prázdnotou!",
+            "subtitle": "Pojďme společně vyčarovat tvůj první příběh. Stačí jeden klik a magie začne.",
+            "create_card": "Vytvořit první přáníčko",
+            "start_writing": "Začít psát"
+        },
+        "guide": {
+            "start": "Spustit průvodce"
+        },
+        "errors": {
+            "load_failed": "Nepodařilo se načíst knihovnu.",
+            "no_text": "Kniha neobsahuje žádný text!",
+            "not_logged_in": "Nejsi přihlášený!"
+        },
+        "cleanup": {
+            "warning": "⚠️ VAROVÁNÍ: Tato akce smaže VŠECHNY knihy, které nemají trvale uloženou obálku v Supabase.\n\nTo zahrnuje:\n- Prázdné obálky\n- Dočasné odkazy z Replicate (expirované)\n- Jakékoli externí URL\n\nOpravdu pokračovat?",
+            "success": "✨ Čisto! Všechny knihy jsou bezpečně uloženy v Supabase.",
+            "candidates": "Nalezeno {{count}} knih k promazání.\n(Tyto knihy nemají trvalý obrázek).\n\nSmazat je navždy?",
+            "delete_success": "🗑️ Úspěšně smazáno {{count}} knih."
+        },
+        "book_card": {
+            "hide_private": "🔒 Skrýt (Soukromé)",
+            "publish": "🌍 Publikovat",
+            "generate_audio": "✨ Vytvořit Audio",
+            "delete": "🗑️ Smazat",
+            "delete_confirm": "Opravdu chceš smazat tuto knihu?",
+            "status_error": "Chyba",
+            "status_creating": "Tvořím",
+            "untitled": "Bezejmenný příběh",
+            "by_author": "od {{nickname}}"
+        },
+        "custom_book_editor": {
+            "title_default": "Nová Kniha",
+            "subtitle": "Vlastní příběh",
+            "voice_none": "Bez vypravěče",
+            "pages_count": "{{count}} stran",
+            "title_page": "Titulní strana",
+            "page_number": "Strana {{number}}",
+            "placeholder_cover": "Zadej název své knihy...",
+            "placeholder_text": "Byl jednou jeden...",
+            "badge_cover": "Obálka",
+            "canvas_empty": "Zatím prázdné plátno",
+            "btn_conjure": "Vykouzlit",
+            "btn_reconjure": "Překouzlit",
+            "btn_conjure_me": "Vykouzlit MĚ",
+            "btn_upload_photo": "Vložit vlastní",
+            "btn_change_photo": "Změnit fotku",
+            "btn_charge_energy": "Dobít energii",
+            "status_working": "Múzy pracují...",
+            "status_uploading": "Nahrávám...",
+            "insufficient_energy": "Nedostatek",
+            "dictionary_title": "Magičtinář",
+            "dictionary_subtitle": "Slovník pro malé spisovatele",
+            "dictionary_placeholder": "Co chceš přeložit? (např. Les)",
+            "dictionary_empty": "Zadej slovo a nauč se magičtinu.",
+            "dictionary_searching": "Listuji ve starých knihách...",
+            "expert_prompt_label": "Magická Formule (English)",
+            "expert_prompt_placeholder": "Zde se objeví anglický popis pro malíře...",
+            "expert_btn_translate": "Přeložit automaticky",
+            "expert_btn_regenerate": "Přegenerovat",
+            "suggestion_label": "Inspirace",
+            "suggestion_tip": "Tip",
+            "suggestion_insert": "Vložit",
+            "synonyms_label": "Synonyma (Lepší slova)",
+            "adjectives_label": "Kouzelné vlastnosti",
+            "confirm_new_book": "Opravdu chceš začít úplně nový příběh? Současný rozepsaný koncept bude nenávratně smazán.",
+            "tooltip_help": "Nápověda",
+            "tooltip_new_book": "Nový příběh (Smazat koncept)",
+            "tooltip_save": "Uložit",
+            "tooltip_publish": "Vydat",
+            "tooltip_export_pdf": "Stáhnout PDF",
+            "tooltip_magic_mirror": "Kouzelné zrcadlo (Nahrát fotku)",
+            "tooltip_change_photo": "Změnit fotku",
+            "tooltip_remove_photo": "Odebrat fotku"
+        }
+    },
+    "book_cover": {
+        "status_phase_1": "🏗️ PROJECT MANAGER: Vytvářím DNA postavy (Krok 1/2)...",
+        "status_phase_2": "🎨 KRYCÍ UMĚLEC: Malování filmové scény (Krok 2/2)...",
+        "by_author": "od",
+        "change_cover": "Změnit obálku",
+        "open_book": "Otevřít knihu",
+        "cover_art_alt_text": "Obálka knihy"
+    }
+}

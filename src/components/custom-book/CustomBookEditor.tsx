@@ -6,12 +6,14 @@ import { useGuide } from '../../hooks/useGuide';
 import { useLocalStorage } from '../../hooks/useLocalStorage';
 import { useGemini } from '../../hooks/useGemini';
 import { generateImage, STYLE_PROMPTS } from '../../lib/ai';
+import { extractVisualIdentity } from '../../lib/storyteller';
 import { StoryBook, StoryPage } from '../../types';
 import { supabase } from '../../lib/supabase';
 import { PublishDialog } from '../PublishDialog';
 import { AchievementToast } from '../profile/AchievementToast';
 import { VOICE_OPTIONS, DEFAULT_VOICE_ID } from '../../lib/audio-constants';
 import { VoicePreviewButton } from '../audio/VoicePreviewButton';
+import { useTranslation } from 'react-i18next';
 
 interface BookPage {
     id: string;
@@ -28,10 +30,13 @@ interface CustomBookEditorProps {
 }
 
 const CustomBookEditor: React.FC<CustomBookEditorProps> = ({ onBack, onOpenStore }) => {
+    const { t } = useTranslation();
     const [bookId, setBookId] = useState<string>(crypto.randomUUID());
+    // CONSISTENCY: Stable seed per book for kinetic seeding across pages
+    const [bookSeed, setBookSeed] = useLocalStorage('skywhale_draft_book_seed', Math.floor(Math.random() * 1000000000));
 
     // PERSISTENCE: Use local storage for drafts
-    const [bookTitle, setBookTitle] = useLocalStorage('skywhale_draft_book_title', 'Nová Kniha');
+    const [bookTitle, setBookTitle] = useLocalStorage('skywhale_draft_book_title', t('library.custom_book_editor.title_default'));
 
     const createInitialPages = (count: number): BookPage[] => [
         { id: 'cover', text: '', isCover: true },
@@ -47,12 +52,16 @@ const CustomBookEditor: React.FC<CustomBookEditorProps> = ({ onBack, onOpenStore
     const [magicMirrorUrl, setMagicMirrorUrl] = useLocalStorage<string | null>('skywhale_draft_mirror_url', null);
     const [showPublishDialog, setShowPublishDialog] = useState(false);
     const [publishBookId, setPublishBookId] = useState<string | null>(null);
+    const [magicMirrorDna, setMagicMirrorDna] = useLocalStorage<string | null>('skywhale_draft_mirror_dna', null);
     const [currentAchievement, setCurrentAchievement] = useState<any>(null);
     const [isUploadingMirror, setIsUploadingMirror] = useState(false);
     const [maxPages, setMaxPages] = useState(10);
     const [userBalance, setUserBalance] = useState<number | null>(null);
     const [selectedVoice, setSelectedVoice] = useState(DEFAULT_VOICE_ID);
     const [selectedStyle, setSelectedStyle] = useState('Pixar 3D'); // Default to Pixar 3D as requested
+
+    // CONTINUITY CHAIN: Last generated image serves as visual reference for next pages
+    const [continuityImageUrl, setContinuityImageUrl] = useState<string | null>(null);
 
     // EXPERT MODE & DICTIONARY STATE
     const [isExpertMode, setIsExpertMode] = useState(false);
@@ -61,8 +70,9 @@ const CustomBookEditor: React.FC<CustomBookEditorProps> = ({ onBack, onOpenStore
     const [dictionaryResult, setDictionaryResult] = useState<any>(null);
     const [isSearchingDict, setIsSearchingDict] = useState(false);
 
-    // Dynamic cost: 50 Energy for Mirror (Pro), 30 Energy for Standard (Dev)
-    const costPerImage = magicMirrorUrl ? 50 : 30;
+    // Dynamic cost: 50 Energy if any reference exists (Mirror or continuity), 30 for no-reference
+    const activeReference = magicMirrorUrl || continuityImageUrl;
+    const costPerImage = activeReference ? 50 : 30;
     const hasEnoughEnergy = userBalance !== null && userBalance >= costPerImage;
 
     const fileInputRef = React.useRef<HTMLInputElement>(null);
@@ -146,11 +156,14 @@ const CustomBookEditor: React.FC<CustomBookEditorProps> = ({ onBack, onOpenStore
     };
 
     const handleNewBook = () => {
-        if (window.confirm('Opravdu chceš začít úplně nový příběh? Současný rozepsaný koncept bude nenávratně smazán.')) {
-            setBookTitle('Nová Kniha');
+        if (window.confirm(t('library.custom_book_editor.confirm_new_book'))) {
+            setBookTitle(t('library.custom_book_editor.title_default'));
             setPages(createInitialPages(maxPages));
             setMagicMirrorUrl(null);
+            setMagicMirrorDna(null);
+            setContinuityImageUrl(null); // Reset continuity chain
             setCurrentPageIndex(0);
+            setBookSeed(Math.floor(Math.random() * 1000000000));
         }
     };
 
@@ -268,20 +281,25 @@ const CustomBookEditor: React.FC<CustomBookEditorProps> = ({ onBack, onOpenStore
                 finalPrompt = `WIDE CINEMATIC BOOK COVER, centered composition, epic lighting, masterwork: ${prompt} `;
             }
 
-            // Debug: Log Magic Mirror status
-            console.log("🪞 Magic Mirror Debug:", {
-                hasMagicMirror: !!magicMirrorUrl,
-                mirrorUrl: magicMirrorUrl,
-                tier: magicMirrorUrl ? 'premium (50⚡)' : 'basic (30⚡)',
-                willUseReference: !!magicMirrorUrl
+            // Debug: Log reference chain status
+            console.log("🔗 Reference Chain:", {
+                magicMirror: !!magicMirrorUrl,
+                continuity: !!continuityImageUrl,
+                activeRef: magicMirrorUrl || continuityImageUrl || 'NONE',
+                tier: activeReference ? 'premium (50⚡)' : 'basic (30⚡)'
             });
+
+            // If Magic Mirror is active, we MUST use the extracted DNA because Flux Pro ignores image inputs.
+            const effectiveDescription = magicMirrorDna || (activeReference ? "The main character of this story" : undefined);
 
             const result = await generateImage({
                 prompt: finalPrompt,
-                style: selectedStyle, // Use user selected style
-                tier: magicMirrorUrl ? 'premium' : 'basic', // Use premium if hero image exists
-                characterReference: magicMirrorUrl || undefined, // Use hero image if uploaded
-                characterDescription: magicMirrorUrl ? "Portrét osoby z referenčního obrázku, hlavní hrdina příběhu" : undefined
+                style: selectedStyle,
+                tier: activeReference ? 'premium' : 'basic',
+                characterReference: activeReference || undefined,
+                characterDescription: effectiveDescription,
+                baseSeed: bookSeed,
+                pageIndex: currentPageIndex
             });
 
             if (result.url) {
@@ -292,6 +310,10 @@ const CustomBookEditor: React.FC<CustomBookEditorProps> = ({ onBack, onOpenStore
                     prompt: prompt
                 };
                 setPages(newPages);
+
+                // CONTINUITY CHAIN: Save this image as reference for future pages
+                setContinuityImageUrl(result.url);
+                console.log("🔗 Continuity Chain: Stored new reference from page", currentPageIndex);
             }
         } catch (err: any) {
             console.error("Scene Gen Failed", err);
@@ -340,6 +362,39 @@ const CustomBookEditor: React.FC<CustomBookEditorProps> = ({ onBack, onOpenStore
 
             console.log('✅ Magic Mirror URL:', publicUrl);
             setMagicMirrorUrl(publicUrl);
+
+            // EXTRACT VISUAL DNA for Flux Pro Consistency
+            try {
+                // Show a toast or log that we are analyzing
+                const loadingToast = document.createElement('div');
+                loadingToast.innerText = "🧬 Analyzuji postavu...";
+                loadingToast.style.position = 'fixed';
+                loadingToast.style.bottom = '20px';
+                loadingToast.style.right = '20px';
+                loadingToast.style.backgroundColor = 'black';
+                loadingToast.style.color = 'white';
+                loadingToast.style.padding = '10px 20px';
+                loadingToast.style.borderRadius = '20px';
+                loadingToast.style.zIndex = '9999';
+                document.body.appendChild(loadingToast);
+
+                console.log('🧬 Extracting Visual DNA from image...');
+                const dna = await extractVisualIdentity(publicUrl, "Main Character");
+
+                if (dna && (dna.includes('{') || dna.length > 20)) {
+                    console.log('🧬 DNA Extracted:', dna);
+                    setMagicMirrorDna(dna);
+                } else {
+                    console.warn('⚠️ DNA Extraction vague, using fallback.');
+                    setMagicMirrorDna("A cheerful " + (dna || "character"));
+                }
+
+                document.body.removeChild(loadingToast);
+            } catch (dnaErr) {
+                console.error("❌ DNA Extraction failed:", dnaErr);
+                // Fallback to null, user implies character
+            }
+
         } catch (err) {
             console.error("❌ Kouzelné zrcadlo: Nahrávání selhalo", err);
             alert('Nahrávání fotky selhalo. Zkus to prosím znovu.');
@@ -441,7 +496,7 @@ const CustomBookEditor: React.FC<CustomBookEditorProps> = ({ onBack, onOpenStore
                             />
                         </div>
                         <div className="flex items-center gap-2">
-                            <span className="text-[10px] text-white/80 uppercase tracking-widest font-bold ml-1 hidden sm:inline">Vlastní příběh</span>
+                            <span className="text-[10px] text-white/80 uppercase tracking-widest font-bold ml-1 hidden sm:inline">{t('library.custom_book_editor.subtitle')}</span>
 
                             {/* Voice Selector */}
                             <div className="relative group">
@@ -451,7 +506,7 @@ const CustomBookEditor: React.FC<CustomBookEditorProps> = ({ onBack, onOpenStore
                                     onChange={(e) => setSelectedVoice(e.target.value)}
                                     className={`bg-white/10 text-white text-xs rounded pl-7 pr-2 py-1 outline-none border border-white/10 cursor-pointer hover:bg-white/20 transition-colors appearance-none ${!selectedVoice && 'text-white/50 italic'}`}
                                 >
-                                    <option value="" className="text-stone-500 bg-white italic">Bez vypravěče</option>
+                                    <option value="" className="text-stone-500 bg-white italic">{t('library.custom_book_editor.voice_none')}</option>
                                     {VOICE_OPTIONS.map(v => (
                                         <option key={v.id} value={v.id} className="text-stone-900 bg-white">
                                             {v.emoji} {v.name}
@@ -499,9 +554,9 @@ const CustomBookEditor: React.FC<CustomBookEditorProps> = ({ onBack, onOpenStore
                                 onChange={(e) => setMaxPages(Number(e.target.value))}
                                 className="bg-white/10 text-white text-xs rounded px-2 py-1 outline-none border border-white/10 cursor-pointer hover:bg-white/20 transition-colors"
                             >
-                                <option value={10} className="text-stone-900 bg-white">10 stran</option>
-                                <option value={15} className="text-stone-900 bg-white">15 stran</option>
-                                <option value={25} className="text-stone-900 bg-white">25 stran</option>
+                                <option value={10} className="text-stone-900 bg-white">{t('library.custom_book_editor.pages_count', { count: 10 })}</option>
+                                <option value={15} className="text-stone-900 bg-white">{t('library.custom_book_editor.pages_count', { count: 15 })}</option>
+                                <option value={25} className="text-stone-900 bg-white">{t('library.custom_book_editor.pages_count', { count: 25 })}</option>
                             </select>
                             <div title="Cena audia: 1 ⚡ / 20 znaků (zde odhad)" className={`flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold border shadow-[0_0_10px_rgba(245,158,11,0.2)] ${magicMirrorUrl ? 'bg-purple-500/20 text-purple-300 border-purple-500/30' : 'bg-amber-500/20 text-amber-300 border-amber-500/30'}`}>
                                 <Zap size={10} fill="currentColor" />
@@ -531,14 +586,14 @@ const CustomBookEditor: React.FC<CustomBookEditorProps> = ({ onBack, onOpenStore
                         <button
                             onClick={() => startGuide('custom_book_editor_welcome')}
                             className="p-2.5 bg-white/10 backdrop-blur-md rounded-full text-white/50 border border-white/20 shadow-lg hover:bg-white/20 hover:text-white transition-all active:scale-95"
-                            title="Nápověda"
+                            title={t('library.custom_book_editor.tooltip_help')}
                         >
                             <span className="font-bold text-lg">?</span>
                         </button>
 
                         <button
                             onClick={() => handleSave(false)}
-                            title="Uložit"
+                            title={t('library.custom_book_editor.tooltip_save')}
                             className="p-2.5 bg-white/10 backdrop-blur-md rounded-full text-white/80 border border-white/20 shadow-lg transition-all hover:scale-110 active:scale-95 disabled:opacity-50 hover:bg-white/20"
                             disabled={saving}
                         >
@@ -563,7 +618,7 @@ const CustomBookEditor: React.FC<CustomBookEditorProps> = ({ onBack, onOpenStore
                         <button
                             onClick={() => magicMirrorInputRef.current?.click()}
                             className="hidden md:flex items-center justify-center w-10 h-10 bg-white/10 backdrop-blur-md rounded-full text-white/50 border border-white/20 transition-all hover:scale-110 active:scale-95 hover:bg-white/20 hover:text-white shadow-lg relative overflow-hidden"
-                            title={magicMirrorUrl ? "Změnit fotku" : "Kouzelné zrcadlo (Nahrát fotku)"}
+                            title={magicMirrorUrl ? t('library.custom_book_editor.tooltip_change_photo') : t('library.custom_book_editor.tooltip_magic_mirror')}
                         >
                             {isUploadingMirror ? (
                                 <Loader2 size={16} className="animate-spin text-white" />
@@ -580,7 +635,7 @@ const CustomBookEditor: React.FC<CustomBookEditorProps> = ({ onBack, onOpenStore
                                     setMagicMirrorUrl(null);
                                 }}
                                 className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-0.5 hover:bg-red-600 shadow-sm z-10 hidden md:flex"
-                                title="Odebrat fotku"
+                                title={t('library.custom_book_editor.tooltip_remove_photo')}
                             >
                                 <X size={10} />
                             </button>
@@ -600,7 +655,7 @@ const CustomBookEditor: React.FC<CustomBookEditorProps> = ({ onBack, onOpenStore
                     <button
                         onClick={handleNewBook}
                         className="hidden md:flex items-center justify-center w-10 h-10 bg-white/10 backdrop-blur-md rounded-full text-red-400 border border-white/20 transition-all hover:scale-110 active:scale-95 hover:bg-white/20 hover:text-red-500 shadow-lg group"
-                        title="Nový příběh (Smazat koncept)"
+                        title={t('library.custom_book_editor.tooltip_new_book')}
                     >
                         <Plus size={20} className="rotate-45 group-hover:text-red-500 transition-colors" strokeWidth={3} />
                     </button>
@@ -632,7 +687,7 @@ const CustomBookEditor: React.FC<CustomBookEditorProps> = ({ onBack, onOpenStore
                     <button
                         onClick={() => handleSave(true)}
                         disabled={saving || isGeneratingImage || isUploading || isUploadingMirror || geminiLoading}
-                        title="Vydat"
+                        title={t('library.custom_book_editor.tooltip_publish')}
                         className="hidden md:flex items-center justify-center p-2.5 bg-white/10 backdrop-blur-md rounded-full text-white/80 border border-white/20 transition-all hover:scale-110 active:scale-95 hover:bg-white/20 disabled:opacity-50 disabled:scale-100 disabled:cursor-not-allowed shadow-lg"
                     >
                         {saving ? <Loader2 size={18} className="animate-spin" /> : <Rocket size={18} />}
@@ -657,7 +712,7 @@ const CustomBookEditor: React.FC<CustomBookEditorProps> = ({ onBack, onOpenStore
                             <div className="w-full h-full min-h-[200px] md:min-h-[500px] flex flex-col relative">
                                 <div className="flex items-center justify-between mb-4 md:mb-8 shrink-0">
                                     <span className="text-[10px] md:text-xs font-bold tracking-widest text-stone-300 uppercase select-none">
-                                        {currentPage.isCover ? 'Titulní strana' : `Strana ${currentPageIndex}`}
+                                        {currentPage.isCover ? t('library.custom_book_editor.title_page') : t('library.custom_book_editor.page_number', { number: currentPageIndex })}
                                     </span>
                                     <button
                                         id="gemini-assist-btn"
@@ -693,7 +748,7 @@ const CustomBookEditor: React.FC<CustomBookEditorProps> = ({ onBack, onOpenStore
                                     id="story-textarea"
                                     value={currentPage.text}
                                     onChange={(e) => handleTextChange(e.target.value)}
-                                    placeholder={currentPage.isCover ? "Zadej název své knihy..." : "Byl jednou jeden..."}
+                                    placeholder={currentPage.isCover ? t('library.custom_book_editor.placeholder_cover') : t('library.custom_book_editor.placeholder_text')}
                                     className="flex-1 w-full bg-transparent border-none resize-none focus:ring-0 text-xl md:text-4xl leading-relaxed text-stone-800 placeholder:text-stone-200/50 font-serif focus:outline-none selection:bg-purple-200"
                                     spellCheck={false}
                                 />
@@ -709,7 +764,7 @@ const CustomBookEditor: React.FC<CustomBookEditorProps> = ({ onBack, onOpenStore
                                         >
                                             <div className="flex items-center justify-between mb-2">
                                                 <span className="text-[10px] font-black uppercase tracking-widest text-indigo-400 flex items-center gap-2">
-                                                    <Sparkles size={10} /> Magická Formule (English)
+                                                    <Sparkles size={10} /> {t('library.custom_book_editor.expert_prompt_label')}
                                                 </span>
                                                 <button
                                                     onClick={async () => {
@@ -722,13 +777,13 @@ const CustomBookEditor: React.FC<CustomBookEditorProps> = ({ onBack, onOpenStore
                                                     }}
                                                     className="text-[10px] bg-indigo-50 text-indigo-600 px-2 py-1 rounded hover:bg-indigo-100 font-bold"
                                                 >
-                                                    {currentPage.prompt ? 'Přegenerovat' : 'Přeložit automaticky'}
+                                                    {currentPage.prompt ? t('library.custom_book_editor.expert_btn_regenerate') : t('library.custom_book_editor.expert_btn_translate')}
                                                 </button>
                                             </div>
                                             <textarea
                                                 className="w-full bg-indigo-50/50 border border-indigo-100 rounded-xl p-3 text-sm font-mono text-indigo-800 focus:ring-2 focus:ring-indigo-200 focus:outline-none"
                                                 rows={4}
-                                                placeholder="Zde se objeví anglický popis pro malíře..."
+                                                placeholder={t('library.custom_book_editor.expert_prompt_placeholder')}
                                                 value={currentPage.prompt || ''}
                                                 onChange={(e) => {
                                                     const newPages = [...pages];
@@ -765,11 +820,11 @@ const CustomBookEditor: React.FC<CustomBookEditorProps> = ({ onBack, onOpenStore
                                             <Feather size={16} className="text-purple-500" />
                                         </div>
                                         <div className="flex-1">
-                                            <p className="text-[8px] md:text-[10px] font-black text-purple-400 mb-1 uppercase tracking-widest">Inspirace</p>
+                                            <p className="text-[8px] md:text-[10px] font-black text-purple-400 mb-1 uppercase tracking-widest">{t('library.custom_book_editor.suggestion_label')}</p>
                                             <p className="text-sm md:text-lg text-stone-700 leading-snug font-serif italic line-clamp-3">"{suggestion}"</p>
                                             <div className="flex items-center gap-2 mt-2 md:mt-3">
-                                                <span className="text-[8px] md:text-[10px] bg-purple-100 text-purple-600 px-2 py-0.5 rounded-full font-bold">Tip</span>
-                                                <span className="text-[8px] md:text-[10px] text-stone-400 font-medium">Vložit</span>
+                                                <span className="text-[8px] md:text-[10px] bg-purple-100 text-purple-600 px-2 py-0.5 rounded-full font-bold">{t('library.custom_book_editor.suggestion_tip')}</span>
+                                                <span className="text-[8px] md:text-[10px] text-stone-400 font-medium">{t('library.custom_book_editor.suggestion_insert')}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -793,7 +848,7 @@ const CustomBookEditor: React.FC<CustomBookEditorProps> = ({ onBack, onOpenStore
                                     {currentPage.isCover && (
                                         <div className="absolute top-4 md:top-8 left-1/2 -translate-x-1/2 px-3 py-1 bg-stone-900 text-white text-[8px] md:text-[10px] font-black uppercase tracking-[0.2em] rounded-full shadow-lg z-20 flex items-center gap-2">
                                             <Star size={8} className="text-yellow-400 fill-yellow-400" />
-                                            Obálka
+                                            {t('library.custom_book_editor.badge_cover')}
                                         </div>
                                     )}
 
@@ -810,7 +865,7 @@ const CustomBookEditor: React.FC<CustomBookEditorProps> = ({ onBack, onOpenStore
                                             <div className="w-16 h-16 md:w-24 md:h-24 rounded-full bg-stone-50 flex items-center justify-center mb-4 md:mb-6">
                                                 <ImageIcon size={24} className="opacity-30" />
                                             </div>
-                                            <p className="text-sm md:text-xl font-bold opacity-40 font-title">Zatím prázdné plátno</p>
+                                            <p className="text-sm md:text-xl font-bold opacity-40 font-title">{t('library.custom_book_editor.canvas_empty')}</p>
                                         </div>
                                     )}
 
@@ -829,17 +884,17 @@ const CustomBookEditor: React.FC<CustomBookEditorProps> = ({ onBack, onOpenStore
                                                 >
                                                     <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
                                                     <span className="text-xl md:text-2xl">✨</span>
-                                                    <span className="text-sm md:text-lg tracking-wide">{currentPage.isCover ? 'Vykouzlit' : (currentPage.imageUrl ? 'Překouzlit' : 'Vykouzlit')}</span>
+                                                    <span className="text-sm md:text-lg tracking-wide">{currentPage.isCover ? t('library.custom_book_editor.btn_conjure') : (currentPage.imageUrl ? t('library.custom_book_editor.btn_reconjure') : t('library.custom_book_editor.btn_conjure'))}</span>
                                                     {!hasEnoughEnergy && (
                                                         <div className="absolute inset-0 bg-stone-900/90 flex flex-col items-center justify-center text-[10px] uppercase font-bold text-red-400">
-                                                            <span>Nedostatek</span>
+                                                            <span>{t('library.custom_book_editor.insufficient_energy')}</span>
                                                             <span>{costPerImage} ⚡</span>
                                                         </div>
                                                     )}
                                                 </button>
                                                 {!hasEnoughEnergy && (
                                                     <button onClick={onOpenStore} className="text-[10px] underline text-stone-500 hover:text-stone-700">
-                                                        Dobít energii
+                                                        {t('library.custom_book_editor.btn_charge_energy')}
                                                     </button>
                                                 )}
 
@@ -850,10 +905,10 @@ const CustomBookEditor: React.FC<CustomBookEditorProps> = ({ onBack, onOpenStore
                                                         className="group relative px-6 py-3 md:px-8 md:py-4 bg-gradient-to-br from-indigo-600 to-purple-700 text-white rounded-xl md:rounded-2xl font-black shadow-[0_10px_30px_rgba(79,70,229,0.3)] transform active:scale-95 transition-all flex items-center gap-2 md:gap-4 border-2 border-white/20 overflow-hidden"
                                                     >
                                                         <span className="text-xl md:text-2xl drop-shadow-md">✨👤</span>
-                                                        <span className="text-sm md:text-lg tracking-wide">Vykouzlit MĚ</span>
+                                                        <span className="text-sm md:text-lg tracking-wide">{t('library.custom_book_editor.btn_conjure_me')}</span>
                                                         {!hasEnoughEnergy && (
                                                             <div className="absolute inset-0 bg-stone-900/90 flex flex-col items-center justify-center text-[10px] uppercase font-bold text-red-400">
-                                                                <span>Nedostatek</span>
+                                                                <span>{t('library.custom_book_editor.insufficient_energy')}</span>
                                                                 <span>{costPerImage} ⚡</span>
                                                             </div>
                                                         )}
@@ -869,7 +924,7 @@ const CustomBookEditor: React.FC<CustomBookEditorProps> = ({ onBack, onOpenStore
                                                 className="mt-2 md:mt-6 flex items-center gap-2 text-stone-400 hover:text-stone-600 transition-colors text-xs md:text-sm font-medium"
                                             >
                                                 <Camera size={14} />
-                                                <span>{currentPage.imageUrl ? 'Změnit fotku' : 'Vložit vlastní'}</span>
+                                                <span>{currentPage.imageUrl ? t('library.custom_book_editor.btn_change_photo') : t('library.custom_book_editor.btn_upload_photo')}</span>
                                             </button>
                                         )}
 
@@ -878,7 +933,7 @@ const CustomBookEditor: React.FC<CustomBookEditorProps> = ({ onBack, onOpenStore
                                             <div className="flex flex-col items-center gap-2 md:gap-4">
                                                 <Loader2 size={32} className="text-purple-500 animate-spin" />
                                                 <p className="font-title font-bold text-stone-400 text-sm md:text-base">
-                                                    {isGeneratingImage ? 'Múzy pracují...' : 'Nahrávám...'}
+                                                    {isGeneratingImage ? t('library.custom_book_editor.status_working') : t('library.custom_book_editor.status_uploading')}
                                                 </p>
                                             </div>
                                         )}
@@ -922,7 +977,7 @@ const CustomBookEditor: React.FC<CustomBookEditorProps> = ({ onBack, onOpenStore
                                 <div className="relative mb-6">
                                     <input
                                         type="text"
-                                        placeholder="Co chceš přeložit? (např. Les)"
+                                        placeholder={t('library.custom_book_editor.dictionary_placeholder')}
                                         value={dictionaryQuery}
                                         onChange={(e) => setDictionaryQuery(e.target.value)}
                                         onKeyDown={(e) => {
@@ -956,7 +1011,7 @@ const CustomBookEditor: React.FC<CustomBookEditorProps> = ({ onBack, onOpenStore
                                         {dictionaryResult.synonyms?.length > 0 && (
                                             <div>
                                                 <h4 className="text-xs font-bold uppercase tracking-widest text-stone-400 mb-3 flex items-center gap-2">
-                                                    <Sparkles size={12} /> Synonyma (Lepší slova)
+                                                    <Sparkles size={12} /> {t('library.custom_book_editor.synonyms_label')}
                                                 </h4>
                                                 <div className="flex flex-wrap gap-2">
                                                     {dictionaryResult.synonyms.map((syn: string) => (
@@ -983,7 +1038,7 @@ const CustomBookEditor: React.FC<CustomBookEditorProps> = ({ onBack, onOpenStore
                                         {dictionaryResult.related_adjectives?.length > 0 && (
                                             <div>
                                                 <h4 className="text-xs font-bold uppercase tracking-widest text-stone-400 mb-3 flex items-center gap-2">
-                                                    <Star size={12} /> Kouzelné vlastnosti
+                                                    <Star size={12} /> {t('library.custom_book_editor.adjectives_label')}
                                                 </h4>
                                                 <div className="flex flex-wrap gap-2">
                                                     {dictionaryResult.related_adjectives.map((adj: string) => (
@@ -998,7 +1053,7 @@ const CustomBookEditor: React.FC<CustomBookEditorProps> = ({ onBack, onOpenStore
                                 ) : (
                                     <div className="text-center text-stone-400 py-10">
                                         <Languages size={48} className="mx-auto mb-4 opacity-20" />
-                                        <p>Zadej slovo a nauč se magičtinu.</p>
+                                        <p>{t('library.custom_book_editor.dictionary_empty')}</p>
                                     </div>
                                 )}
                             </div>

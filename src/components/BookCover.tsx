@@ -4,6 +4,7 @@ import { ImageGenerator } from './ImageGenerator';
 import { RefreshCw, BookOpen } from 'lucide-react';
 import { getTheme } from '../lib/themes';
 import { BackgroundOrchestrator } from './BackgroundOrchestrator';
+import { useTranslation } from 'react-i18next';
 
 interface BookCoverProps {
     book: StoryBook;
@@ -15,7 +16,7 @@ interface BookCoverProps {
 }
 
 export const BookCover = ({ book, onOpen, onUpdateCover, onUploadImage, tier, referenceImageUrl }: BookCoverProps) => {
-
+    const { t } = useTranslation();
     const theme = getTheme(book.theme_style);
 
     const handleCoverGenerated = async (tempUrl: string, seed?: number) => {
@@ -62,8 +63,8 @@ export const BookCover = ({ book, onOpen, onUpdateCover, onUploadImage, tier, re
 
     // Status Message for user
     const statusMessage = isPhaseOne
-        ? "🏗️ PROJECT MANAGER: Creating Character DNA (Step 1/2)..."
-        : "🎨 COVER ARTIST: Painting Cinematic Scene (Step 2/2)...";
+        ? t('book_cover.status_phase_1')
+        : t('book_cover.status_phase_2');
 
     const hasCover = !!book.cover_image;
 
@@ -100,7 +101,7 @@ export const BookCover = ({ book, onOpen, onUpdateCover, onUploadImage, tier, re
                         transition={{ duration: 0.8, ease: "easeOut" }}
                         src={book.cover_image!}
                         className="w-full h-full object-contain drop-shadow-2xl rounded-lg shadow-black/50"
-                        alt="Cover Art"
+                        alt={t('book_cover.cover_art_alt_text')}
                     />
                 </div>
             )}
@@ -130,7 +131,7 @@ export const BookCover = ({ book, onOpen, onUpdateCover, onUploadImage, tier, re
                         className={`font-serif italic text-lg md:text-xl transition-colors duration-500 ${hasCover ? 'text-white/90 drop-shadow-md' : 'text-indigo-300/80'
                             }`}
                     >
-                        by {book.author}
+                        {t('book_cover.by_author')} {book.author}
                     </p>
                 </div>
 
@@ -141,7 +142,7 @@ export const BookCover = ({ book, onOpen, onUpdateCover, onUploadImage, tier, re
                             onClick={() => onUpdateCover(null)}
                             className="bg-black/60 hover:bg-black/90 text-white backdrop-blur-md px-4 py-2 rounded-full font-bold shadow-lg flex items-center gap-2 transform hover:scale-105 transition-all text-xs border border-white/10"
                         >
-                            <RefreshCw size={12} /> Change Cover
+                            <RefreshCw size={12} /> {t('book_cover.change_cover')}
                         </button>
                     </div>
                 )}
@@ -176,7 +177,7 @@ export const BookCover = ({ book, onOpen, onUpdateCover, onUploadImage, tier, re
                         ? 'bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/30 text-white'
                         : 'bg-[#1e1b4b] text-purple-200 hover:bg-[#2e1065] border border-purple-500/30'
                         }`}
-                    title="Otevřít knihu"
+                    title={t('book_cover.open_book')}
                 >
                     <BookOpen size={32} className={hasCover ? 'text-white' : 'text-purple-200 drop-shadow-[0_0_8px_rgba(255,255,255,0.4)]'} />
                 </motion.button>

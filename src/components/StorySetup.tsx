@@ -5,6 +5,7 @@ import { generateStoryStructure, generateStoryIdea } from '../lib/storyteller';
 import { invokeEdgeFunction } from '../lib/edge-functions';
 import { supabase } from '../lib/supabase';
 import { StoryBook } from '../types';
+import { useTranslation } from 'react-i18next';
 import { MagicLoading } from './MagicLoading';
 import { AnimatedInput } from './story/AnimatedInput';
 import { AgeSelector } from './story/AgeSelector';
@@ -22,6 +23,7 @@ interface StorySetupProps {
 import { useGuide } from '../hooks/useGuide';
 
 export const StorySetup: React.FC<StorySetupProps> = ({ onComplete, onOpenStore }) => {
+    const { t, i18n } = useTranslation();
     const [mode, setMode] = useState<'select' | 'custom' | 'auto' | 'chat' | 'architect'>('select');
     const [step, setStep] = useState(0);
     const [isGenerating, setIsGenerating] = useState(false);
@@ -93,10 +95,10 @@ export const StorySetup: React.FC<StorySetupProps> = ({ onComplete, onOpenStore 
     const handleMagicLink = async () => {
         setMode('auto');
         setIsGenerating(true);
-        setCreationStatus("Vyvolávám Múzy...");
+        setCreationStatus(t('setup.status.calling_muses'));
 
         try {
-            const idea = await generateStoryIdea();
+            const idea = await generateStoryIdea({ language: i18n.language } as any);
             setFormData(prev => ({
                 ...prev,
                 title: idea.title,
@@ -112,7 +114,7 @@ export const StorySetup: React.FC<StorySetupProps> = ({ onComplete, onOpenStore 
             setStep(0);
         } catch (error) {
             console.error("Magic Gen Failed", error);
-            setCreationStatus(`Múza mlčí: ${(error as Error).message}`);
+            setCreationStatus(`${t('setup.status.failed')}: ${(error as Error).message}`);
             setTimeout(() => {
                 setIsGenerating(false);
                 setCreationStatus(null);
@@ -123,12 +125,12 @@ export const StorySetup: React.FC<StorySetupProps> = ({ onComplete, onOpenStore 
 
     const handleSubmit = async () => {
         setIsGenerating(true);
-        setCreationStatus("Sním o novém světě...");
+        setCreationStatus(t('setup.status.dreaming'));
 
         try {
 
 
-            setCreationStatus("Vazba struktury příběhu...");
+            setCreationStatus(t('setup.status.binding_structure'));
             const { pages, coverPrompt, identityPrompt, visualDna } = await generateStoryStructure({
                 title: formData.title,
                 author: formData.author,
@@ -137,13 +139,14 @@ export const StorySetup: React.FC<StorySetupProps> = ({ onComplete, onOpenStore 
                 setting: formData.setting,
                 target_audience: formData.target_audience,
                 visual_style: formData.visual_style,
-                user_identity_image: formData.hero_image_url || undefined // HERO MODE
+                user_identity_image: formData.hero_image_url || undefined, // HERO MODE
+                language: i18n.language
             });
 
-            setCreationStatus("Připravuji plátno...");
+            setCreationStatus(t('setup.status.preparing_canvas'));
             const bookId = crypto.randomUUID();
 
-            setCreationStatus("Eufórie...");
+            setCreationStatus(t('setup.status.euphoria'));
 
             const newStory: StoryBook = {
                 book_id: bookId,
@@ -167,7 +170,7 @@ export const StorySetup: React.FC<StorySetupProps> = ({ onComplete, onOpenStore 
 
         } catch (error) {
             console.error("Story Creation Failed:", error);
-            setCreationStatus("Nepodařilo se vytvořit příběh.");
+            setCreationStatus(t('setup.status.failed'));
             setTimeout(() => {
                 setIsGenerating(false);
                 setCreationStatus(null);
@@ -183,7 +186,7 @@ export const StorySetup: React.FC<StorySetupProps> = ({ onComplete, onOpenStore 
 
     if (mode === 'chat' || mode === 'architect') {
         return (
-            <div className={`w-full max-w-4xl bg-slate-900/90 backdrop-blur-2xl rounded-[40px] shadow-2xl h-[80vh] min-h-[600px] border relative overflow-hidden flex flex-col ${mode === 'architect' ? 'border-emerald-500/20' : 'border-cyan-500/20'}`}>
+            <div className={`w-full max-w-4xl bg-slate-900/90 backdrop-blur-2xl rounded-[40px] shadow-2xl h-[80vh] min-h-[600px] border relative overflow-y-auto flex flex-col ${mode === 'architect' ? 'border-emerald-500/20' : 'border-cyan-500/20'}`}>
                 <StoryChat
                     mode={mode === 'architect' ? 'architect' : 'muse'}
                     onCancel={() => setMode('select')}
@@ -203,10 +206,10 @@ export const StorySetup: React.FC<StorySetupProps> = ({ onComplete, onOpenStore 
             <div className="flex flex-col items-center gap-8 w-full max-w-5xl px-4 animate-in fade-in zoom-in duration-500 py-10">
                 <div className="text-center space-y-4">
                     <h1 className="text-3xl md:text-5xl font-black mb-2 text-white drop-shadow-lg text-center" style={{ fontFamily: 'Fredoka' }}>
-                        Jak začne tvé dobrodružství?
+                        {t('setup.title')}
                     </h1>
                     <p className="text-slate-400 text-lg text-center max-w-lg mx-auto" style={{ fontFamily: 'Quicksand' }}>
-                        Každá cesta začíná prvním krokem. Vyber si tu svou.
+                        {t('setup.subtitle')}
                     </p>
                 </div>
 
@@ -221,7 +224,7 @@ export const StorySetup: React.FC<StorySetupProps> = ({ onComplete, onOpenStore 
                     >
                         <div className="absolute top-6 right-6 z-20">
                             <div className="bg-gradient-to-r from-cyan-500 to-blue-500 text-white text-[10px] font-black tracking-widest uppercase px-3 py-1 rounded-full shadow-lg shadow-cyan-500/40 animate-pulse">
-                                AI Chat
+                                {t('setup.modes.chat_badge')}
                             </div>
                         </div>
                         <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/circuit.png')] opacity-10 mix-blend-overlay" />
@@ -234,9 +237,9 @@ export const StorySetup: React.FC<StorySetupProps> = ({ onComplete, onOpenStore 
                                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-white"><path d="M12 8V4H8" /><rect width="16" height="12" x="4" y="8" rx="2" /><path d="M2 14h2" /><path d="M20 14h2" /><path d="M15 13v2" /><path d="M9 13v2" /></svg>
                             </div>
                             <div>
-                                <h3 className="text-2xl font-bold text-white mb-1 group-hover:text-cyan-200 transition-colors">Pokec s Múzou</h3>
+                                <h3 className="text-2xl font-bold text-white mb-1 group-hover:text-cyan-200 transition-colors">{t('setup.modes.chat_title')}</h3>
                                 <p className="text-cyan-200/60 group-hover:text-cyan-100/80 leading-relaxed text-sm">
-                                    Povykládej si o svém nápadu a společně ho vymyslíme.
+                                    {t('setup.modes.chat_desc')}
                                 </p>
                             </div>
                         </div>
@@ -252,7 +255,7 @@ export const StorySetup: React.FC<StorySetupProps> = ({ onComplete, onOpenStore 
                     >
                         <div className="absolute top-6 right-6 z-20">
                             <div className="bg-gradient-to-r from-pink-500 to-rose-500 text-white text-[10px] font-black tracking-widest uppercase px-3 py-1 rounded-full shadow-lg shadow-pink-500/40 animate-pulse">
-                                Rychlé
+                                {t('setup.modes.magic_badge')}
                             </div>
                         </div>
                         <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
@@ -264,9 +267,9 @@ export const StorySetup: React.FC<StorySetupProps> = ({ onComplete, onOpenStore 
                                 <Wand2 size={24} />
                             </div>
                             <div>
-                                <h3 className="text-2xl font-bold text-white mb-1 group-hover:text-indigo-200 transition-colors">Magická hůlka</h3>
+                                <h3 className="text-2xl font-bold text-white mb-1 group-hover:text-indigo-200 transition-colors">{t('setup.modes.magic_title')}</h3>
                                 <p className="text-indigo-200/60 group-hover:text-indigo-100/80 leading-relaxed text-sm">
-                                    Nech Múzu, ať tě překvapí. Jen jedno kliknutí.
+                                    {t('setup.modes.magic_desc')}
                                 </p>
                             </div>
                         </div>
@@ -285,7 +288,7 @@ export const StorySetup: React.FC<StorySetupProps> = ({ onComplete, onOpenStore 
                     >
                         <div className="absolute top-6 right-6 z-20">
                             <div className="bg-gradient-to-r from-emerald-500 to-green-500 text-white text-[10px] font-black tracking-widest uppercase px-3 py-1 rounded-full shadow-lg shadow-emerald-500/40">
-                                Hero Mode
+                                {t('setup.modes.hero_badge')}
                             </div>
                         </div>
                         <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-20 mix-blend-overlay" />
@@ -298,9 +301,9 @@ export const StorySetup: React.FC<StorySetupProps> = ({ onComplete, onOpenStore 
                                 <User size={24} className="text-white" />
                             </div>
                             <div>
-                                <h3 className="text-2xl font-bold text-white mb-1 group-hover:text-emerald-200 transition-colors">Příběh Hrdiny</h3>
+                                <h3 className="text-2xl font-bold text-white mb-1 group-hover:text-emerald-200 transition-colors">{t('setup.modes.hero_title')}</h3>
                                 <p className="text-emerald-200/60 group-hover:text-emerald-100/80 leading-relaxed text-sm">
-                                    Nahraj fotku a staň se hlavním hrdinou.
+                                    {t('setup.modes.hero_desc')}
                                 </p>
                             </div>
                         </div>
@@ -323,9 +326,9 @@ export const StorySetup: React.FC<StorySetupProps> = ({ onComplete, onOpenStore 
                                 <PenTool size={24} />
                             </div>
                             <div>
-                                <h3 className="text-2xl font-bold text-white mb-1 group-hover:text-indigo-200 transition-colors">Vlastní příběh</h3>
+                                <h3 className="text-2xl font-bold text-white mb-1 group-hover:text-indigo-200 transition-colors">{t('setup.modes.custom_title')}</h3>
                                 <p className="text-indigo-200/60 group-hover:text-indigo-100/80 leading-relaxed text-sm">
-                                    Staň se architektem a vybuduj svůj svět detail po detailu.
+                                    {t('setup.modes.custom_desc')}
                                 </p>
                             </div>
                         </div>
@@ -345,7 +348,7 @@ export const StorySetup: React.FC<StorySetupProps> = ({ onComplete, onOpenStore 
                     onClick={() => setMode('select')}
                     className="text-slate-400 hover:text-slate-600 font-bold uppercase text-xs tracking-widest transition-colors flex items-center gap-2"
                 >
-                    <ArrowRight className="rotate-180" size={14} /> Zpět na výběr
+                    <ArrowRight className="rotate-180" size={14} /> {t('setup.back_to_select')}
                 </button>
                 <div className="flex gap-2">
                     {[0, 1].map(i => (
@@ -357,9 +360,9 @@ export const StorySetup: React.FC<StorySetupProps> = ({ onComplete, onOpenStore 
             </div>
 
             <h2 className="text-2xl md:text-3xl font-title font-bold text-white mb-1 flex items-center gap-3">
-                {formData.title || 'Nový Příběh'} <Sparkles className="text-amber-400 animate-pulse" size={20} />
+                {formData.title || t('setup.new_book_default')} <Sparkles className="text-amber-400 animate-pulse" size={20} />
             </h2>
-            <p className="text-indigo-200/50 mb-6 md:mb-8 font-medium italic text-sm">Bude to legenda...</p>
+            <p className="text-indigo-200/50 mb-6 md:mb-8 font-medium italic text-sm">{t('setup.legend_hint')}</p>
 
             <AnimatePresence mode='wait'>
                 {step === 0 ? (
@@ -378,7 +381,7 @@ export const StorySetup: React.FC<StorySetupProps> = ({ onComplete, onOpenStore 
                                 {formData.hero_image_url && (
                                     <div className="space-y-4 animate-in fade-in slide-in-from-left duration-500">
                                         <label className="flex items-center gap-2 text-emerald-400 font-bold uppercase tracking-wider text-xs">
-                                            <Sparkles size={14} /> Kdo je hrdina? (Nahraj fotku)
+                                            <Sparkles size={14} /> {t('setup.fields.hero_upload')}
                                         </label>
 
                                         <div className="relative group">
@@ -398,7 +401,7 @@ export const StorySetup: React.FC<StorySetupProps> = ({ onComplete, onOpenStore 
                                                         const { data: { publicUrl } } = supabase.storage.from('story-assets').getPublicUrl(filePath);
                                                         setFormData({ ...formData, hero_image_url: publicUrl });
                                                     } catch (err) {
-                                                        alert("Chyba při nahrávání.");
+                                                        alert(t('setup.status.failed'));
                                                     } finally {
                                                         setIsUploadingHero(false);
                                                     }
@@ -421,10 +424,10 @@ export const StorySetup: React.FC<StorySetupProps> = ({ onComplete, onOpenStore 
                                                 </div>
                                                 <div className="flex-1">
                                                     <h4 className="font-bold text-white">
-                                                        {formData.hero_image_url && formData.hero_image_url !== 'pending' ? 'Fotka nahrána!' : 'Vybrat fotku'}
+                                                        {formData.hero_image_url && formData.hero_image_url !== 'pending' ? t('setup.fields.hero_upload_done') : t('setup.fields.hero_upload_select')}
                                                     </h4>
                                                     <p className="text-xs text-slate-400">
-                                                        {formData.hero_image_url && formData.hero_image_url !== 'pending' ? 'Můžeme pokračovat.' : 'Klikni pro nahrání selfie'}
+                                                        {formData.hero_image_url && formData.hero_image_url !== 'pending' ? t('setup.fields.hero_upload_ok') : t('setup.fields.hero_upload_hint')}
                                                     </p>
                                                 </div>
                                             </label>
@@ -433,25 +436,25 @@ export const StorySetup: React.FC<StorySetupProps> = ({ onComplete, onOpenStore 
                                 )}
 
                                 <AnimatedInput
-                                    label="Název příběhu"
+                                    label={t('setup.fields.title')}
                                     icon={Book}
                                     value={formData.title}
                                     onChange={(e: any) => setFormData({ ...formData, title: e.target.value })}
-                                    placeholder="např. Tajemství Starého Dubu"
+                                    placeholder={t('setup.fields.title_placeholder')}
                                 />
                                 <AnimatedInput
-                                    label="Hrdina (Hlavní postava)"
+                                    label={t('setup.fields.hero')}
                                     icon={User}
                                     value={formData.main_character}
                                     onChange={(e: any) => setFormData({ ...formData, main_character: e.target.value })}
-                                    placeholder="např. Eliška, statečná veverka"
+                                    placeholder={t('setup.fields.hero_placeholder')}
                                 />
                                 <AnimatedInput
-                                    label="Svět (Prostředí)"
+                                    label={t('setup.fields.setting')}
                                     icon={MapPin}
                                     value={formData.setting}
                                     onChange={(e: any) => setFormData({ ...formData, setting: e.target.value })}
-                                    placeholder="např. Kouzelný les plný světlušek"
+                                    placeholder={t('setup.fields.setting_placeholder')}
                                 />
                             </div>
 
@@ -473,11 +476,11 @@ export const StorySetup: React.FC<StorySetupProps> = ({ onComplete, onOpenStore 
                                         )}
                                     </div>
                                     <div>
-                                        <h4 className="font-bold text-white">Tvůj Hrdina</h4>
+                                        <h4 className="font-bold text-white">{t('setup.hero_preview_title')}</h4>
                                         <p className="text-sm text-indigo-200/50 mt-2">
                                             {formData.main_character ?
-                                                `"${formData.main_character}" zní skvěle! Už si ho představuji.` :
-                                                "Napiš jméno hrdiny a sleduj, jak ožívá..."}
+                                                t('setup.hero_preview_ready', { name: formData.main_character }) :
+                                                t('setup.hero_preview_hint')}
                                         </p>
                                     </div>
                                 </div>
@@ -490,7 +493,7 @@ export const StorySetup: React.FC<StorySetupProps> = ({ onComplete, onOpenStore 
                                 disabled={!formData.title}
                                 className="bg-slate-900 text-white px-10 py-4 rounded-full font-bold text-lg hover:bg-violet-600 transition-colors shadow-xl shadow-slate-900/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-3"
                             >
-                                Pokračovat <ArrowRight size={20} />
+                                {t('setup.next')} <ArrowRight size={20} />
                             </button>
                         </div>
                     </motion.div>
@@ -512,7 +515,7 @@ export const StorySetup: React.FC<StorySetupProps> = ({ onComplete, onOpenStore 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-10">
                             <div className="space-y-6">
                                 <label className="flex items-center gap-2 text-slate-500 font-bold uppercase tracking-wider text-xs">
-                                    <User size={14} /> Pro koho to bude?
+                                    <User size={14} /> {t('setup.fields.target_audience')}
                                 </label>
                                 <AgeSelector
                                     selected={formData.target_audience}
@@ -520,7 +523,7 @@ export const StorySetup: React.FC<StorySetupProps> = ({ onComplete, onOpenStore 
                                 />
                                 {/* Voice Selector */}
                                 <label className="flex items-center gap-2 text-slate-500 font-bold uppercase tracking-wider text-xs mt-6">
-                                    <Mic size={14} /> Hlas vypravěče
+                                    <Mic size={14} /> {t('setup.fields.voice')}
                                 </label>
                                 <div className="grid grid-cols-2 gap-3">
                                     {VOICE_OPTIONS.map((voice) => (
@@ -545,7 +548,7 @@ export const StorySetup: React.FC<StorySetupProps> = ({ onComplete, onOpenStore 
 
                             <div className="space-y-6">
                                 <label className="flex items-center gap-2 text-slate-500 font-bold uppercase tracking-wider text-xs">
-                                    <Palette size={14} /> Jak to má vypadat?
+                                    <Palette size={14} /> {t('setup.fields.style')}
                                 </label>
                                 <StyleSelector
                                     selected={formData.visual_style}
@@ -557,7 +560,7 @@ export const StorySetup: React.FC<StorySetupProps> = ({ onComplete, onOpenStore 
                         {/* Story Length Selector */}
                         <div className="space-y-6">
                             <label className="flex items-center gap-2 text-slate-500 font-bold uppercase tracking-wider text-xs">
-                                <Book size={14} /> Délka příběhu
+                                <Book size={14} /> {t('setup.fields.length')}
                             </label>
                             <div className="grid grid-cols-3 gap-4">
                                 {[10, 15, 25].map((len) => {
@@ -575,11 +578,11 @@ export const StorySetup: React.FC<StorySetupProps> = ({ onComplete, onOpenStore 
                                             onClick={() => setFormData({ ...formData, length: len })}
                                             className={`p-4 rounded-xl border-2 transition-all relative overflow-hidden ${isSelected ? 'border-violet-500 bg-violet-500/10' : 'border-white/10 bg-white/5 hover:border-white/30'}`}
                                         >
-                                            <div className="text-2xl font-bold text-white mb-1">{len} stran</div>
+                                            <div className="text-2xl font-bold text-white mb-1">{len} {t('setup.energy.pages')}</div>
                                             <div className="text-xs font-bold uppercase tracking-wider text-indigo-200">{cost} ⚡</div>
                                             {!isAffordable && (
                                                 <div className="absolute inset-0 bg-black/60 backdrop-blur-[1px] flex items-center justify-center">
-                                                    <span className="text-[10px] font-bold text-red-300 uppercase bg-red-900/80 px-2 py-1 rounded">Nedostatek ⚡</span>
+                                                    <span className="text-[10px] font-bold text-red-300 uppercase bg-red-900/80 px-2 py-1 rounded">{t('setup.energy.insufficient')}</span>
                                                 </div>
                                             )}
                                         </button>
@@ -592,11 +595,11 @@ export const StorySetup: React.FC<StorySetupProps> = ({ onComplete, onOpenStore 
                         {!hasEnoughEnergy && (
                             <div className="bg-amber-900/30 border border-amber-500/30 p-4 rounded-xl flex items-center justify-between">
                                 <div className="text-amber-200 text-sm">
-                                    <span className="font-bold block">Nedostatek Magické Energie</span>
+                                    <span className="font-bold block">{t('setup.energy.insufficient_energy')}</span>
                                     Potřebuješ {requiredEnergy} ⚡, ale máš jen {userBalance} ⚡.
                                 </div>
                                 <button onClick={onOpenStore} className="bg-amber-500 text-black px-4 py-2 rounded-lg font-bold text-xs uppercase hover:bg-amber-400 transition-colors">
-                                    Dobít Energii
+                                    {t('setup.energy.recharge')}
                                 </button>
                             </div>
                         )}
@@ -606,19 +609,19 @@ export const StorySetup: React.FC<StorySetupProps> = ({ onComplete, onOpenStore 
                                 onClick={() => setStep(0)}
                                 className="text-slate-400 font-bold hover:text-slate-600 px-6 py-4"
                             >
-                                Zpět
+                                {t('setup.back')}
                             </button>
                             <button
                                 onClick={handleSubmit}
                                 disabled={!hasEnoughEnergy}
                                 className={`bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white px-12 py-4 rounded-full font-bold text-lg hover:shadow-2xl hover:shadow-fuchsia-500/30 transition-all transform hover:scale-105 flex items-center gap-3 ${!hasEnoughEnergy ? 'opacity-50 grayscale cursor-not-allowed' : ''}`}
                             >
-                                Vyčarovat Knihu <Wand2 size={24} />
+                                {t('setup.create')} <Wand2 size={24} />
                             </button>
                             {/* Disabled Overlay Tooltip */}
                             {!hasEnoughEnergy && (
                                 <div className="text-xs text-center text-red-400 font-bold uppercase mt-2 w-full absolute -bottom-8">
-                                    Musíš dobít energii
+                                    {t('setup.energy.must_recharge')}
                                 </div>
                             )}
                         </div>

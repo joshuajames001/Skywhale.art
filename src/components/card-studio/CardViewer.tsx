@@ -4,6 +4,7 @@ import { CardPage } from './types';
 import { CardCanvas } from './CardCanvas';
 import { ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
 import { StarryBackground } from '../StarryBackground';
+import { useTranslation } from 'react-i18next';
 
 // Helper for single page in spread
 const ViewerPage = ({ page }: { page: CardPage }) => {
@@ -20,6 +21,7 @@ const ViewerPage = ({ page }: { page: CardPage }) => {
 };
 
 export const CardViewer = ({ cardId, onClose }: { cardId: string | null, onClose: () => void }) => {
+    const { t } = useTranslation();
     const [pages, setPages] = useState<CardPage[] | null>(null);
     const [loading, setLoading] = useState(true);
     const [viewStartIndex, setViewStartIndex] = useState(0);
@@ -69,8 +71,8 @@ export const CardViewer = ({ cardId, onClose }: { cardId: string | null, onClose
     if (!pages) {
         return (
             <div className="fixed inset-0 bg-slate-950 flex flex-col items-center justify-center text-white gap-4">
-                <p>Card not found or magic dissipated...</p>
-                <button onClick={onClose} className="text-sm underline">Return Home</button>
+                <p>{t('atelier.viewer.not_found')}</p>
+                <button onClick={onClose} className="text-sm underline">{t('atelier.viewer.return_home')}</button>
             </div>
         );
     }
@@ -88,7 +90,7 @@ export const CardViewer = ({ cardId, onClose }: { cardId: string | null, onClose
 
                 {/* Close / Back */}
                 <button onClick={onClose} className="absolute top-6 left-6 px-4 py-2 bg-white/10 hover:bg-white/20 rounded-full transition-colors text-xs uppercase tracking-widest backdrop-blur-md">
-                    Close Viewer
+                    {t('atelier.viewer.close')}
                 </button>
 
                 {/* VIEW RENDERER */}
@@ -102,7 +104,7 @@ export const CardViewer = ({ cardId, onClose }: { cardId: string | null, onClose
                             onSelect={() => { }}
                             onUpdate={() => { }}
                         />
-                        <div className="text-center mt-4 text-slate-500 text-xs uppercase tracking-widest font-bold">Front Cover</div>
+                        <div className="text-center mt-4 text-slate-500 text-xs uppercase tracking-widest font-bold">{t('atelier.viewer.front_cover')}</div>
                     </div>
                 ) : (
                     // SPREAD
@@ -127,7 +129,7 @@ export const CardViewer = ({ cardId, onClose }: { cardId: string | null, onClose
                 <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex items-center gap-4 px-6 py-3 bg-slate-900/90 backdrop-blur-md rounded-full border border-white/10 shadow-xl z-50">
                     <button onClick={goToPrevPage} disabled={!canGoPrev} className="p-2 hover:bg-white/10 rounded-full disabled:opacity-30 transition-colors"><ChevronLeft size={20} /></button>
                     <div className="flex flex-col items-center text-center w-24">
-                        <span className="text-sm font-semibold text-white tracking-widest">{viewStartIndex === 0 ? "COVER" : `SPREAD`}</span>
+                        <span className="text-sm font-semibold text-white tracking-widest">{viewStartIndex === 0 ? t('atelier.viewer.cover') : t('atelier.viewer.spread')}</span>
                     </div>
                     <button onClick={goToNextPage} disabled={!canGoNext} className="p-2 hover:bg-white/10 rounded-full disabled:opacity-30 transition-colors"><ChevronRight size={20} /></button>
                 </div>

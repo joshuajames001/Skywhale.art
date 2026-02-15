@@ -12,6 +12,22 @@ serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
   try {
+    // --- AUTHENTICATION CHECK ---
+    const authHeader = req.headers.get('Authorization')!;
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      { global: { headers: { Authorization: authHeader } } }
+    );
+
+    const {
+      data: { user },
+    } = await supabaseClient.auth.getUser();
+
+    if (!user) {
+      return new Response("Unauthorized", { status: 401, headers: corsHeaders });
+    }
+
     const body = await req.json();
     const { prompt, mode, user_id, image_prompt } = body;
     // mode: 'sticker' | 'background'

@@ -142,7 +142,7 @@ serve(async (req) => {
 
     // 2. Sestavení vstupu pro Replicate
     let finalPrompt = prompt;
-    const inputImages: (string | null)[] = new Array(10).fill(null);
+    const inputImages: (string | null)[] = new Array(8).fill(null);
 
     // JSON PARSING FOR 10-SLOT PROTOCOL
     try {
@@ -171,7 +171,9 @@ serve(async (req) => {
       output_format: "webp",
       output_quality: 80, 
       safety_tolerance: 5,
-      seed: safeSeed 
+      seed: safeSeed,
+      steps: 28,
+      prompt_upsampling: true
     };
 
     // DUAL REFERENCE & MODEL SPECIFIC PARAMS
@@ -197,56 +199,53 @@ serve(async (req) => {
         // Let's assume the incoming allRefs follows the order from App.tsx:
         // [DNA, StyleAnchor, Continuity, Environment, Prop, Lighting]
         
-        // Slot 1-5: Identity (Primary DNA)
+        // Slot 1: Identity (Primary DNA) - single reference, not duplicated
         const dnaUrl = allRefs[0] || null;
         if (dnaUrl) {
-            for (let i = 0; i < 5; i++) inputImages[i] = dnaUrl;
+            inputImages[0] = dnaUrl;
         }
 
-        // Slot 6: Style (Anchor)
+        // Slot 2: Style (Anchor)
         // Prefer explicit style_reference, fallback to allRefs[1] (Cover)
-        inputImages[5] = styleRefs[0] || allRefs[1] || null;
+        inputImages[1] = styleRefs[0] || allRefs[1] || null;
 
-        // Slot 7: Continuity (Temporal Memory)
-        inputImages[6] = allRefs[2] || null;
+        // Slot 3: Continuity (Temporal Memory)
+        inputImages[2] = allRefs[2] || null;
 
-        // Slot 8: Environment (Location Map)
-        inputImages[7] = allRefs[3] || null;
+        // Slot 4: Environment (Location Map)
+        inputImages[3] = allRefs[3] || null;
 
-        // Slot 9: Prop (Object Permanence)
-        inputImages[8] = allRefs[4] || null;
+        // Slot 5: Prop (Object Permanence)
+        inputImages[4] = allRefs[4] || null;
 
-        // Slot 10: Lighting (Atmospheric Map)
-        inputImages[9] = allRefs[5] || null;
+        // Slot 6: Additional reference
+        inputImages[5] = allRefs[5] || null;
+
+        // Slot 7-8: Reserved
+        inputImages[6] = styleRefs[1] || null;
+        inputImages[7] = styleRefs[2] || null;
 
         // Final Filter and limit
         const finalImages = inputImages.filter(img => img !== null) as string[];
 
         if (finalImages.length > 0) {
             inputPayload.input_images = finalImages; 
-            inputPayload.image_prompt_strength = 0.45; // 2026 Protocol: Adjusted to 0.45 to allow "Disneyfication" (Stylization) while keeping identity features. 0.70 was too strong (copy-paste).
-            console.log(`🔗 2026 MULTI-REF PROTOCOL: Bound ${finalImages.length} images.`);
-            console.log(`   - Slots 1-5 (Identity): ${inputImages[0] ? 'LOCKED' : 'EMPTY'}`);
-            console.log(`   - Slot 6 (Style): ${inputImages[5] ? 'LOCKED' : 'EMPTY'}`);
-            console.log(`   - Slot 7 (Continuity): ${inputImages[6] ? 'LOCKED' : 'EMPTY'}`);
-            console.log(`   - Slot 8 (Environment): ${inputImages[7] ? 'LOCKED' : 'EMPTY'}`);
-            console.log(`   - Slot 10 (Lighting): ${inputImages[9] ? 'LOCKED' : 'EMPTY'}`);
+            console.log(`🔗 MULTI-REF PROTOCOL: Bound ${finalImages.length} images (max 8).`);
+            console.log(`   - Slot 1 (Identity): ${inputImages[0] ? 'LOCKED' : 'EMPTY'}`);
+            console.log(`   - Slot 2 (Style): ${inputImages[1] ? 'LOCKED' : 'EMPTY'}`);
+            console.log(`   - Slot 3 (Continuity): ${inputImages[2] ? 'LOCKED' : 'EMPTY'}`);
+            console.log(`   - Slot 4 (Environment): ${inputImages[3] ? 'LOCKED' : 'EMPTY'}`);
         }
     }
 
-    // VERSION LOOKUP
-    const verResp = await fetch(`https://api.replicate.com/v1/models/${activeModel}`, {
-         headers: { "Authorization": `Token ${Deno.env.get('REPLICATE_API_TOKEN')}` }
-    });
-    const verData = await verResp.json();
-    const versionId = verData.latest_version?.id;
+    console.log(`🔹 Using Model: ${activeModel}`);
 
-    if (!versionId) throw new Error(`Could not retrieve latest version ID for model: ${activeModel}`);
+    // 3. Volání Replicate (model-based endpoint, auto-uses latest version)
+    const replicateEndpoint = `https://api.replicate.com/v1/models/${activeModel}/predictions`;
+    console.log(`🔗 Replicate Endpoint: ${replicateEndpoint}`);
+    console.log(`📦 Input Payload Keys: ${Object.keys(inputPayload).join(', ')}`);
 
-    console.log(`🔹 Using Model Version: ${versionId} (${activeModel})`);
-
-    // 3. Volání Replicate
-    const response = await fetch("https://api.replicate.com/v1/predictions", {
+    const response = await fetch(replicateEndpoint, {
       method: "POST",
       headers: {
         "Authorization": `Token ${Deno.env.get('REPLICATE_API_TOKEN')}`,
@@ -254,7 +253,6 @@ serve(async (req) => {
         "Prefer": "wait=60"
       },
       body: JSON.stringify({
-        version: versionId,
         input: inputPayload
       }),
     });
@@ -264,7 +262,7 @@ serve(async (req) => {
 
     if (!response.ok || prediction.error) {
       console.error("❌ REPLICATE API ERROR:", JSON.stringify(prediction));
-      throw new Error(prediction.error || `Replicate API error: ${response.status}`);
+      throw new Error(prediction.error || prediction.detail || `Replicate API error: ${response.status}`);
     }
 
     // 4. Extrakce výsledku a seedu

@@ -1,5 +1,6 @@
-import { useState, useEffect, memo } from 'react';
+import { useState, useEffect, memo, forwardRef } from 'react';
 import { motion, useMotionValue, useSpring, useTransform, AnimatePresence } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import { StoryBook } from '../types';
 import { BookOpen, AlertCircle, Loader2, Calendar, MoreVertical, Globe, Lock, Trash2, Heart, Headphones } from 'lucide-react';
 import { ReactionBar } from './social/ReactionBar';
@@ -21,7 +22,7 @@ interface BookCardProps {
     onGenerateAudio?: (bookId: string) => void;
 }
 
-const BookCardBase = ({
+const BookCardBase = forwardRef<HTMLDivElement, BookCardProps>(({
     book,
     onClick,
     onHover,
@@ -34,7 +35,8 @@ const BookCardBase = ({
     isFavorited = false,
     onToggleFavorite,
     onGenerateAudio
-}: BookCardProps) => {
+}: BookCardProps, ref) => {
+    const { t } = useTranslation();
     const [showDropdown, setShowDropdown] = useState(false);
 
     // Removed internal favorite fetching logic to prevent request storm
@@ -108,6 +110,7 @@ const BookCardBase = ({
 
     return (
         <motion.div
+            ref={ref}
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: index * 0.1, type: "spring" }}
@@ -185,7 +188,7 @@ const BookCardBase = ({
                                             className="w-full px-4 py-3 text-left hover:bg-violet-50 transition-colors flex items-center gap-3 text-slate-600 font-semibold"
                                         >
                                             {book.is_public ? <Lock size={18} /> : <Globe size={18} />}
-                                            <span>{book.is_public ? '🔒 Skrýt (Soukromé)' : '🌍 Publikovat'}</span>
+                                            <span>{book.is_public ? t('book_card.hide_private') : t('book_card.publish')}</span>
                                         </button>
                                     )}
 
@@ -199,7 +202,7 @@ const BookCardBase = ({
                                             className="w-full px-4 py-3 text-left hover:bg-violet-50 transition-colors flex items-center gap-3 text-violet-600 font-semibold border-t border-slate-100"
                                         >
                                             <Headphones size={18} />
-                                            <span>✨ Vytvořit Audio</span>
+                                            <span>{t('book_card.generate_audio')}</span>
                                         </button>
                                     )}
 
@@ -207,7 +210,7 @@ const BookCardBase = ({
                                         <button
                                             onClick={(e) => {
                                                 e.stopPropagation();
-                                                if (confirm('Opravdu chceš smazat tuto knihu?')) {
+                                                if (confirm(t('book_card.delete_confirm'))) {
                                                     onDelete(book.book_id!);
                                                 }
                                                 setShowDropdown(false);
@@ -215,7 +218,7 @@ const BookCardBase = ({
                                             className="w-full px-4 py-3 text-left hover:bg-red-50 transition-colors flex items-center gap-3 text-red-600 font-semibold border-t border-slate-100"
                                         >
                                             <Trash2 size={18} />
-                                            <span>🗑️ Smazat</span>
+                                            <span>{t('book_card.delete')}</span>
                                         </button>
                                     )}
                                 </motion.div>
@@ -274,12 +277,12 @@ const BookCardBase = ({
                                 {book.status === 'error' ? (
                                     <>
                                         <AlertCircle size={10} className="text-red-400" />
-                                        <span className="text-[10px] font-bold text-red-100 uppercase">Chyba</span>
+                                        <span className="text-[10px] font-bold text-red-100 uppercase">{t('book_card.status_error')}</span>
                                     </>
                                 ) : (
                                     <>
                                         <Loader2 size={10} className="text-purple-400 animate-spin" />
-                                        <span className="text-[10px] font-bold text-purple-100 uppercase">Tvořím</span>
+                                        <span className="text-[10px] font-bold text-purple-100 uppercase">{t('book_card.status_creating')}</span>
                                     </>
                                 )}
                             </div>
@@ -300,7 +303,7 @@ const BookCardBase = ({
                     style={{ transform: "translateZ(10px)" }}
                 >
                     <h3 className="line-clamp-2 text-lg font-bold text-slate-100 mb-2 leading-tight group-hover:text-fuchsia-400 transition-colors font-title">
-                        {book.title || "Bezejmenný příběh"}
+                        {book.title || t('book_card.untitled')}
                     </h3>
 
                     {/* Author Info (for public books) */}
@@ -313,7 +316,7 @@ const BookCardBase = ({
                             className="text-xs text-slate-400 hover:text-purple-400 transition-colors mb-2 flex items-center gap-1.5"
                         >
                             <span>{book.author_profile.avatar_emoji || '👤'}</span>
-                            <span className="font-semibold">od {book.author_profile.nickname}</span>
+                            <span className="font-semibold">{t('book_card.by_author', { nickname: book.author_profile.nickname })}</span>
                         </button>
                     )}
 
@@ -337,6 +340,6 @@ const BookCardBase = ({
             </motion.div>
         </motion.div>
     );
-};
+});
 
 export const BookCard = memo(BookCardBase);

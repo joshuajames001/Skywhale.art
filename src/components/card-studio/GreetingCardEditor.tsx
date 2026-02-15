@@ -12,6 +12,7 @@ import { Undo2, Redo2, ChevronLeft, ChevronRight, Home, Loader2, X, Share2, Save
 import { AnimatePresence, motion } from 'framer-motion';
 import { CardPage, CardItem } from './types';
 import { invokeEdgeFunction } from '../../lib/edge-functions';
+import { useTranslation } from 'react-i18next';
 
 // Simple ID generator
 const generateId = () => Math.random().toString(36).substr(2, 9);
@@ -43,6 +44,7 @@ interface GreetingCardEditorProps {
 }
 
 export const GreetingCardEditor = ({ initialProject }: GreetingCardEditorProps) => {
+    const { t } = useTranslation();
     const [activeTool, setActiveTool] = useState<'background' | 'stickers' | 'text' | 'ai' | 'templates' | null>(null);
     const [isDraggingSticker, setIsDraggingSticker] = useState(false); // Track item drag to disable page swipe
 
@@ -61,17 +63,16 @@ export const GreetingCardEditor = ({ initialProject }: GreetingCardEditorProps) 
     const PAGE_BACK = 3;
 
     // --- STATE: PAGES (Strict 4-Page Booklet) ---
-    // --- STATE: PAGES (Strict 4-Page Booklet) ---
     // PERSISTENCE: Use local storage for drafts
     const [pages, setPages] = useLocalStorage<CardPage[]>('skywhale_draft_card_pages', (() => {
         if (initialProject && initialProject.pages) {
             return initialProject.pages;
         }
         return [
-            { id: 'p0', name: 'Titulní strana', items: [], background: "#fffcf5" }, // Cover
-            { id: 'p1', name: 'Levá strana', items: [], background: "#fffcf5" },    // Inside Left
-            { id: 'p2', name: 'Pravá strana', items: [], background: "#fffcf5" },   // Inside Right (LINED)
-            { id: 'p3', name: 'Zadní strana', items: [], background: "#fffcf5" }    // Back
+            { id: 'p0', name: t('atelier.pages.front_cover'), items: [], background: "#fffcf5" }, // Cover
+            { id: 'p1', name: t('atelier.pages.left_side'), items: [], background: "#fffcf5" },    // Inside Left
+            { id: 'p2', name: t('atelier.pages.right_side'), items: [], background: "#fffcf5" },   // Inside Right (LINED)
+            { id: 'p3', name: t('atelier.pages.back_side'), items: [], background: "#fffcf5" }    // Back
         ];
     })());
 
@@ -166,6 +167,20 @@ export const GreetingCardEditor = ({ initialProject }: GreetingCardEditorProps) 
             // 🛡️ SAFETY CHECK: Moderate prompt before AI generation
             await assertContentSafe(prompt);
 
+            // 🎨 CALL MODEL: Use Flux Dev for Atelier (Economical & Fast)
+            const { data, error } = await invokeEdgeFunction('generate-story-image', {
+                prompt: mode === 'sticker'
+                    ? `${prompt}, sticker style, isolated on white background, high quality, vector style`
+                    : `${prompt}, beautiful storybook background, high detail, artistic`,
+                model: 'dev',
+                // Optional: pass reference if provided (e.g. for Magic Mirror)
+                image_prompt_url: referenceUrl
+            });
+
+            if (error || !data?.imageUrl) {
+                throw new Error(error?.message || t('setup.status.failed'));
+            }
+
             if (mode === 'sticker') {
                 handleAddImage(data.imageUrl);
             } else {
@@ -177,14 +192,14 @@ export const GreetingCardEditor = ({ initialProject }: GreetingCardEditorProps) 
 
             // User-friendly error for inappropriate content
             if (msg.includes('Obsah není vhodný')) {
-                alert("⚠️ Tento text není vhodný pro děti.\n\nZkus napsat něco jiného, prosím! 🌟");
+                alert(t('atelier.status.inappropriate_content'));
                 return;
             }
 
             if (msg.includes('402') || msg.includes('Insufficient credit')) {
-                alert("💳 Platba přijata! Replicate systém však potřebuje 3-5 minut na připsání kreditu.\n\nZkuste to prosím za chvilku znovu.");
+                alert(t('atelier.status.payment_wait'));
             } else {
-                alert(`Došel kouzelný prach! Chyba: ${msg}`);
+                alert(`${t('atelier.status.magic_dust_error')} ${msg}`);
             }
         } finally {
             setIsGenerating(false);
@@ -246,7 +261,7 @@ export const GreetingCardEditor = ({ initialProject }: GreetingCardEditorProps) 
                 const dataURL = stageRef.current?.toDataURL({ pixelRatio: 2 });
                 if (dataURL) {
                     const link = document.createElement('a');
-                    link.download = `přáníčko-${focusedPageIndex + 1}.png`;
+                    link.download = `${t('atelier.card_default_title')}-${focusedPageIndex + 1}.png`;
                     link.href = dataURL;
                     link.click();
                 }
@@ -260,7 +275,7 @@ export const GreetingCardEditor = ({ initialProject }: GreetingCardEditorProps) 
 
     const handleSaveDB = async () => {
         if (!stageRef.current) {
-            alert("Chyba: Nelze zachytit náhled. Zkuste kliknout na stránku, kterou chcete uložit jako náhled.");
+            alert(t('atelier.status.capture_error'));
             return;
         }
 
@@ -273,52 +288,46 @@ export const GreetingCardEditor = ({ initialProject }: GreetingCardEditorProps) 
         );
 
         if (!blob) {
-            alert("Nepodařilo se vytvořit náhled.");
+            alert(t('atelier.status.thumbnail_error'));
             return;
         }
 
         // 2. Prepare Data
-        // Convert pages to clean object (remove functions if any, but they are pure data)
         const projectData = {
-            // Better: use one persistent ID for the whole card project.
-            // For now, generate a new ID or use the first page ID as base.
-            // Let's create a dedicated state for projectID if strictly needed, but random is ok for new saves (creates new copy).
-            // NOTE: If we want to UPDATE, we need to store initial ID.
-            // For MVP (Save New):
             id: crypto.randomUUID(),
-            title: `Přáníčko ${new Date().toLocaleDateString()}`,
+            title: `${t('atelier.card_default_title')} ${new Date().toLocaleDateString()}`,
             pages: pages,
             thumbnailBlob: blob
         };
 
         const success = await saveCardProject(projectData);
         if (success) {
-            // maybe redirect or just notify. Notification handled in hook.
+            // Success notification handled in hook
         }
     };
 
     const handleShare = () => {
         const referralCode = localStorage.getItem('referral_code') || '';
         const shareUrl = `${window.location.origin}/?ref=${referralCode || 'friend'}`;
-        if (confirm("✨ Chceš zkopírovat odkaz na aplikaci pro kamarády?")) {
+        if (confirm(t('atelier.status.share_confirm'))) {
             navigator.clipboard.writeText(shareUrl);
-            alert("Odkaz zkopírován! 📋");
+            alert(t('atelier.status.share_ok'));
         }
     };
 
     const handleNewProject = () => {
-        if (window.confirm('Opravdu chceš začít nové přání? Současný koncept bude smazán.')) {
+        if (window.confirm(t('atelier.status.reset_confirm'))) {
             setPages([
-                { id: 'p0', name: 'Titulní strana', items: [], background: "#fffcf5" },
-                { id: 'p1', name: 'Levá strana', items: [], background: "#fffcf5" },
-                { id: 'p2', name: 'Pravá strana', items: [], background: "#fffcf5" },
-                { id: 'p3', name: 'Zadní strana', items: [], background: "#fffcf5" }
+                { id: 'p0', name: t('atelier.pages.front_cover'), items: [], background: "#fffcf5" },
+                { id: 'p1', name: t('atelier.pages.left_side'), items: [], background: "#fffcf5" },
+                { id: 'p2', name: t('atelier.pages.right_side'), items: [], background: "#fffcf5" },
+                { id: 'p3', name: t('atelier.pages.back_side'), items: [], background: "#fffcf5" }
             ]);
             addToHistory([
-                { id: 'p0', name: 'Titulní strana', items: [], background: "#fffcf5" }, // Reset history too
-                { id: 'p1', name: 'Levá strana', items: [], background: "#fffcf5" },
-                { id: 'p2', name: 'Pravá strana', items: [], background: "#fffcf5" },
-                { id: 'p3', name: 'Zadní strana', items: [], background: "#fffcf5" }
+                { id: 'p0', name: t('atelier.pages.front_cover'), items: [], background: "#fffcf5" },
+                { id: 'p1', name: t('atelier.pages.left_side'), items: [], background: "#fffcf5" },
+                { id: 'p2', name: t('atelier.pages.right_side'), items: [], background: "#fffcf5" },
+                { id: 'p3', name: t('atelier.pages.back_side'), items: [], background: "#fffcf5" }
             ]);
             setViewStartIndex(0);
         }
@@ -344,11 +353,7 @@ export const GreetingCardEditor = ({ initialProject }: GreetingCardEditorProps) 
         }
     };
 
-    const canGoNext = viewStartIndex !== PAGE_BACK;
-    const canGoPrev = viewStartIndex !== PAGE_COVER;
-
     const isCover = viewStartIndex === PAGE_COVER;
-    const isSpread = viewStartIndex === PAGE_SPREAD;
     const isBack = viewStartIndex === PAGE_BACK;
 
     const handleSelectTemplate = (template: any) => {
@@ -369,17 +374,17 @@ export const GreetingCardEditor = ({ initialProject }: GreetingCardEditorProps) 
             {/* TOP BAR / HEADER */}
             <div className="h-16 bg-white/10 backdrop-blur-md border-b border-white/20 flex items-center justify-between px-4 fixed top-0 left-0 right-0 z-[60]">
                 <div className="flex items-center gap-4">
-                    {/* HOME BUTTON (Mobile Only replacement for V2) */}
+                    {/* HOME BUTTON */}
                     <a href="/?view=landing" className="w-10 h-10 bg-indigo-500/20 hover:bg-indigo-500/40 rounded-xl flex items-center justify-center text-indigo-300 transition-colors">
                         <Home size={20} />
                     </a>
-                    <span className="text-white font-bold text-lg block md:hidden">Ateliér</span>
-                    <span className="text-white font-bold text-lg hidden md:block">Ateliér Přání v2</span>
+                    <span className="text-white font-bold text-lg block md:hidden">{t('atelier.title')}</span>
+                    <span className="text-white font-bold text-lg hidden md:block">{t('atelier.title_v2')}</span>
 
                     <button
                         onClick={handleNewProject}
                         className="w-8 h-8 rounded-full bg-red-500/20 hover:bg-red-500 border border-red-500/50 flex items-center justify-center text-red-200 hover:text-white transition-all shrink-0 ml-4 hover:scale-110 hover:shadow-[0_0_15px_rgba(239,68,68,0.5)]"
-                        title="Nové přání (Smazat)"
+                        title={t('atelier.new_project')}
                     >
                         <Plus size={16} className="rotate-45" strokeWidth={3} />
                     </button>
@@ -397,7 +402,7 @@ export const GreetingCardEditor = ({ initialProject }: GreetingCardEditorProps) 
                     <button
                         onClick={handleDownload}
                         disabled={isExporting}
-                        title="Stáhnout obrázek"
+                        title={t('atelier.download_tooltip')}
                         className="p-2.5 bg-white/10 backdrop-blur-md rounded-full text-white/80 border border-white/20 shadow-lg hover:bg-white/20 transition-all hover:scale-110 active:scale-95 disabled:opacity-50"
                     >
                         <Download size={18} />
@@ -405,14 +410,14 @@ export const GreetingCardEditor = ({ initialProject }: GreetingCardEditorProps) 
                     <button
                         onClick={handleSaveDB}
                         disabled={isSaving}
-                        title="Uložit do Knihovny"
+                        title={t('atelier.save_tooltip')}
                         className="p-2.5 bg-white/10 backdrop-blur-md rounded-full text-white/80 border border-white/20 shadow-lg hover:bg-white/20 transition-all hover:scale-110 active:scale-95 disabled:opacity-50"
                     >
                         {isSaving ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
                     </button>
                     <button
                         onClick={handleShare}
-                        title="Sdílet Odkaz"
+                        title={t('atelier.share_tooltip')}
                         className="p-2.5 bg-white/10 backdrop-blur-md rounded-full text-white/80 border border-white/20 shadow-lg hover:bg-white/20 transition-all hover:scale-110 active:scale-95 disabled:opacity-50"
                     >
                         <Share2 size={18} />
@@ -449,7 +454,7 @@ export const GreetingCardEditor = ({ initialProject }: GreetingCardEditorProps) 
                                             animate={{ opacity: 1, scale: 1 }}
                                             exit={{ opacity: 0, scale: 0.9 }}
                                             className="w-full h-full flex items-center justify-center p-6 pt-36 pb-32"
-                                            drag={isDraggingSticker ? false : "x"} // Disable page swipe when dragging a sticker
+                                            drag={isDraggingSticker ? false : "x"}
                                             dragConstraints={{ left: 0, right: 0 }}
                                             onDragEnd={(e, { offset }) => { if (offset.x < -50) goToNextPage(); }}
                                         >
@@ -465,7 +470,7 @@ export const GreetingCardEditor = ({ initialProject }: GreetingCardEditorProps) 
                                                         stageRef={focusedPageIndex === 0 ? stageRef : undefined}
                                                     />
                                                 </div>
-                                                <PageLabel label="Titulní Strana" hasItems={pages[0].items.length > 0} />
+                                                <PageLabel label={t('atelier.pages.front_cover')} hasItems={pages[0].items.length > 0} />
                                             </div>
                                         </motion.div>
                                     );
@@ -480,7 +485,7 @@ export const GreetingCardEditor = ({ initialProject }: GreetingCardEditorProps) 
                                             animate={{ opacity: 1, scale: 1 }}
                                             exit={{ opacity: 0, scale: 0.9 }}
                                             className="w-full h-full flex items-center justify-center p-6 pt-36 pb-32"
-                                            drag={isDraggingSticker ? false : "x"} // Disable page swipe when dragging a sticker
+                                            drag={isDraggingSticker ? false : "x"}
                                             dragConstraints={{ left: 0, right: 0 }}
                                             onDragEnd={(e, { offset }) => { if (offset.x > 50) goToPrevPage(); }}
                                         >
@@ -496,13 +501,13 @@ export const GreetingCardEditor = ({ initialProject }: GreetingCardEditorProps) 
                                                         stageRef={focusedPageIndex === 3 ? stageRef : undefined}
                                                     />
                                                 </div>
-                                                <PageLabel label="Zadní Strana" hasItems={pages[3].items.length > 0} />
+                                                <PageLabel label={t('atelier.pages.back_side')} hasItems={pages[3].items.length > 0} />
                                             </div>
                                         </motion.div>
                                     );
                                 }
 
-                                // 3. SPREAD (Inner Pages) - HORIZONTAL Double View
+                                // 3. SPREAD (Inner Pages)
                                 return (
                                     <motion.div
                                         key={`mobile-spread`}
@@ -511,7 +516,7 @@ export const GreetingCardEditor = ({ initialProject }: GreetingCardEditorProps) 
                                         animate={{ x: 0, opacity: 1 }}
                                         exit={{ x: direction * -100 + '%', opacity: 0 }}
                                         transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                                        drag={isDraggingSticker ? false : "x"} // Disable page swipe when dragging a sticker
+                                        drag={isDraggingSticker ? false : "x"}
                                         dragConstraints={{ left: 0, right: 0 }}
                                         onDragEnd={(e, { offset }) => {
                                             if (offset.x < -50) goToNextPage();
@@ -519,9 +524,7 @@ export const GreetingCardEditor = ({ initialProject }: GreetingCardEditorProps) 
                                         }}
                                         className="absolute inset-0 flex flex-col items-center justify-center p-2 pt-20 pb-32"
                                     >
-                                        {/* Container for the Spread */}
                                         <div className="flex flex-row w-full aspect-[4/3] shadow-2xl rounded-lg overflow-hidden border border-slate-600 bg-slate-800 gap-[2px] relative z-0">
-                                            {/* LEFT PAGE */}
                                             <div
                                                 className={`flex-1 bg-white relative rounded-l-[1px] overflow-hidden flex items-center justify-center transition-all duration-300 ${focusedPageIndex === 1 ? 'ring-4 ring-indigo-500 z-10 brightness-110' : 'brightness-90 hover:brightness-100'}`}
                                             >
@@ -543,7 +546,6 @@ export const GreetingCardEditor = ({ initialProject }: GreetingCardEditorProps) 
                                                 </div>
                                             </div>
 
-                                            {/* RIGHT PAGE - LINED */}
                                             <div
                                                 className={`flex-1 bg-white relative rounded-r-[1px] overflow-hidden flex items-center justify-center transition-all duration-300 ${focusedPageIndex === 2 ? 'ring-4 ring-indigo-500 z-10 brightness-110' : 'brightness-90 hover:brightness-100'}`}
                                             >
@@ -569,8 +571,7 @@ export const GreetingCardEditor = ({ initialProject }: GreetingCardEditorProps) 
                                                 </div>
                                             </div>
 
-                                            {/* Label for Spread */}
-                                            <PageLabel label="Vnitřek listu" hasItems={pages[1].items.length > 0 || pages[2].items.length > 0} />
+                                            <PageLabel label={t('atelier.pages.inside_spread')} hasItems={pages[1].items.length > 0 || pages[2].items.length > 0} />
                                         </div>
 
                                         <div className="mt-8 text-white/50 text-xs font-medium uppercase tracking-widest flex items-center gap-2">
@@ -588,9 +589,8 @@ export const GreetingCardEditor = ({ initialProject }: GreetingCardEditorProps) 
                                             <div onClick={() => setFocusedPageIndex(0)} className="w-full h-full cursor-pointer">
                                                 <GreetingCardPage page={pages[0]} selectedId={selectedId} onSelect={setSelectedId} onUpdate={handleUpdateItem} stageRef={focusedPageIndex === 0 ? stageRef : undefined} />
                                             </div>
-                                            <PageLabel label="Titulní Strana" hasItems={pages[0].items.length > 0} />
+                                            <PageLabel label={t('atelier.pages.front_cover')} hasItems={pages[0].items.length > 0} />
                                         </div>
-                                        {/* Desktop Nav Arrows (Side) */}
                                         <button onClick={goToNextPage} className="absolute -right-16 top-1/2 -translate-y-1/2 p-4 bg-white/10 hover:bg-white/20 rounded-full text-white transition-all hover:scale-110">
                                             <ChevronRight size={32} />
                                         </button>
@@ -604,7 +604,7 @@ export const GreetingCardEditor = ({ initialProject }: GreetingCardEditorProps) 
                                             <div onClick={() => setFocusedPageIndex(3)} className="w-full h-full cursor-pointer">
                                                 <GreetingCardPage page={pages[3]} selectedId={selectedId} onSelect={setSelectedId} onUpdate={handleUpdateItem} stageRef={focusedPageIndex === 3 ? stageRef : undefined} />
                                             </div>
-                                            <PageLabel label="Zadní Strana" hasItems={pages[3].items.length > 0} />
+                                            <PageLabel label={t('atelier.pages.back_side')} hasItems={pages[3].items.length > 0} />
                                         </div>
                                         <button onClick={goToPrevPage} className="absolute -left-16 top-1/2 -translate-y-1/2 p-4 bg-white/10 hover:bg-white/20 rounded-full text-white transition-all hover:scale-110">
                                             <ChevronLeft size={32} />
@@ -625,9 +625,8 @@ export const GreetingCardEditor = ({ initialProject }: GreetingCardEditorProps) 
                                         </div>
                                     </div>
 
-                                    {/* Centered Label for Desktop Spread */}
                                     <div className={`absolute bottom-8 left-1/2 transform -translate-x-1/2 bg-black/50 backdrop-blur-md text-white/90 text-[10px] font-bold uppercase tracking-widest px-4 py-2 rounded-full pointer-events-none transition-opacity duration-500 ${(pages[1].items.length > 0 || pages[2].items.length > 0) ? 'opacity-0' : 'opacity-100'}`}>
-                                        Vnitřek listu
+                                        {t('atelier.pages.inside_spread')}
                                     </div>
 
                                     <button onClick={goToPrevPage} className="absolute -left-16 top-1/2 -translate-y-1/2 p-4 bg-white/10 hover:bg-white/20 rounded-full text-white transition-all hover:scale-110">
@@ -654,7 +653,6 @@ export const GreetingCardEditor = ({ initialProject }: GreetingCardEditorProps) 
                     const newItem: CardItem = {
                         id: generateId(), type: 'sticker', content: sticker.content, x: 100, y: 100, rotation: 0, scaleX: 1, scaleY: 1
                     };
-                    // Deep update to ensure React detects change
                     const newPages = [...pages];
                     newPages[focusedPageIndex] = {
                         ...newPages[focusedPageIndex],

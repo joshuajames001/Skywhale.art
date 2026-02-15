@@ -2,6 +2,7 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './App.tsx'
 import './index.css'
+import i18n from './lib/i18n'
 
 // Global Safety Checks
 if (window.location.hash.includes('error=')) {
@@ -26,11 +27,11 @@ class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { has
         if (this.state.hasError) {
             return (
                 <div style={{ padding: 20, color: 'white', background: 'black', height: '100vh', overflow: 'auto' }}>
-                    <h1>Něco se pokazilo :(</h1>
+                    <h1>{i18n.t('common.errors.unexpected')}</h1>
                     <pre style={{ color: 'red', whiteSpace: 'pre-wrap' }}>
                         {this.state.error && this.state.error.toString()}
                     </pre>
-                    <p style={{ marginTop: 20 }}>Refreshni stránku a zkus to znovu.</p>
+                    <p style={{ marginTop: 20 }}>{i18n.t('common.errors.refresh_hint')}</p>
                 </div>
             );
         }

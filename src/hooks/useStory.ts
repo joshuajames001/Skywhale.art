@@ -16,11 +16,10 @@ export const useStory = () => {
             const { data: { user } } = await supabase.auth.getUser();
 
             if (!user) console.warn("No authenticated user. Save might fail due to RLS.");
-
             const PLACEHOLDER_ID = "123e4567-e89b-12d3-a456-426614174000";
             const realBookId = story.book_id === PLACEHOLDER_ID ? crypto.randomUUID() : story.book_id;
             
-            console.log(`📘 saveStory: Input ID=${story.book_id} -> Real ID=${realBookId}`);
+            // console.log(`📘 saveStory: Input ID=${story.book_id} -> Real ID=${realBookId}`);
 
             // ... (rest of book upsert) ...
             
@@ -62,7 +61,7 @@ export const useStory = () => {
                 image_url: p.image_url,
             }));
             
-            console.log(`📄 saveStory: Preparing ${pageRows.length} pages for ID ${realBookId}. Sample Page 1:`, pageRows[0]);
+            // console.log(`📄 saveStory: Preparing ${pageRows.length} pages for ID ${realBookId}. Sample Page 1:`, pageRows[0]);
 
             // Smažeme staré a vložíme nové (jednoduchý sync)
             // Smažeme staré a vložíme nové (jednoduchý sync)
@@ -78,7 +77,7 @@ export const useStory = () => {
                 throw pageError;
             }
 
-            console.log(`✅ INSTANT CHECK: Inserted ${insertedPages?.length ?? 0} rows into 'pages' table.`);
+            // console.log(`✅ INSTANT CHECK: Inserted ${insertedPages?.length ?? 0} rows into 'pages' table.`);
 
             // DVOJITÁ KONTROLA: Přečteme z DB, co tam skutečně je
             const { count: dbCount, error: countError } = await supabase
@@ -87,13 +86,13 @@ export const useStory = () => {
                 .eq('book_id', realBookId);
             
             if (countError) console.error("❌ Verification Read Failed:", countError);
-            else console.log(`🔎 DB VERIFICATION: Found ${dbCount} rows in 'pages' for Book ${realBookId}`);
+            // else console.log(`🔎 DB VERIFICATION: Found ${dbCount} rows in 'pages' for Book ${realBookId}`);
 
             if (dbCount === 0 && pageRows.length > 0) {
                  console.error("🚨 CRITICAL: Insert reported success, but DB is empty! Checking RLS policies...");
             }
 
-            console.log(`✅ Story Structure Created (Book ${realBookId} + ${pageRows.length} Pages)`); 
+            // console.log(`✅ Story Structure Created (Book ${realBookId} + ${pageRows.length} Pages)`); 
             setLastSaved(new Date());
             setNotification("Story saved successfully!");
             setTimeout(() => setNotification(null), 3000);
@@ -126,7 +125,7 @@ export const useStory = () => {
         try {
             // SPECIAL CASE: Page -1 = Character Sheet (Identity Slot)
             if (pageNumber === -1) {
-                console.log("🧬 Persisting Character Sheet (Identity Slot) for Book:", bookId);
+                // console.log("🧬 Persisting Character Sheet (Identity Slot) for Book:", bookId);
                 const { error } = await supabase
                     .from('books')
                     .update({ character_sheet_url: permanentSupabaseUrl })
@@ -149,7 +148,7 @@ export const useStory = () => {
                 
                 if (seed !== undefined && seed !== null) updateData.character_seed = seed;
 
-                console.log("🔒 IDENTITY: Cover updated (Identity Reference is Upstream):", permanentSupabaseUrl);
+                // console.log("🔒 IDENTITY: Cover updated (Identity Reference is Upstream):", permanentSupabaseUrl);
 
                 const { error: bookError } = await supabase
                     .from('books')
@@ -179,7 +178,7 @@ export const useStory = () => {
                 console.log('✅ DB updated (Cover + Page 0 saved)');
             } else {
                 
-                 console.log(`📝 UPDATING Page ${pageNumber} for Book ${bookId}`);
+                 // console.log(`📝 UPDATING Page ${pageNumber} for Book ${bookId}`);
 
                 // UPSERT ensures robustness even if the row was missing or deleted
                 const { data, error } = await supabase
@@ -195,7 +194,7 @@ export const useStory = () => {
                 if (error) {
                     console.error('❌ DB Error:', error);
                 } else {
-                    console.log('✅ DB sync (Page Image Linked)', data);
+                    // console.log('✅ DB sync (Page Image Linked)', data);
                 }
             }
 
@@ -209,7 +208,7 @@ export const useStory = () => {
 
     // 3. Update Identity (Visual DNA + Sheet)
     const updateIdentity = async (bookId: string, sheetUrl: string, visualDna: string) => {
-        console.log(`🧬 Persisting Identity for Book ${bookId}`);
+        // console.log(`🧬 Persisting Identity for Book ${bookId}`);
         const { error } = await supabase
             .from('books')
             .update({ 
@@ -220,7 +219,7 @@ export const useStory = () => {
             .eq('id', bookId);
 
         if (error) console.error("❌ Failed to update identity:", error);
-        else console.log("✅ Identity Persisted to DB.");
+        // else console.log("✅ Identity Persisted to DB.");
     };
 
     // 4. Uložení projektu přáníčka (Greeting Card)
@@ -277,7 +276,7 @@ export const useStory = () => {
 
             if (bookError) throw bookError;
 
-            console.log("✅ Card Project Saved:", project.id);
+            // console.log("✅ Card Project Saved:", project.id);
             setLastSaved(new Date());
             setNotification("Přáníčko uloženo!");
             setTimeout(() => setNotification(null), 3000);

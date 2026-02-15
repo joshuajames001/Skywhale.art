@@ -147,7 +147,7 @@ export const generateImage = async (params: GenerateImageParams): Promise<ImageG
         }
         finalPrompt = JSON.stringify(jsonPayload);
     } else {
-        finalPrompt = `${styleInstruction}. (Subject: ${subjectAnchor}). ${safePrompt}`.trim();
+        finalPrompt = `${styleInstruction}. ${safePrompt}. The character is: ${subjectAnchor}`.trim();
     }
 
     let kineticSeed = seed;

@@ -20,11 +20,22 @@ export const useGemini = () => {
             if (error) throw error;
             if (!data) throw new Error("No data received from AI.");
 
-            // Edge function returns the full OpenAI response object structure
-            // We need to check if the edge function returns the *parsed content* or the *openai response*
-            // Looking at the edge function code: return new Response(JSON.stringify(data)) where data is await response.json() from OpenAI.
-            // So data matches the OpenAI schema: { choices: [...] }
-            return data.choices[0].message.content.trim();
+            console.log("🤖 Gemini Raw Response:", JSON.stringify(data));
+
+            // Handle multiple response formats
+            let parsed = data;
+            if (typeof parsed === 'string') {
+                try { parsed = JSON.parse(parsed); } catch { return parsed.trim(); }
+            }
+            
+            // Format: { choices: [{ message: { content: "..." } }] }
+            if (parsed?.choices?.[0]?.message?.content) {
+                return parsed.choices[0].message.content.trim();
+            }
+            // Direct content string
+            if (typeof parsed === 'string') return parsed.trim();
+            
+            throw new Error("Unexpected AI response format.");
 
         } catch (err: any) {
             console.error("Gemini Hook Error:", err);
@@ -51,8 +62,16 @@ export const useGemini = () => {
 
             if (error) throw error;
             if (!data) throw new Error("Prompt generation failed.");
-            
-            return data.choices[0].message.content.trim();
+
+            let parsed = data;
+            if (typeof parsed === 'string') {
+                try { parsed = JSON.parse(parsed); } catch { return parsed.trim(); }
+            }
+            if (parsed?.choices?.[0]?.message?.content) {
+                return parsed.choices[0].message.content.trim();
+            }
+            if (typeof parsed === 'string') return parsed.trim();
+            throw new Error("Unexpected AI response format.");
 
         } catch (err) {
             console.error("Prompt Gen Error:", err);
@@ -77,8 +96,17 @@ export const useGemini = () => {
 
             if (error) throw error;
             if (!data) throw new Error("Idea generation failed.");
-            
-            const text = data.choices[0].message.content.trim();
+
+            let parsed = data;
+            if (typeof parsed === 'string') {
+                try { parsed = JSON.parse(parsed); } catch { /* use as-is */ }
+            }
+            let text = '';
+            if (parsed?.choices?.[0]?.message?.content) {
+                text = parsed.choices[0].message.content.trim();
+            } else if (typeof parsed === 'string') {
+                text = parsed.trim();
+            }
             return text.split(';').map((s: string) => s.trim().replace(/^["']|["']$/g, ''));
 
         } catch (err) {
@@ -105,9 +133,16 @@ export const useGemini = () => {
 
             if (error) throw error;
             if (!data) throw new Error("Dictionary lookup failed.");
-            
-            const result = JSON.parse(data.choices[0].message.content);
-            return result;
+
+            let parsed = data;
+            if (typeof parsed === 'string') {
+                try { parsed = JSON.parse(parsed); } catch { return null; }
+            }
+            if (parsed?.choices?.[0]?.message?.content) {
+                const content = parsed.choices[0].message.content;
+                return typeof content === 'string' ? JSON.parse(content) : content;
+            }
+            return parsed;
 
         } catch (err) {
             console.error("Dictionary Error:", err);

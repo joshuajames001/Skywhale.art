@@ -1,5 +1,6 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { Globe, Lock, Sparkles } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useState } from 'react';
 
 interface PublishDialogProps {
@@ -9,6 +10,7 @@ interface PublishDialogProps {
 }
 
 export const PublishDialog = ({ bookId, onPublish, onClose }: PublishDialogProps) => {
+    const { t } = useTranslation();
     const [isPublishing, setIsPublishing] = useState(false);
 
     const handlePublish = async (makePublic: boolean) => {
@@ -55,12 +57,12 @@ export const PublishDialog = ({ bookId, onPublish, onClose }: PublishDialogProps
 
                         {/* Title */}
                         <h2 className="text-3xl font-black text-slate-800 mb-3" style={{ fontFamily: 'Fredoka, sans-serif' }}>
-                            Tvůj příběh je hotový!
+                            {t('publish.title')}
                         </h2>
 
                         {/* Description */}
                         <p className="text-lg text-slate-600 mb-8 font-semibold">
-                            Chceš ho sdílet s ostatními v galerii?
+                            {t('publish.subtitle')}
                         </p>
 
                         {/* Buttons */}
@@ -73,7 +75,7 @@ export const PublishDialog = ({ bookId, onPublish, onClose }: PublishDialogProps
                                 className="flex items-center justify-center gap-3 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-black py-4 px-6 rounded-2xl shadow-lg transition-all disabled:opacity-50"
                             >
                                 <Globe size={24} />
-                                <span>🌍 Zveřejnit v galerii</span>
+                                <span>🌍 {t('publish.gallery_button')}</span>
                             </motion.button>
 
                             {/* Share Link Button (NEW) */}
@@ -83,12 +85,12 @@ export const PublishDialog = ({ bookId, onPublish, onClose }: PublishDialogProps
                                 onClick={() => {
                                     const link = `${window.location.origin}/?view=book&id=${bookId}`;
                                     navigator.clipboard.writeText(link);
-                                    alert("Odkaz na knihu zkopírován! 📖");
+                                    alert(t('publish.link_copied'));
                                 }}
                                 className="flex items-center justify-center gap-3 bg-white hover:bg-slate-50 text-indigo-600 font-bold py-3 px-6 rounded-2xl border-2 border-indigo-100 hover:border-indigo-300 transition-all"
                             >
                                 <Sparkles size={20} />
-                                <span>Sdílet odkaz s přáteli</span>
+                                <span>{t('publish.share_button')}</span>
                             </motion.button>
 
                             <motion.button
@@ -99,13 +101,13 @@ export const PublishDialog = ({ bookId, onPublish, onClose }: PublishDialogProps
                                 className="flex items-center justify-center gap-3 bg-white hover:bg-slate-50 text-slate-700 font-bold py-4 px-6 rounded-2xl border-2 border-slate-200 hover:border-slate-300 transition-all disabled:opacity-50"
                             >
                                 <Lock size={24} />
-                                <span>🔒 Jen pro mě</span>
+                                <span>🔒 {t('publish.private_button')}</span>
                             </motion.button>
                         </div>
 
                         {/* Hint */}
                         <p className="text-xs text-slate-500 mt-4">
-                            Můžeš to změnit kdykoliv v knihovně
+                            {t('publish.hint')}
                         </p>
                     </div>
                 </motion.div>

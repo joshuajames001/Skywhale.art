@@ -5,10 +5,12 @@ export interface EdgeFunctionResult<T> {
     error: any;
 }
 
+// Supabase project URL for direct fetch
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+
 /**
- * Invokes a Supabase Edge Function with enforced Authentication.
- * This helper ensures a valid session token is always passed in the Authorization header,
- * bypassing potential issues with client-side auto-injection or stale tokens.
+ * Invokes a Supabase Edge Function using raw fetch() for full control over headers.
+ * This bypasses supabase.functions.invoke() which can use stale internal tokens.
  */
 export const invokeEdgeFunction = async <T = any>(
     functionName: string,
@@ -24,7 +26,6 @@ export const invokeEdgeFunction = async <T = any>(
         }
 
         // 2. Check Expiration & Force Refresh if needed (buffer 2 minutes)
-        // Note: supabase-js usually handles this, but we force check to be safe.
         const expiresAt = (session.expires_at || 0) * 1000;
         const now = Date.now();
         let accessToken = session.access_token;
@@ -34,45 +35,39 @@ export const invokeEdgeFunction = async <T = any>(
             const { data: { session: refreshed }, error: refreshError } = await supabase.auth.refreshSession();
             if (refreshError || !refreshed) {
                 console.error("❌ Token Refresh Failed:", refreshError);
-                // Try with old token anyway? Or fail? Fail is safer to avoid 401 loop.
                 return { data: null, error: new Error("Session expired and refresh failed.") };
             }
             accessToken = refreshed.access_token;
             console.log("✅ Token Refreshed.");
         }
 
-        // 3. Invoke Function with Explicit Header
-        console.log(`🚀 Invoking '${functionName}' with explicit Auth header...`);
-        const { data, error } = await supabase.functions.invoke(functionName, {
-            body
+        // 3. Direct fetch() – bypasses supabase-js client token management entirely
+        const url = `${SUPABASE_URL}/functions/v1/${functionName}`;
+        console.log(`🚀 Invoking '${functionName}' via direct fetch...`);
+        
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${accessToken}`,
+            },
+            body: JSON.stringify({ ...body, access_token_bypass: accessToken }),
         });
 
-        if (error) {
-            console.error(`❌ Edge Function '${functionName}' RAW Error:`, error);
-            
-            // Attempt to extract JSON body from the response context (FunctionsHttpError)
+        if (!response.ok) {
             let serverMessage = null;
-            if (error && typeof error === 'object' && 'context' in error) {
-                 const ctx = (error as any).context;
-                 if (ctx && typeof ctx.json === 'function') {
-                     try {
-                         const json = await ctx.json(); 
-                         console.error("❌ Edge Function SERVER RESPONSE:", JSON.stringify(json, null, 2));
-                         if (json && json.error) serverMessage = json.error;
-                     } catch (e) {
-                         console.warn("Could not parse error context JSON", e);
-                     }
-                 }
+            try {
+                const json = await response.json();
+                console.error(`❌ Edge Function '${functionName}' Error (${response.status}):`, JSON.stringify(json, null, 2));
+                serverMessage = json.error || json.message || `HTTP ${response.status}`;
+            } catch {
+                console.error(`❌ Edge Function '${functionName}' Error: HTTP ${response.status}`);
+                serverMessage = `HTTP ${response.status}`;
             }
-
-            // Propagate the specific server error message if found
-            if (serverMessage) {
-                return { data: null, error: new Error(serverMessage) };
-            }
-
-            return { data: null, error };
+            return { data: null, error: new Error(serverMessage) };
         }
 
+        const data = await response.json();
         return { data, error: null };
 
     } catch (err: any) {
@@ -80,3 +75,4 @@ export const invokeEdgeFunction = async <T = any>(
         return { data: null, error: err };
     }
 };
+

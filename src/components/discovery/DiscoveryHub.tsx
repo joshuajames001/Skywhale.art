@@ -6,12 +6,14 @@ import { DiscoveryCard } from './DiscoveryCard';
 import { MiniPlayer } from '../audio/MiniPlayer';
 import { DiscoveryCategory, DiscoveryBook, DiscoveryPage } from '../../types/discovery';
 import { supabase } from '../../lib/supabase';
+import { useTranslation } from 'react-i18next';
 
 interface DiscoveryHubProps {
     onClose: () => void;
 }
 
 export const DiscoveryHub = ({ onClose }: DiscoveryHubProps) => {
+    const { t, i18n } = useTranslation();
     // Internal Routing State
     const [view, setView] = useState<'categories' | 'book-list' | 'reader' | 'trailer'>('categories');
 
@@ -66,11 +68,12 @@ export const DiscoveryHub = ({ onClose }: DiscoveryHubProps) => {
     useEffect(() => {
         const loadData = async () => {
             // ... (keep existing loadData logic)
-            // 1. Load Categories
+            // 1. Load Categories (Filter by language)
             const { data: catData } = await supabase
                 .from('discovery_categories')
                 .select('*')
-                .eq('is_active', true);
+                .eq('is_active', true)
+                .eq('language', i18n.language);
 
             // 2. Load Trailers (scan books for trailer_urls to use as category intros)
             const { data: trailerData } = await supabase
@@ -119,9 +122,9 @@ export const DiscoveryHub = ({ onClose }: DiscoveryHubProps) => {
                     console.warn("Space category missing in DB, injecting static fallback.");
                     finalCategories.push({
                         id: 'space-static-fallback',
-                        title: 'Vesmír',
+                        title: t('discovery.categories_fallback_space'),
                         slug: 'vesmir',
-                        description: 'Nekonečný vesmír čeká! Odhal skryté krásy hvězd a vzdálených galaxií.',
+                        description: t('discovery.categories_fallback_space_desc'),
                         icon_url: '🚀',
                         theme_color_hex: '#0f172a',
                         is_active: true
@@ -176,11 +179,11 @@ export const DiscoveryHub = ({ onClose }: DiscoveryHubProps) => {
                 // Only fetch books if we don't have them OR if category changed
                 let currentBooks = books;
                 if (books.length === 0 || selectedCategory?.id !== targetCat.id) {
-                    // Fetch books fresh if needed
                     const { data: bookData } = await supabase
                         .from('discovery_books')
                         .select('*')
-                        .eq('category_id', targetCat.id);
+                        .eq('category_id', targetCat.id)
+                        .eq('language', i18n.language);
 
                     currentBooks = processBooks(bookData || []);
                     setBooks(currentBooks);
@@ -246,11 +249,11 @@ export const DiscoveryHub = ({ onClose }: DiscoveryHubProps) => {
         const seenKey = `seen_trailer_cat_${cat.id}`;
         const seenTrailer = localStorage.getItem(seenKey) === 'true';
 
-        // Fetch Books (parallel)
         const booksPromise = supabase
             .from('discovery_books')
             .select('*')
-            .eq('category_id', cat.id);
+            .eq('category_id', cat.id)
+            .eq('language', i18n.language);
 
         const { data } = await booksPromise;
 
@@ -322,12 +325,14 @@ export const DiscoveryHub = ({ onClose }: DiscoveryHubProps) => {
     };
 
     const isDinoCategory = selectedCategory?.title?.toLowerCase().includes('dino') ||
-        selectedCategory?.slug?.includes('dino');
+        selectedCategory?.slug?.includes('dino') ||
+        selectedCategory?.title?.toLowerCase().includes('dinosauři');
 
     const isSpaceCategory = selectedCategory?.title?.toLowerCase().includes('vesmír') ||
         selectedCategory?.title?.toLowerCase().includes('space') ||
         selectedCategory?.slug?.includes('space') ||
-        selectedCategory?.slug === 'vesmir';
+        selectedCategory?.slug === 'vesmir' ||
+        selectedCategory?.slug === 'space';
 
     // Helper to get active trailer URL
     const activeTrailerUrl = selectedCategory ? categoryTrailers[selectedCategory.id] : null;
@@ -336,7 +341,7 @@ export const DiscoveryHub = ({ onClose }: DiscoveryHubProps) => {
         return (
             <div className="fixed inset-0 z-[60] bg-slate-900 flex flex-col items-center justify-center text-white">
                 <Loader2 size={48} className="animate-spin opacity-50 mb-4" />
-                <p className="text-slate-400 animate-pulse">Obnovuji stránku...</p>
+                <p className="text-slate-400 animate-pulse">{t('discovery.loading')}</p>
             </div>
         );
     }
@@ -387,14 +392,14 @@ export const DiscoveryHub = ({ onClose }: DiscoveryHubProps) => {
                             console.log("Attempted URL:", activeTrailerUrl);
                         }}
                     >
-                        Váš prohlížeč nepodporuje video.
+                        {t('discovery.browser_no_video')}
                     </video>
 
                     <button
                         onClick={handleTrailerComplete}
                         className="absolute top-8 right-8 px-6 py-2 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-full text-white font-medium transition-colors border border-white/20 z-[80]"
                     >
-                        Přeskočit
+                        {t('discovery.skip_trailer')}
                     </button>
                 </div>
             )
@@ -413,7 +418,7 @@ export const DiscoveryHub = ({ onClose }: DiscoveryHubProps) => {
                         <div className="flex items-center gap-2 min-w-0 flex-1">
                             <Compass className="text-amber-400 shrink-0" size={20} />
                             <h1 className="text-base md:text-xl font-bold font-title truncate">
-                                {view === 'categories' ? 'Encyklopedie' :
+                                {view === 'categories' ? t('discovery.title') :
                                     view === 'book-list' ? selectedCategory?.title :
                                         selectedBook?.title}
                             </h1>
@@ -423,7 +428,7 @@ export const DiscoveryHub = ({ onClose }: DiscoveryHubProps) => {
                                 <button
                                     onClick={playTrailer}
                                     className="ml-2 p-2 bg-white/10 hover:bg-white/20 rounded-full transition-colors text-amber-300"
-                                    title="Přehrát intro"
+                                    title={t('discovery.play_trailer')}
                                 >
                                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
                                 </button>
@@ -459,7 +464,7 @@ export const DiscoveryHub = ({ onClose }: DiscoveryHubProps) => {
                                     {categories.length === 0 && (
                                         <div className="col-span-full text-center py-20 text-slate-500">
                                             <Loader2 size={48} className="mx-auto mb-4 animate-spin opacity-50" />
-                                            <p>Načítám kategorie...</p>
+                                            <p>{t('discovery.loading_categories')}</p>
                                         </div>
                                     )}
 
@@ -538,7 +543,7 @@ export const DiscoveryHub = ({ onClose }: DiscoveryHubProps) => {
                                     {!loading && books.length === 0 && (
                                         <div className="text-center py-20 text-slate-500">
                                             <Sparkles size={48} className="mx-auto mb-4 opacity-50" />
-                                            <p>V této kategorii zatím nejsou žádné knihy.</p>
+                                            <p>{t('discovery.no_books')}</p>
                                         </div>
                                     )}
 
@@ -563,7 +568,7 @@ export const DiscoveryHub = ({ onClose }: DiscoveryHubProps) => {
                                     {loading ? (
                                         <div className="flex flex-col items-center justify-center h-64 text-slate-400">
                                             <Loader2 size={32} className="animate-spin mb-4" />
-                                            <p>Načítám stránky...</p>
+                                            <p>{t('discovery.loading_pages')}</p>
                                         </div>
                                     ) : pages.length > 0 ? (
                                         <>
@@ -646,7 +651,7 @@ export const DiscoveryHub = ({ onClose }: DiscoveryHubProps) => {
                                         </>
                                     ) : (
                                         <div className="text-center py-20 text-slate-500">
-                                            <p>Tato kniha zatím nemá žádné stránky.</p>
+                                            <p>{t('discovery.no_pages')}</p>
                                         </div>
                                     )}
 

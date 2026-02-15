@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { User } from '@supabase/supabase-js';
 import { AnimatePresence, motion } from 'framer-motion';
 import { sampleStory } from './data';
 import { supabase, isSupabaseConfigured } from './lib/supabase';
@@ -7,8 +8,9 @@ import { StorySpread } from './components/StorySpread';
 import { Controls } from './components/Controls';
 import { Auth } from './components/Auth';
 import { useStory } from './hooks/useStory';
-import { StoryBook, StoryPage } from './types';
+import { StoryBook, StoryPage, UserProfile as UserProfileType, Achievement, CardProject } from './types';
 import { Save, AlertTriangle, X, Loader2, Download } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { StorySetup } from './components/StorySetup';
 import { Library } from './components/Library';
 import { NavigationHub } from './components/NavigationHub';
@@ -34,10 +36,13 @@ import { MiniPlayer } from './components/audio/MiniPlayer';
 import { GuideOverlay } from './components/guide/GuideOverlay';
 import { DailyRewardModal } from './components/gamification/DailyRewardModal';
 import { ElevenLabsProfile } from './components/layout/ElevenLabsProfile';
+import { useDailyReward } from './hooks/useDailyReward';
+import { usePdfExport } from './hooks/usePdfExport';
 
 function App() {
+    const { t } = useTranslation();
     const [story, setStory] = useState<StoryBook>(sampleStory);
-    const [cardProject, setCardProject] = useState<any>(null);
+    const [cardProject, setCardProject] = useState<CardProject | null>(null);
 
     // Include 'library', 'landing', 'profile', 'pricing' in viewMode
     const [viewMode, setViewMode] = useState<'landing' | 'cinematic' | 'book' | 'setup' | 'library' | 'card_studio' | 'arcade' | 'discovery' | 'card_viewer' | 'create_custom' | 'energy_store' | 'terms' | 'privacy' | 'feedback_board' | 'profile' | 'pricing'>(() => {
@@ -54,8 +59,8 @@ function App() {
     // WIZARD RESET STATE
     const [storySetupKey, setStorySetupKey] = useState(0);
 
-    const [user, setUser] = useState<any>(null);
-    const [profile, setProfile] = useState<any>(null);
+    const [user, setUser] = useState<User | null>(null);
+    const [profile, setProfile] = useState<UserProfileType | null>(null);
 
     // MAGIC TRANSITION STATE
     const [isTransitioning, setIsTransitioning] = useState(false);
@@ -63,14 +68,14 @@ function App() {
     const [showFlash, setShowFlash] = useState(false);
 
     // ACHIEVEMENT TOAST STATE
-    const [currentAchievement, setCurrentAchievement] = useState<any>(null);
+    const [currentAchievement, setCurrentAchievement] = useState<Achievement | null>(null);
 
     // PUBLISH DIALOG STATE
     const [showPublishDialog, setShowPublishDialog] = useState(false);
     const [publishBookId, setPublishBookId] = useState<string | null>(null);
 
     // PDF EXPORT STATE
-    const [isExportingPdf, setIsExportingPdf] = useState(false);
+
 
     const { saveStory, uploadImage, updateIdentity, saving, notification } = useStory();
 
@@ -111,7 +116,7 @@ function App() {
                 .single();
 
             if (data) {
-                setProfile(data);
+                setProfile({ ...data, id: userId });
             }
         } catch (err) {
             console.error('Failed to fetch profile:', err);
@@ -125,7 +130,7 @@ function App() {
         // 1. Referral Code
         const refCode = params.get('ref');
         if (refCode) {
-            console.log("🔗 Caught Referral Code:", refCode);
+            // console.log("🔗 Caught Referral Code:", refCode);
             localStorage.setItem('referral_code', refCode);
         }
 
@@ -140,10 +145,11 @@ function App() {
                 // Use existing AchievementToast logic or a new state for generic notifications?
                 // For now, let's abuse currentAchievement to show a nice message
                 setCurrentAchievement({
-                    title: "Platba úspěšná!",
-                    description: "Děkujeme za předplatné. Tvoje magie je doplněna.",
+                    title: t('app.notifications.payment_success_title'),
+                    description: t('app.notifications.payment_success_desc'),
                     icon: "⚡",
-                    xp: 0
+                    xp: 0,
+                    id: "payment-success"
                 });
             }, 1000);
         }
@@ -156,7 +162,7 @@ function App() {
 
     // Update URL when top-level view changes
     useEffect(() => {
-        console.log("App.tsx: viewMode changed to:", viewMode);
+        // console.log("App.tsx: viewMode changed to:", viewMode);
         const url = new URL(window.location.href);
 
         // Always sync the current view to URL
@@ -217,7 +223,7 @@ function App() {
 
         if (result) {
             const { bookId: savedId, achievements } = result;
-            console.log(`✨ Story Created & Saved. ID: ${savedId}`);
+            // console.log(`✨ Story Created & Saved. ID: ${savedId}`);
             // 2. Update Local State with the CONFIRMED ID
             const confirmedStory = { ...newStory, book_id: savedId };
             setStory(confirmedStory);
@@ -323,49 +329,7 @@ function App() {
     };
 
     // --- PDF EXPORT HANDLER ---
-    const [pdfProgress, setPdfProgress] = useState<{ current: number; total: number } | null>(null);
-
-    const handleExportPdf = async () => {
-        if (!story.pages || story.pages.length === 0) return;
-
-        setIsExportingPdf(true);
-        setPdfProgress({ current: 0, total: story.pages.length + 1 }); // +1 for cover
-
-        try {
-            // Wait for React to render the hidden container & images to load
-            await new Promise(r => setTimeout(r, 1500));
-
-            // Collect IDs
-            const pageIds = ['pdf-cover', ...story.pages.map(p => `pdf-page-${p.page_number}`)];
-
-            // Dynamically import generator to save bundle size
-            const success = await import('./utils/pdfGenerator').then(m =>
-                m.generatePdf(pageIds, `${story.title?.replace(/[^a-z0-9]/gi, '_') || 'pribeh'}.pdf`, (current, total) => {
-                    setPdfProgress({ current, total });
-                })
-            );
-
-            if (success) {
-                // Check if we should prompt to share
-                const referralCode = localStorage.getItem('referral_code') || '';
-                const shareUrl = `${window.location.origin}/?ref=${referralCode || 'friend'}`;
-
-                if (confirm("✨ Kniha stažena!\n\nChcete zkopírovat odkaz na aplikaci a pochlubit se přátelům?")) {
-                    navigator.clipboard.writeText(shareUrl);
-                    alert("Odkaz zkopírován! 📋");
-                }
-            } else {
-                throw new Error("PDF generation failed");
-            }
-
-        } catch (e) {
-            console.error("PDF Export Error:", e);
-            alert("Nepodařilo se vytvořit PDF.");
-        } finally {
-            setIsExportingPdf(false);
-            setPdfProgress(null);
-        }
-    };
+    const { isExportingPdf, pdfProgress, handleExportPdf } = usePdfExport(story);
 
     // NAVIGATION HUB HANDLER
     const handleHubNavigate = (view: 'landing' | 'library' | 'setup' | 'card_studio' | 'arcade' | 'discovery' | 'create_custom' | 'energy_store' | 'terms' | 'privacy' | 'feedback_board' | 'profile' | 'pricing') => {
@@ -450,7 +414,7 @@ function App() {
             return;
         }
 
-        console.log("🚀 Loading Book from Landing:", bookId);
+        // console.log("🚀 Loading Book from Landing:", bookId);
         try {
             const { data: bookData, error } = await supabase
                 .from('books')
@@ -496,75 +460,7 @@ function App() {
     };
 
     // Daily Reward Logic
-    const [showDailyReward, setShowDailyReward] = useState(false);
-    const [rewardStreak, setRewardStreak] = useState(0);
-
-    const checkDailyReward = async () => {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) return;
-
-        const { data: profile } = await supabase
-            .from('profiles')
-            .select('last_claim_date, claim_streak, energy_balance')
-            .eq('id', user.id)
-            .single();
-
-        if (profile) {
-            // Check if user object doesn't have profile data, we might want to sync
-            // For now, trust the fetch
-
-            const lastClaim = profile.last_claim_date ? new Date(profile.last_claim_date) : null;
-            const now = new Date();
-            const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-
-            // If never claimed, or claimed before today
-            if (!lastClaim || lastClaim < startOfToday) {
-                // Check if streak is broken (last claim was before yesterday)
-                const startOfYesterday = new Date(startOfToday);
-                startOfYesterday.setDate(startOfYesterday.getDate() - 1);
-
-                let currentStreak = profile.claim_streak || 0;
-
-                if (lastClaim && lastClaim < startOfYesterday) {
-                    currentStreak = 0; // Streak broken
-                }
-
-                setRewardStreak(currentStreak);
-                setShowDailyReward(true);
-            }
-        }
-    };
-
-    const handleClaimReward = async () => {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) return;
-
-        // Re-fetch current profile to get latest energy_balance from database
-        const { data: currentProfile } = await supabase
-            .from('profiles')
-            .select('energy_balance')
-            .eq('id', user.id)
-            .single();
-
-        if (!currentProfile) return;
-
-        const newStreak = rewardStreak + 1;
-        const isDay7 = newStreak % 7 === 0;
-        const rewardAmount = isDay7 ? 30 : 10; // Original rewards (no inflation)
-
-        await supabase.from('profiles').update({
-            last_claim_date: new Date().toISOString(),
-            claim_streak: newStreak,
-            energy_balance: currentProfile.energy_balance + rewardAmount // Use fresh DB value as source of truth
-        }).eq('id', user.id);
-
-        // Refresh 
-        window.location.reload(); // Simple refresh to update global state or just re-fetch
-    };
-
-    useEffect(() => {
-        checkDailyReward();
-    }, []);
+    const { showDailyReward, setShowDailyReward, rewardStreak, handleClaimReward } = useDailyReward();
 
     const isImmersive = location.pathname.includes('/editor') ||
         location.pathname.includes('/story') ||
@@ -645,7 +541,7 @@ function App() {
                 !isSupabaseConfigured && (
                     <div className="absolute top-0 left-0 right-0 bg-amber-500 text-ink-900 px-4 py-2 text-center text-sm font-bold z-[100] flex items-center justify-center gap-2">
                         <AlertTriangle size={16} />
-                        <span>Demo Mode: Supabase not configured. Please check your .env file.</span>
+                        <span>{t('app.demo_mode')}</span>
                     </div>
                 )
             }
@@ -662,7 +558,7 @@ function App() {
                 ) : viewMode === 'cinematic' ? (
                     <CinematicLanding onEnter={handleBookFromLanding} onNavigate={setViewMode} />
                 ) : viewMode === 'library' ? (
-                    <div className="w-full h-full">
+                    <div className="w-full h-[100svh] overflow-y-auto relative">
                         <Library
                             onOpenBook={handleOpenBook}
                             onOpenMagic={handleNewStoryClick}
@@ -688,7 +584,7 @@ function App() {
                         onNavigate={setViewMode}
                     />
                 ) : viewMode === 'setup' ? (
-                    <div className="z-10 w-full h-full overflow-y-auto flex items-start md:items-center justify-center py-10 md:py-0">
+                    <div className="z-10 w-full h-[100svh] md:h-full overflow-y-auto flex flex-col items-center py-10 relative">
                         <StorySetup
                             key={storySetupKey}
                             onComplete={handleStoryCreated}
@@ -700,17 +596,23 @@ function App() {
                 ) : viewMode === 'arcade' ? (
                     <GameHub imageUrl={null} onClose={() => setViewMode('library')} />
                 ) : viewMode === 'discovery' ? (
-                    <DiscoveryHub onClose={() => setViewMode('landing')} />
+                    <div className="w-full h-screen overflow-hidden relative">
+                        <DiscoveryHub onClose={() => setViewMode('landing')} />
+                    </div>
                 ) : viewMode === 'card_viewer' ? (
-                    <CardViewer
-                        cardId={new URLSearchParams(window.location.search).get('id')}
-                        onClose={() => setViewMode('landing')}
-                    />
+                    <div className="w-full h-screen overflow-y-auto flex items-center justify-center relative">
+                        <CardViewer
+                            cardId={new URLSearchParams(window.location.search).get('id')}
+                            onClose={() => setViewMode('landing')}
+                        />
+                    </div>
                 ) : viewMode === 'create_custom' ? (
-                    <CustomBookEditor
-                        onBack={() => setViewMode('landing')}
-                        onOpenStore={() => setViewMode('energy_store')}
-                    />
+                    <div className="w-full h-[100svh] overflow-y-auto relative">
+                        <CustomBookEditor
+                            onBack={() => setViewMode('library')}
+                            onOpenStore={() => setViewMode('energy_store')}
+                        />
+                    </div>
                 ) : viewMode === 'pricing' ? (
                     <div className="w-full h-full flex items-center justify-center p-4">
                         <PricingPage
@@ -779,7 +681,7 @@ function App() {
                                     onClick={handleExportPdf}
                                     disabled={isExportingPdf}
                                     className="flex items-center justify-center bg-white/10 backdrop-blur-md text-white/80 p-2.5 rounded-full shadow-lg hover:bg-white/20 transition-all border border-white/20 hover:scale-110 active:scale-95 disabled:opacity-50"
-                                    title="Stáhnout PDF"
+                                    title={t('app.tooltips.download_pdf')}
                                 >
                                     {isExportingPdf ? (
                                         <div className="flex items-center gap-2 px-2 text-xs font-bold text-white">
@@ -793,7 +695,7 @@ function App() {
 
                                 {/* Identity Status Badge hidden per user request */}
 
-                                <button onClick={handleSave} disabled={saving} title="Uložit" className="flex items-center justify-center bg-white/10 backdrop-blur-md text-white/80 p-2.5 rounded-full shadow-lg hover:bg-white/20 transition-all border border-white/20 hover:scale-110 active:scale-95 disabled:opacity-50">
+                                <button onClick={handleSave} disabled={saving} title={t('app.tooltips.save')} className="flex items-center justify-center bg-white/10 backdrop-blur-md text-white/80 p-2.5 rounded-full shadow-lg hover:bg-white/20 transition-all border border-white/20 hover:scale-110 active:scale-95 disabled:opacity-50">
                                     {saving ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
                                 </button>
                             </div>
@@ -885,7 +787,7 @@ function App() {
                             <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/60" />
                             <div className="absolute top-20 w-full text-center px-10">
                                 <h1 className="text-6xl font-black text-white drop-shadow-xl mb-6 font-serif">{story.title}</h1>
-                                <p className="text-3xl text-white/80 font-serif italic">by {story.author}</p>
+                                <p className="text-3xl text-white/80 font-serif italic">{t('app.pdf.by_author', { author: story.author })}</p>
                             </div>
                         </div>
                     </div>

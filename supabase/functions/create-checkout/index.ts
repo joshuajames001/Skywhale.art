@@ -40,7 +40,52 @@ serve(async (req) => {
 
   try {
     debug_trace.push("Imports Loaded. Reading Body...");
+
+    // --- AUTHENTICATION CHECK ---
+    // Note: Checkout might be called from unauth context? 
+    // Usually checkout is from a logged-in user to buy energy.
+    // If we want to allow "Guest Checkout", we might skip this.
+    // But the payload has 'userId'. We should verify it matches.
+    
+    const authHeader = req.headers.get('Authorization');
+    if (authHeader) {
+        const supabaseClient = createClient(
+        Deno.env.get('SUPABASE_URL') ?? '',
+        Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+        { global: { headers: { Authorization: authHeader } } }
+        );
+
+        const { data: { user } } = await supabaseClient.auth.getUser();
+        
+        // If user is logged in, strict check.
+        if (user) {
+             debug_trace.push(`Auth User Identified: ${user.id}`);
+             // later we verify user.id matches body.userId
+        }
+    } else {
+        // If no auth header, strict fail?
+        // SkyWhale is an app where you need to be logged in to buy energy for YOUR account.
+        // So yes, strictly fail.
+        return new Response("Unauthorized: Missing Auth Header", { status: 401, headers: corsHeaders });
+    }
+    
+    // Re-verify strictly:
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      { global: { headers: { Authorization: authHeader! } } }
+    );
+    const { data: { user } } = await supabaseClient.auth.getUser();
+    if (!user) return new Response("Unauthorized", { status: 401, headers: corsHeaders });
+
+
     const { packageId, userId, successUrl, cancelUrl, customAmount } = await req.json()
+    
+    // STRICT OWNERSHIP CHECK
+    if (userId !== user.id) {
+         return new Response("Unauthorized: User ID mismatch", { status: 403, headers: corsHeaders });
+    }
+
     debug_trace.push(`Body Read. Package: ${packageId}, User: ${userId}`);
 
     let pkg;

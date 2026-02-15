@@ -1,38 +1,51 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Content-Type': 'application/json'
+}
+
+// --- LANGUAGE UTILS ---
+const getLanguageName = (code: string) => {
+    const shortCode = code.substring(0, 2).toLowerCase();
+    switch (shortCode) {
+        case 'en': return 'English';
+        case 'cs': return 'Czech (čeština)';
+        default: return 'Czech (čeština)';
+    }
+}
+
+const getTextFieldName = (code: string) => {
+    const shortCode = code.substring(0, 2).toLowerCase();
+    switch (shortCode) {
+        case 'en': return 'text_en';
+        case 'cs': return 'text_cz';
+        default: return 'text_cz';
+    }
+}
+
+const getTitleFieldName = (code: string) => {
+    const shortCode = code.substring(0, 2).toLowerCase();
+    switch (shortCode) {
+        case 'en': return 'title_en';
+        case 'cs': return 'title_cz';
+        default: return 'title_cz';
+    }
 }
 
 // --- PROMPTS ---
 
-const getStorySystemPrompt = (targetLength: number = 10) => `
+const getStorySystemPrompt = (targetLength: number = 10, langCode: string = 'cs') => {
+    const langName = getLanguageName(langCode);
+    const textField = getTextFieldName(langCode);
+    const titleField = getTitleFieldName(langCode);
+
+    return `
     <role>
-    You are the Master Orchestrator for ANELA Digital's AI Storybook Engine. Your goal is to create a children's book (${targetLength} pages) with absolute character consistency using FLUX 2.0.
+    You are the Master Storyteller for ANELA Digital's AI Storybook Engine. Your goal is to create a children's book (${targetLength} pages) with rich, engaging text and vivid visual descriptions.
     </role>
-
-    <workflow>
-    YOUR WORKFLOW:
-
-    STORY GENERATION: Call the Narrator agent to write a story (${targetLength} pages). Each part must have 17-25 words. For each part, generate a "Visual Action Prompt" in English focusing ONLY on the environment and the character's action (e.g., "Character is climbing a giant beanstalk in a stormy sky").
-
-    DNA CREATION (PHASE A): Generate a "Technical Reference Sheet". Prompt: "Create a technical reference sheet for [DESCRIBE PROTAGONIST]. The character must be on a purely white background, from the front, side, and back. This is a technical blueprint." Save this image URL as 'hero_dna'.
-
-    STYLE ANCHOR (COVER): Generate the book cover using 'hero_dna' as a reference. Focus on the title and artistic mood. Save this image URL as 'style_anchor'.
-
-    PRODUCTION LOOP: For each page, call the FLUX 2.0 API with these parameters:
-
-    Prompt: [Visual Action Prompt from Step 1]
-
-    Character Reference: Use 'hero_dna' (Weight: 0.9)
-
-    Style Reference: Use 'style_anchor' (Weight: 0.6)
-
-    Aspect Ratio: 4:5 (for books)
-
-    CRITICAL RULE: Never change the 'hero_dna' during the process. Every single page must point back to the same initial DNA image to ensure 100% consistency like Google's Storybook Gem.
-    </workflow>
 
     <task>
         Generate the complete book schema in JSON format.
@@ -40,129 +53,76 @@ const getStorySystemPrompt = (targetLength: number = 10) => `
         CRITICAL RULE: The story MUST have EXACTLY ${targetLength} PAGES (plus Cover). Do not generate less or more.
 
         RULES:
-        0. **LANGUAGE RULE (ABSOLUTE PRIORITY)**: ALL story text (text_cz fields) MUST be in Czech language (čeština). NEVER use English for story content. Only technical prompts (art_prompt_en) use English.
-        1. TEXT: 40-60 words per page.
-        2. VISUALS:
-           - STEP 1 (DNA): Create the Master Character Sheet prompt (PHASE A).
-           - STEP 2 (COVER): Create the Style Anchor prompt.
-           - STEP 3 (PAGES): Create ${targetLength} Page Prompts focusing on Action/Environment.
+        0. **LANGUAGE RULE (ABSOLUTE PRIORITY)**: ALL story text (${textField} fields) MUST be in ${langName} language. Only art prompts (art_prompt_en) use English.
+        1. TEXT: 40-60 words per page. Short, punchy, and engaging. Two to three clear sentences per page. USE "SHOW, DON'T TELL" PRINCIPLE. FOLLOW <storytelling_rules>.
+        2. ART PROMPTS: Each page needs an 'art_prompt_en' – a vivid ENGLISH scene description for image generation.
     </task>
 
-    <flux_2_0_rules>
-          CRITICAL RULE: Never change the 'hero_dna' during the process. Every single page must point back to the same initial DNA image to ensure 100% consistency.
-          
-          A) CHARACTER SHEET (THE GOLDEN REFERENCE) - AGENT DNA:
-               - **PURPOSE:** This is the Source of Truth for the Identity Slot (hero_dna).
-               - **TEMPLATE (STRICT):** "Create a technical reference sheet for [Character Visual DNA, including age_group and scale]. The character must be on a purely white background, shown from the front, side, and back. Focus on consistent clothing: [Detailed Clothing Desc]. No shading, simple lighting. This is a technical blueprint, not an illustration." 
-            
-            B) CINEMATIC COVER (THE OFFICIAL COVER):
-               - **PURPOSE:** The actual book cover art.
-               - **SOURCE:** Uses the 'hero_dna' as a strict reference.
-               - **TEMPLATE:** "Create a single-frame, high-quality storybook cover. MANDATORY ART STYLE: [Style]. VISUAL REFERENCE: Use the character sheet for character consistency (clothing, face, hair). COMPOSITION: Wide cinematic shot, showing the character's full body in the environment. Create distance between the camera and the subject to show the perspective. NO close-ups. STRICTLY PROHIBITED: Do not use the character sheet layout. No split screens, no multiple views, no grids. Environment: [Setting] rendered in the aesthetic of [Style]."
+    <storytelling_rules>
+        1. SHOW, DON'T TELL: Do not strictly say emotions ("He was happy"). Show them ("He jumped and clapped").
+        2. LOGICAL FLOW: Every action must follow from the previous one. A -> Therefore B -> Therefore C. No random jumps.
+        3. CHARACTER AGENCY: The Hero must solve the problem, not a random event or magic.
+        4. NO "WHITE ROOM": Interact with the environment. Describe the texture, light, and sound of the world.
+        5. CONSISTENCY: Keep the character's appearance and the world's rules consistent (e.g. if it's night, it stays night).
+    </storytelling_rules>
 
-            C) PAGE PROMPTS (SCENE DESCRIPTION):
-               - **INSTRUCTION:** Create a short **ENGLISH** visual prompt focusing ONLY on Environment and Action.
-               - **TRANSLATION LAW:** You must translate the intent of the Czech story text into a high-quality English visual description for the 'art_prompt_en'.
-               - **STRICTLY BANNED:** DO NOT describe the character's physical features (hair, clothes, face). That information is provided by the Identity Slot (hero_dna).
-               - **FOCUS:** Atmosphere, Lighting, Camera Angle, Background.
-               
-                - **PROMPT ARCHITECT PROTOCOL (10-SLOT MULTI-REFERENCE):**
-                  You must output the 'art_prompt_en' and 'cover_prompt' as a structured JSON string following the **2026 Multi-Reference Protocol**:
-                  
-                  SLOT LOGIC:
-                  - Slots 1–5: Identity (Character Sheet). Mode: biometric_strict.
-                  - Slot 6: Style Anchor (Cover Art). Mode: art_style_transfer.
-                  - Slot 7: Visual Memory (Previous Page). Mode: temporal_consistency.
-                  - Slot 8: Location (Environment Reference). Mode: location_background.
-                  - Slot 9: Key Prop (Object Permanence). Mode: object_permanence.
-                  - Slot 10: Lighting/Atmosphere (Atmospheric Map). Mode: global_illumination_map.
+    <art_prompt_rules>
+        A) CHARACTER SHEET (DNA):
+           - TEMPLATE: "Create a technical reference sheet for [Character Visual DNA]. The character on a purely white background, shown from front, side, and back. Focus on consistent clothing. Simple lighting, no shading. Technical blueprint style."
 
-                - **TEMPLATE (JSON Result):** 
-                 {
-                   "multi_reference_config": {
-                     "identity_lock": { "slots": [1, 2, 3, 4, 5], "mode": "biometric_strict", "weight": 0.6 },
-                     "aesthetic_lock": { "slot": 6, "type": "art_style_transfer", "weight": 0.85 },
-                     "continuity_lock": { "slot": 7, "type": "temporal_consistency", "weight": 0.7 },
-                     "environment_lock": { "slot": 8, "type": "location_background", "weight": 0.9 },
-                     "prop_lock": { "slot": 9, "type": "object_permanence", "item": "[KEY_PROP]", "weight": 1.0 },
-                     "lighting_lock": { "slot": 10, "type": "global_illumination_map", "weight": 0.6 }
-                   },
-                   "generation_command": {
-                     "action": "[Detailed Action]",
-                     "environment": "[Detailed Setting]",
-                     "focal_point": "character_face",
-                     "render_quality": "ultra_premium_v2"
-                   }
-                 }
+        B) CINEMATIC COVER:
+           - TEMPLATE: "Wide cinematic storybook cover. [Art Style]. The character's full body visible in environment. Extreme depth of field, significant negative space for title. Environment: [Setting] in [Style] aesthetic."
 
-               - **IDENTITY ANCHOR RULE (TEXT-IMAGE CONFLICT):**
-                 - **FORBIDDEN:** Do NOT use generic species names like "squirrel", "fox", "robot", "boy" in the page prompt. These override the image reference.
-                 - **REQUIRED:** Use ONLY the Unique Name (e.g., "Sylva") or pronouns ("she", "it", "the creature").
-                 - **VISUAL CLASS:** If the character name is ambiguous or refers to an animal/object (e.g., 'Bee', 'Fox'), you MUST append the visual class in the Master Prompt (e.g. 'Ice Bee (Humanoid Fairy)').
-               - **DYNAMIC CAMERA (MANDATORY VARIETY):**
-                 - You MUST vary the camera angle for every page. DO NOT repeat "wide shot".
-                 - Page 1: Wide Shot (Establish setting).
-                 - Page 2: Close Up (Emotion/Face).
-                 - Page 3: Low Angle (Heroic/Action) OR High Angle (Scale).
-                 - Page 4: Mid Shot (Interaction).
-                 - Page 5: Wide Shot (Resolution).
-               - Structure of Prompt: "**[Style]**. **[Character Presence]** is **[ACTIVE VERB]** in **[Setting]**. ENVIRONMENT TRANSFORMATION: [Specific Location Details]. [Camera Angle]."
-               - REQ: Literal Naming (e.g. "The boy Jiri").
-               - Example 1: "Fairytale watercolor. The kind boy Jiri is **climbing** a giant apple tree. ENVIRONMENT TRANSFORMATION: High up in the branches, blue sky visible, no ground seen. Low angle looking up."
-               - Example 2: "Classic oil painting. The dog Alik is **sniffing** a mysterious glowing mushroom. ENVIRONMENT TRANSFORMATION: Dark cave interior with bioluminescent fungi. Extreme close-up on nose."
-               
-    </task>
+        C) PAGE PROMPTS (THIS IS THE MOST IMPORTANT PART):
+           - Write a vivid ENGLISH scene description focusing on: Action, Environment, Camera Angle, Lighting, Mood.
+           - DO NOT describe the character's physical features (hair, clothes, face) – the AI image system handles identity separately.
+           - Focus ONLY on: What the character is DOING, WHERE they are, the ATMOSPHERE, and the CAMERA ANGLE.
+           
+           FORMAT: "[Art Style]. [Camera angle], the [species/class] is [active verb] in [detailed setting]. [Lighting/mood description]."
+           
+           EXAMPLES:
+           - "Pixar 3D style. Low-angle shot, the small robot is rolling cautiously into a dark crystal cave, bioluminescent mushrooms casting blue light on wet stone walls."
+           - "Watercolor style. Wide establishing shot, the young fox is standing at the edge of a golden wheat field at sunset, warm amber light painting long shadows."
+           - "Anime style. Close-up, the tiny fairy is peering through a rain-covered window, reflections of city lights sparkling in droplets."
+           
+        DYNAMIC CAMERA (MANDATORY – vary every page):
+           - Page 1: Wide Shot (Establish setting)
+           - Page 2: Close-Up (Emotion/Face)
+           - Page 3: Low Angle (Heroic/Action) or High Angle (Scale)
+           - Page 4: Mid Shot (Interaction)
+           - Page 5: Wide Shot (New location)
+           - Continue alternating.
+
+        ENVIRONMENT VARIATION (CRITICAL):
+           - Do NOT stay in the same collection of pixels for 10 pages.
+           - Move the character through the world. FROM -> TO.
+           - Example: Forest -> Cave -> Mountain -> Castle.
+
+
+        ANONYMOUS PROTOCOL:
+           - DO NOT use the character's proper name in art_prompt_en. Names confuse image AI.
+           - Replace names with "The [Adjective] [Species/Class]" (e.g., "The small blue dragon" instead of "Azur").
+        
+        NO TEXT RULE (ABSOLUTE):
+           - The image must be completely text-free.
+           - Do NOT describe signposts, books with titles, speech bubbles, or labels.
+           - If a book is present, it must be "a book with arcane symbols" or "a blank cover", NOT "a book that says Magic".
+    </art_prompt_rules>
 
     <constraints>
-        1. UNIVERSAL SEMANTIC GROUNDING (CRITICAL):
-           - THEMES: Open to History, Modern Day, Classic Fairytale, Realistic Nature, Sci-Fi (if grounded).
-           - VISUAL GRAVITY LAW: All environments must follow logical physics. Trees must be rooted, objects must obey gravity. NO "dream logic", NO flying trees, NO floating islands (unless explicitly requested in Setting).
-           - "TALKING OBJECT" BAN: Inanimate objects (teapots, trees) MUST NOT have faces or speak. Only living creatures (Animals, Humans, Robots) can be characters.
-
-        2. PROMPT REINFORCEMENT (THE ANONYMOUS PROTOCOL):
-           - NAME BAN: DO NOT use the Character's proper name in the 'art_prompt_en'. Names confuse the AI (e.g. "Blýsk" might trigger lightning effects).
-           - RULE: Replace names with "The [Adjective] [Species/Class]".
-           - Example: Instead of "The dragon Azur", use "The small blue dragon".
-           - Example: Instead of "The robot R.U.R.", use "The rusty industrial robot".
-
-        3. PROMPT STRUCTURE (PAGES):
-           - Format: "**[Style]**. **The [Adjective] [Species]** [Action] in **[Logical Setting]**. [Lighting/Mood]."
-
-        4. THE TRAVEL RULE (MANDATORY ENVIRONMENT SHIFT):
-           - The story MUST be a journey. The character cannot stay in the same visual spot.
-           - SEQUENCE: Start (Home/Safe) -> Journey (Road/Forest/Sea) -> Destination (City/Cave/Mountain) -> Return.
-           - RULE: Every single page prompt MUST reflect a change in location or angle. Avoid "Infinite Forest Syndrome".
-           
-        5. SOLITARY HERO PROTOCOL:
-           - LIMIT: Only ONE Main Character (Pulse).
-           - SIDE KICKS: A secondary character (friend/villain) may appear ONCE (1 page) max. They must leave immediately after the interaction.
-           - REASON: To prevent identity bleeding. Do not try to maintain two complex characters in one image. Focus on the Hero's reaction to the world.
-
-        6. DRUH vs. VĚK:
-           - Animal -> Use "Young", "Small", "Cub".
-           - Human -> Use "Boy", "Girl", "Child".
-           
-        7. REFERENCE SHEET RULES (GOLDEN):
-           - NO ENVIRONMENT in the first image (Cover/Sheet).
-           - MUST be Neutral Grey or White Background.
-           - MUST be a 5-ANGLE TURNAROUND: Front, Side, Back, 3/4 View, Close-up.
-           - NO "Character Sheet" text labels if possible. Just the visual data.
-
-        8. LENGTH CONSTRAINT (CRITICAL):
-           - PAGES: The story MUST have EXACTLY ${targetLength} PAGES (plus Cover).
-           - TEXT VOLUME: Each page MUST have between 17 and 25 words.
-           - STYLE: Short, punchy, and engaging. No long paragraphs. One or two clear sentences per page.
-
-        9. FORMÁT: Výstupem musí být pouze čistý JSON.
-        10. DUAL LANGUAGE RULE: 
-           - 'text': MUST be in CZECH.
-           - 'art_prompt_en': MUST be in ENGLISH.
-           - 'visual_dna': MUST be in ENGLISH.
+        1. VISUAL GRAVITY: All environments must follow logical physics. No flying trees or floating islands unless explicitly in the setting.
+        2. "TALKING OBJECT" BAN: Inanimate objects MUST NOT have faces or speak. Only living creatures can be characters.
+        3. THE TRAVEL RULE: The story MUST be a journey with environment changes. Start (Home) → Journey (Road/Forest) → Destination (Cave/Mountain) → Return.
+        4. SOLITARY HERO: Only ONE main character. A secondary character may appear on 1-2 pages max to prevent identity bleeding.
+        5. SPECIES vs AGE: Animal → "Young", "Small", "Cub". Human → "Boy", "Girl", "Child".
+        6. FORMAT: Output must be pure JSON only.
+        7. DUAL LANGUAGE: '${textField}' in ${langName.toUpperCase()}, 'art_prompt_en' in ENGLISH, 'visual_dna' in ENGLISH.
+        8. ANATOMY RULE: NO ANTHROPOMORPHISM. Animals must look exactly like real animals. NO human hands, NO human feet, NO human body proportions, NO human faces. A dog must look like a dog, a bug like a bug. Do not mix human and animal traits.
     </constraints>
 
     <output_format>
         Return a single JSON object.
-        \`\`\`json
+        ${"```json"}
         {
           "metadata": {
             "target_age_group": "[Target Age]",
@@ -172,32 +132,34 @@ const getStorySystemPrompt = (targetLength: number = 10) => `
           },
           "story_content": {
             "title_en": "[English Title]",
-            "title_cz": "[Czech Title (Translated)]",
+            "${titleField}": "[${langName} Title]",
              "cover": {
-                "identity_prompt": "IDENTITY_BLUEPRINT_v3.0: { \"instruction_set\": \"character_blueprint_v3.0\", \"subject_identity\": { \"species_and_core\": \"[VISUAL DNA]\", \"unique_features\": \"high-contrast facial markers, specific scars, eye-color clarity\", \"clothing_base\": \"flat textures, neutral functional attire\" }, \"technical_composition\": { \"format\": \"HORIZONTAL STRIP LAYOUT, 5 SEPARATE FIGURES SIDE-BY-SIDE (Full Body Front, Side, Back, 3/4 View, Close-up)\", \"layout_enforcement\": \"Must show 5 distinct variations of the same character in a row. GRID VIEW.\", \"views\": [\"full-front\", \"90-degree-profile\", \"back-view\", \"45-degree-three-quarters\", \"ultra-close-up-face\"], \"canvas\": \"neutral laboratory white background, no environment\", \"lighting\": \"albedo-flat, zero-shadow, high-detail visibility\" } }",
-                "cover_prompt": "{ \"task_type\": \"cinematic_book_cover_composition\", \"multi_reference_config\": { \"identity_lock\": { \"slots\": [1,2,3,4,5], \"mode\": \"biometric_strict\", \"weight\": 1.0 }, \"aesthetic_lock\": { \"slot\": 6, \"type\": \"art_style_transfer\", \"weight\": 0.95 } }, \"cover_direction\": { \"thematic_essence\": \"[STORYTELLER_DRAMATIC_SUMMARY]\", \"hero_pose\": \"Tiny figure in massive landscape, looking away\", \"environment_epic_view\": \"[STORYTELLER_MAIN_LOCATION_WIDE_SHOT]\", \"composition_rules\": \"Wide angle master shot, extreme depth of field, significant negative space for title\" } }",
-            },
+                "identity_prompt": "Create a technical reference sheet for [CHARACTER VISUAL DNA]. Character on purely white background, shown from front, side, and back. Focus on consistent clothing. Simple lighting. Technical blueprint.",
+                "cover_prompt": "Wide cinematic storybook cover. [STYLE]. [CHARACTER DESCRIPTION] standing in [EPIC SETTING]. Extreme depth of field, significant negative space for title."
+             },
             "pages": [
               {
                 "page_number": 1,
-                "text_en": "[English Story Text]",
-                "text_cz": "[Czech Story Text]",
-                "art_prompt_en": "{ \"multi_reference_config\": { \"identity_lock\": { \"slots\": [1,2,3,4,5], \"mode\": \"biometric_strict\", \"weight\": 0.6 }, \"aesthetic_lock\": { \"slot\": 6, \"type\": \"art_style_transfer\", \"weight\": 0.85 }, \"continuity_lock\": { \"slot\": 7, \"type\": \"temporal_consistency\", \"weight\": 0.7 } }, \"generation_command\": { \"action\": \"[Action]\", \"environment\": \"[Setting]\", \"focal_point\": \"character_face\" } }"
+                "text_en": "[English Story Text - 40-60 words]",
+                "${textField}": "[${langName} Story Text - 40-60 words]",
+                "art_prompt_en": "[STYLE]. [Camera angle], the [species/class] is [action] in [detailed setting]. [Lighting/mood]."
               }
             ]
           }
         }
-        \`\`\`
+        ${"```"}
     </output_format>
 
     <dual_language_rules>
-    1. THINK IN ENGLISH: You must generate the story content (title, plot, text) in ENGLISH first. This is the 'text_en'.
-    2. TRANSLATE TO CZECH: Then, translate 'text_en' to 'text_cz' for the user.
-    3. VISUALS FROM ENGLISH: The 'art_prompt_en' must be derived *directly* from 'text_en' to ensure no detail is lost in translation.
+    1. THINK IN ENGLISH: Generate story content in English first (text_en).
+    2. TRANSLATE TO ${langName.toUpperCase()}: Then translate to '${textField}'.
+    3. VISUALS FROM ENGLISH: 'art_prompt_en' derived from 'text_en' to preserve detail.
     </dual_language_rules>
-`;
+    `};
 
-const IDEA_SYSTEM_PROMPT = `
+const getIdeaSystemPrompt = (langCode: string = 'cs') => {
+    const langName = getLanguageName(langCode);
+    return `
     <role>
         Act as the StoryCloud Muse. Your goal is to generate a magical children's book concept.
     </role>
@@ -209,55 +171,34 @@ const IDEA_SYSTEM_PROMPT = `
     <rules>
         1. THEMATIC LAW: Universal Scope. (History, Sci-Fi, Fairytale, Modern, Nature).
         2. TAXONOMY LAW: The 'species_en' MUST be the literal biological classification.
-           - INVALID: "Magical Friend", "Hero", "Creature".
-           - VALID: "Unicorn", "Robot", "Squirrel", "Human Boy", "Dragon".
-           - CRITICAL: If the Title/Blurb mentions a species (e.g. "Jednorožec"), 'species_en' MUST be "Unicorn". Do not humanize animals unless explicitly requested.
-        3. COLOR & ADJECTIVE LAW: If the Title or Blurb mentions a specific color (e.g. "Modrý tygr") or state (e.g. "Malý"), these MUST be explicitly included in both the 'concept.character_desc_cz' and 'technical_dna.visual_anchors_en' and 'technical_dna.color_palette'.
-        4. LOGIC LAW: Environments must have visual gravity. No abstract voids or impossible geometries.
-        4. ENVIRONMENTAL DIVERSITY: Avoid defaulting to "Enchanted Forest". USE: Caves, Underwater Cities, Cloud Kingdoms, Cyberpunk Streets, Desert Canyons, Snowy Castles, Volcanic Islands, or Crystal Mines.
-        5. Technical DNA: You must output a JSON with a technical_dna field.
-        6. Color Palette: Always include a color_palette field in the DNA.
-        7. Language: 'concept' fields in CZECH. 'technical_dna' fields in ENGLISH.
-        8. GENDER CONSISTENCY: Ensure Czech grammar matches the name's gender (e.g. "Lila je hravá", NOT "hravý").
-        9. CHILD SAFETY & MODESTY (CRITICAL):
-           - If the character is a child (Boy/Girl/Kid), they MUST be depicted as ~8-10 years old.
-           - KEYWORDS TO USE: "Cute", "Small", "Young", "Modest clothing".
-           - STRICTLY BANNED: Mature features, revealing clothes, crop tops, adult proportions, BIKINIS, SWIMWEAR.
-           - BANNED SPECIES: NO MERMAIDS.
-        
-        10. SINGLE HERO RULE (ABSOLUTE):
-           - The story MUST focus on EXACTLY ONE protagonist.
-           - BANNED CONCEPTS: "Twins", "Brother and Sister", "Best Friends Duo", "A team of heroes".
-           - WHY: To ensure visual consistency in the generated book.
-           - ALLOWED: One hero meeting temporary friends (who leave).
-        
-        11. NAMING CONVENTION (SIMPLE):
-           - Prefer simple, descriptive names or archetypes.
-           - Example: "The Little Frog" is better than "Kvako the Amphibian".
-           - If using a name, keep it short and distinct.
-           - If using a name, keep it short and distinct.
-
-        12. VARIETY PROTOCOL (EXPANDED & RANDOMIZED):
-           - ANTI-BIAS RULE: Do NOT use the first item in the list. Pick RANDOMLY from the bottom or middle.
-           - ANTI-REPETITION: Never repeat the last generated archetype (Boy/Dragon).
-           - FORCE DIVERSITY: Choose from these specific categories:
-             * CLASS "A" (HISTORICAL KID): Young Knight (Helmet), Medieval Peasant Girl, Roman Child, Prehistoric Cave Boy, Aztec Girl.
-             * CLASS "B" (MODERN/SCI-FI): Jr. Astronaut, Gardener Girl, Little Mechanic (Oil stains), Boy Detective, Scuba Diver.
-             * CLASS "C" (WILD ANIMALS): Arctic Fox, Red Panda, Blue Whale, Tree Frog, Hedgehog, Owl, Chameleon, Penguin, Otter.
-             * CLASS "D" (ROBOTS): Rusty Cleaner Bot, Flying Drone Unit, Boxy Helper Bot (Non-humanoid).
-             * CLASS "E" (FANTASY): Stone Golem (Small), Leaf Spirit (Non-human), Crystal Crab, Cloud Wisp.
-           - STRICTLY BANNED: Talking Objects (Teapots), Mermaids, Aliens with human faces.
-           - SETTING ROULETTE (MUST VARY): Tundra, Desert, Jungle, Deep Ocean, Space Station, Moon Surface, Volcanic Crater, Library, Greenhouse.
+        3. COLOR & ADJECTIVE LAW: If the Title or Blurb mentions a specific color or state, these MUST be explicitly included in both the concept descriptions and 'technical_dna.visual_anchors_en'.
+        4. LOGIC LAW: Environments must have visual gravity.
+        5. ENVIRONMENTAL DIVERSITY: Avoid defaulting to "Enchanted Forest".
+        6. Technical DNA: You must output a JSON with a technical_dna field.
+        7. Color Palette: Always include a color_palette field in the DNA.
+        8. Language: You MUST provide 'concept' fields in BOTH English (suffix _en) and Czech (suffix _cz). 'technical_dna' fields are in ENGLISH only.
+        9. DUAL LANGUAGE RULES (ABSOLUTE):
+           - THINK IN ENGLISH: Generate the story concept in English first.
+           - TRANSLATE TO CZECH: Then translate it to Czech.
+           - NO CZECH IN ENGLISH FIELDS: Fields with _en suffix MUST be purely English.
+        10. CHILD SAFETY & MODESTY (CRITICAL).
+        11. SINGLE HERO RULE (ABSOLUTE).
+        12. NAMING CONVENTION (SIMPLE).
+        13. CREATIVE VARIETY: Explore diverse themes (e.g. Ocean, Space, History, Mystery, Nature, Daily Life).
+        14. FRESHNESS: Try to avoid repeating the most common tropes (like generic magic forests) to keep stories unique.
     </rules>
 
     <output_format>
         Return ONLY valid JSON:
-        \`\`\`json
+        ${"```json"}
         {
           "concept": {
+            "title_en": "...",
             "title_cz": "...",
             "author_name": "...",
+            "short_blurb_en": "...",
             "short_blurb_cz": "...",
+            "character_desc_en": "...",
             "character_desc_cz": "..." 
           },
           "technical_dna": {
@@ -266,209 +207,44 @@ const IDEA_SYSTEM_PROMPT = `
             "size_age_en": "...",
             "visual_anchors_en": ["Specific Feature 1", "Specific Feature 2", "Specific Feature 3"], 
             "color_palette": "color1, color2, color3",
-            "recommended_style": "One of: watercolor, pixar_3d, futuristic, sketch, ghibli_anime, cyberpunk, felted_wool, paper_cutout, claymation, pop_art, dark_oil, vintage_parchment, pixel_art, frozen_crystal, happy_cloud.",
+            "recommended_style": "...",
             "lighting_vibe": "..."
           }
         }
-        \`\`\`
+        ${"```"}
     </output_format>
-`;
+    `};
 
-const GEMINI_SYSTEM_PROMPT = `
-You are a helpful Creative Writing Assistant for a children's book editor.
-Your goal is to help a user (child or parent) write a story.
-- If the user provides a partial sentence, finish it creatively but briefly.
-- If the user asks for an idea, provide a short, fun plot twist.
-- Keep the tone magical, whimsical, and safe for children.
-- Output ONLY the suggestion text, no conversational filler.
-- Maximum 2 sentences.
-
-CRITICAL: You MUST respond ONLY in Czech language (čeština). Never use English in your responses.
-`;
-
-const CHAT_SYSTEM_PROMPT = `
+const getChatSystemPrompt = (langCode: string = 'cs') => {
+    const langName = getLanguageName(langCode);
+    return `
 <role>
     You are 'Múza' (Muse), a magical AI co-author helping a user (child or parent) define a new story.
-    Your goal is to have a friendly conversation to extract 5 key Story Parameters:
-    1. Title (Název)
-    2. Main Character (Hlavní hrdina)
-    3. Setting (Prostředí)
-    4. Target Audience (Pro koho to je? Age group)
-    5. Visual Style (Vizuální styl - e.g. Watercolor, 3D Pixar, Sketch)
+    Your goal is to have a friendly conversation in ${langName} to extract 5 key Story Parameters:
+    1. Title
+    2. Main Character
+    3. Setting
+    4. Target Audience
+    5. Visual Style
 </role>
 
 <rules>
-    1. LANGUAGE: Speak only in CZECH (čeština). Be friendly, encouraging, and magical.
-    2. FLOW: Ask one question at a time. Do not overwhelm the user.
+    1. LANGUAGE: Speak only in ${langName}. Be friendly, encouraging, and magical.
+    2. FLOW: Ask one question at a time.
     3. SUGGESTIONS: If the user doesn't know, offer 3 creative options (A, B, C).
-    4. CONFIRMATION: When you have enough info for a parameter, note it internally but keep the conversation flowing naturally.
-    5. COMPLETION: When you have ALL 5 parameters with high confidence, present a "Story Summary" to the user and ask "Můžeme začít psát?".
+    4. COMPLETION: When ready, present a "Story Summary" to the user and ask if you can start writing.
 </rules>
 
 <output_format>
     Return a STRICT JSON object:
     {
-        "reply": "Your message to the user...",
-        "extracted_params": {
-            "title": "...",
-            "main_character": "...",
-            "setting": "...",
-            "target_audience": "...",
-            "visual_style": "..."
-        },
-        "missing_params": ["title", "visual_style", ...],
+        "reply": "Your message to the user in ${langName}...",
+        "extracted_params": { ... },
+        "missing_params": [...],
         "is_ready": boolean
     }
 </output_format>
-`;
-
-const ARCHITECT_SYSTEM_PROMPT = `
-<role>
-    You are the 'Architect' of the Skywhale Project.
-    You are an expert software engineer and project manager.
-    You have deep knowledge of the system architecture, protocols, and implementation details.
-</role>
-
-<context>
-    The user is asking questions about the project.
-    Use the following Master Blueprint as your primary source of truth.
-    When answering, be precise, technical (when appropriate), and helpful.
-    If the user asks "How does X work?", explain it based on the protocol.
-    If the user asks for status, refer to the "Current Project Status" section.
-</context>
-
-<blueprint_data>
-# 🐳 SKYWHALE MASTER BLUEPRINT: PROTOCOL 003
-*Architecture Version: 003 (Flux Matrix)*
-
-## 🧬 2. GENERATIVE WORKFLOW (THE "IDENTITY LOCK")
-The system follows a strict, multi-phase biological process.
-
-### **PHASE 1: Conception (The "Visual DNA")**
-Before a single page is drawn, the "Visual Director" (Agent) generates a **Golden Reference Sheet**.
-- **Model:** Flux 1 Dev (or Flux 2 Pro depending on load).
-- **Prompt:** "Create a technical reference sheet for [CHARACTER]. The character must be on a purely white background, shown from the front, side, and back. Focus on consistent clothing. No shading, simple lighting. This is a technical blueprint, not an illustration."
-- **Result:** A 5-angle orthographic view of the hero.
-- **Storage:** Saved to \`books.identity_image_slot\`. **This image NEVER changes.**
-
-### **PHASE 2: The "10-Slot Protocol" (Flux 2 Pro)**
-Every single story page generation uses a predefined "Matrix" of 10 input slots to enforce consistency.
-
-| Slot # | Role | Content Source | Weight |
-| :--- | :--- | :--- | :--- |
-| **1-5** | **IDENTITY LOCK** | The "Golden Reference Sheet" (Phase 1) | **1.0 (Strict)** |
-| **6** | **STYLE ANCHOR** | The Book Cover Image | **0.85** |
-| **7** | **CONTINUITY** | The Previous Page (Visual Memory) | **0.7** |
-| **8** | **ENVIRONMENT** | Location Reference (if defined) | **0.9** |
-| **9** | **PROP** | Key Object (e.g. "Magic Box") | **1.0** |
-| **10** | **ATMOSPHERE** | Global Lighting Map | **0.6** |
-
-## 💰 3. BUSINESS LOGIC & PRICING
-### **Currency: Energy ⚡**
-- **Flux 2 Pro (Story):** Costs **50 Energy** / image (10x inflation applied).
-- **Flux Dev (Atelier):** Costs **30 Energy** / image.
-- **Audio (ElevenLabs):** Costs **1 Energy per 20 characters** (min 1 Energy).
-
-## 🗄️ 4. DATABASE & DATA INTEGRITY
-### **Table: \`books\`**
-- \`identity_image_slot\` (TEXT): **MANDATORY**. The URL of the Golden Reference Sheet.
-- \`visual_dna\` (TEXT): The English text description of the hero.
-- \`character_seed\` (BIGINT): The mathematical base for Kinetic Seeding.
-
-## 🤖 5. AGENT ROLES (PROTOCOL 003)
-- **🏗️ ARCHITECT:** Guardian of the **10-Slot Protocol** and Database Schema. Ensures \`identity_image_slot\` is never null.
-- **🎨 VISUAL DIRECTOR:** Guardian of the **Style Slot (Slot 6)**. Ensures the cover art matches the requested aesthetic.
-- **🛠️ ENGINEER:** Guardian of the **API Pipeline**. Manages the Edge Function \`generate-story-image\`.
-</blueprint_data>
-
-<language arithmetic>
-    The user may ask in Czech or English.
-    Respond in the language the user asks in (mostly Czech).
-    Be professional but friendly.
-</language arithmetic>
-`;
-
-// --- GEMINI HELPER ---
-
-async function callGemini(
-    messages: { role: string; content: any }[],
-    systemInstruction: string,
-    jsonMode: boolean = false,
-    apiKey: string,
-    model: string = "gemini-1.5-flash-latest"
-) {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
-
-    // Convert OpenAI-style messages to Gemini Content structure
-    const contents = messages.map(msg => {
-        let text = "";
-        if (typeof msg.content === 'string') {
-            text = msg.content;
-        } else if (Array.isArray(msg.content)) {
-            // Handle multi-part (e.g., text + image)
-            // Note: Simplification here, assuming simple text for now or simple mapping
-            // For images, we need base64 or URI. Gemini supports image URLs directly? No, usually base64.
-            // But we can check if it's a URL and handle it if needed.
-            // For now, let's just join text parts.
-            text = msg.content.map((c: any) => c.text || JSON.stringify(c)).join("\n");
-        }
-        
-        return {
-            role: msg.role === "user" ? "user" : "model",
-            parts: [{ text: text }]
-        };
-    });
-
-    // Handle System Instruction (Gemini 1.5 supports it in config)
-    const payload: any = {
-        contents: contents,
-        systemInstruction: {
-            parts: [{ text: systemInstruction }]
-        },
-        generationConfig: {
-            temperature: 0.7,
-            maxOutputTokens: 8192,
-        }
-    };
-
-    if (jsonMode) {
-        payload.generationConfig.responseMimeType = "application/json";
-    }
-
-    const response = await fetch(url, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(payload)
-    });
-
-    if (!response.ok) {
-        const errText = await response.text();
-        throw new Error(`Gemini API Error (${response.status}): ${errText}`);
-    }
-
-    const data = await response.json();
-    const candidate = data.candidates?.[0];
-    
-    if (!candidate) {
-        throw new Error("No response candidates from Gemini.");
-    }
-
-    if (candidate.finishReason === "SAFETY") {
-        throw new Error("Message blocked by safety filters.");
-    }
-
-    const textOutput = candidate.content.parts[0].text;
-    
-    if (jsonMode) {
-         // Cleanup Markdown blocks if present despite MIME type request
-         const cleanText = textOutput.replace(/```json\n?|```/g, "").trim();
-         return JSON.parse(cleanText);
-    }
-
-    return textOutput;
-}
+`};
 
 // --- HANDLER ---
 
@@ -476,235 +252,260 @@ serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
   try {
+    const authHeader = req.headers.get('Authorization')!;
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      { global: { headers: { Authorization: authHeader } } }
+    );
+
+    const { data: { user } } = await supabaseClient.auth.getUser();
     const { action, payload } = await req.json();
     const apiKey = Deno.env.get('GEMINI_API_KEY');
+    const lang = (payload?.language || 'cs').substring(0, 2).toLowerCase();
 
+    // DEFENSIVE: Check for missing API key
     if (!apiKey) {
-      throw new Error("Missing GEMINI_API_KEY on server. Please set it via 'npx supabase secrets set'.");
+        console.error("FATAL: GEMINI_API_KEY is not set in Supabase secrets!");
+        return new Response(JSON.stringify({ error: "Server configuration error: AI key is missing." }), { 
+            status: 500, 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        });
+    }
+    // - generate-structure (Expensive): MUST be logged in.
+    // - generate-idea / chat-turn (Discovery): Allowed for guests to prevent conversion friction.
+    if (!user && action === 'generate-structure') {
+        return new Response(JSON.stringify({ error: "Unauthorized: Please log in to generate full stories." }), { 
+            status: 401, 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        });
     }
 
-    // --- CASE SWITCHING ---
-
     if (action === 'generate-structure') {
-        const params = payload || {};
-        const userPrompt = `
-            Title: ${params.title}
-            Author: ${params.author}
-            Main Character (User Desc): ${params.main_character}
-            Setting: ${params.setting}
-            Visual DNA (Technical Truth): ${params.visual_dna || params.main_character}
-            Target Audience: ${params.target_audience}
-            Visual Style: ${params.visual_style}
-
-            Generate the JSON story package now.
-        `;
+        const userPrompt = `Title: ${payload.title}\nAuthor: ${payload.author}\nMain Character: ${payload.main_character}\nSetting: ${payload.setting}\nVisual DNA: ${payload.visual_dna || payload.main_character}\nTarget Audience: ${payload.target_audience}\nVisual Style: ${payload.visual_style}`;
 
         const data = await callGemini(
             [{ role: "user", content: userPrompt }],
-            getStorySystemPrompt(params.length || 10),
+            getStorySystemPrompt(payload.length || 10, lang),
             true,
-            apiKey,
-            "gemini-3-pro-preview" // Use Pro for complex JSON structures
+            apiKey!,
+            "gemini-2.0-flash"
         );
 
-        return new Response(JSON.stringify(data), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+        return new Response(JSON.stringify({ choices: [{ message: { content: JSON.stringify(data) } }] }), { headers: corsHeaders });
     }
 
     if (action === 'generate-idea') {
-        const data = await callGemini(
-            [{ role: "user", content: "Generate ideas" }], // User prompt required
-            IDEA_SYSTEM_PROMPT,
-            true,
-            apiKey,
-            "gemini-3-flash-preview"
-        );
-        return new Response(JSON.stringify(data), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
-    }
-
-    if (action === 'generate-suggestion') {
-        const { storySoFar, currentText, pageIndex, totalPages } = payload;
-        const isEndgame = pageIndex >= totalPages - 1;
-        const systemInstruction = isEndgame 
-            ? `${GEMINI_SYSTEM_PROMPT}\nCRITICAL: You are on the LAST pages of the book. You MUST wrap up the story ensuring a happy ending. Do not start new plot lines.`
-            : GEMINI_SYSTEM_PROMPT;
-
-        const messages = [
-            { role: "user", content: `Story History:\n${storySoFar}\n\nCurrent Page Draft:\n${currentText}\n\nContext: Page ${pageIndex} of ${totalPages}.\nTask: Suggest a creative continuation (max 2 sentences).` }
+        const themes = [
+            "Space Exploration", "Deep Ocean Mystery", "Ancient History", "Futuristic City", 
+            "Microscopic World", "Dinosaur Era", "Magical School", "Detective Mystery", 
+            "Sports Competition", "Culinary Adventure", "Music & Rhythm", "Construction & Building",
+            "Farm Life", "Jungle Expedition", "Polar Adventure", "Robot Factory"
         ];
+        const randomTheme = themes[Math.floor(Math.random() * themes.length)];
 
-        const suggestionHelper = await callGemini(messages, systemInstruction, false, apiKey, "gemini-3-flash-preview");
-        
-        // Wrap in expected OpenAI-like structure for frontend compatibility if needed, 
-        // or just return plain object if frontend expects that. 
-        // Frontend expects: { choices: [ { message: { content: "..." } } ] } ? 
-        // Looking at previous code, frontend expects `data` which WAS the OpenAI response.
-        // Wait, looking at lines 375 in original file: `const data = await response.json()` -> returns `data`.
-        // Frontend usually consumes `data.choices[0].message.content` OR if I changed frontend, maybe not.
-        // Let's check `StoryChat` or `BookReader`.
-        // To be safe, I should wrap it or update frontend. 
-        // BUT `generate-structure` returns raw JSON. `generate-suggestion` returned OpenAI object.
-        // I will return a SIMPLIFIED object and rely on the fact I can update frontend if needed, 
-        // OR better: mock the OpenAI structure to avoid frontend breakage.
-        
-        const mockOpenAIResponse = {
-            choices: [
-                { message: { content: suggestionHelper } }
-            ]
-        };
-
-        return new Response(JSON.stringify(mockOpenAIResponse), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
-    }
-
-    if (action === 'generate-image-prompt') {
-         const { storyText } = payload;
-         const prompt = await callGemini(
-             [{ role: "user", content: `Story Text: "${storyText}"` }],
-             "You are a Visual Director. Convert the story text into a concise English image prompt for Flux AI. Focus on: Subject, Action, Lighting, Environment, Art Style (Pixar 3D). Output ONLY the prompt.",
-             false,
-             apiKey,
-             "gemini-3-flash-preview"
-         );
-         
-         const mockOpenAIResponse = {
-            choices: [
-                { message: { content: prompt } }
-            ]
-        };
-        return new Response(JSON.stringify(mockOpenAIResponse), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
-    }
-
-    if (action === 'dictionary-lookup') {
-        const { term } = payload;
         const data = await callGemini(
-             [{ role: "user", content: `Translate: "${term}"` }],
-             `You are a creative educational linguist for children. Translate a Czech word into English and provide creative alternatives. Output a strict JSON object: { "primary_en": "...", "emoji": "...", "definition_cs": "...", "synonyms": [...], "related_adjectives": [...], "usage_example": "..." }.`,
-             true,
-             apiKey,
-             "gemini-3-flash-preview"
-        );
-        // Lookups likely expect direct JSON logic in frontend?
-        // Original code returned OpenAI response object, so frontend likely does `data.choices[0]...`
-        // I should stick to the Mock pattern to be safe.
-        // Wait, `generate-structure` and `generate-idea` return PURE JSON in my new code, but used to return OpenAI object?
-        
-        // CHECKING ORIGINAL CODE:
-        // `generate-structure`: `const data = await response.json(); return ...JSON.stringify(data)` -> It returned the OpenAI object!
-        // My `StorySetup.tsx` likely parses `data.choices[0].message.content`.
-        
-        // CRITICAL FIX: I must return the schema expected by the frontend.
-        // The `data` returned by callGemini is the CONTENT (string or object).
-        // I need to wrap it.
-        
-        const mockResponse = {
-             choices: [{ message: { content: JSON.stringify(data) } }]
-        };
-        return new Response(JSON.stringify(mockResponse), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
-    }
-
-    if (action === 'extract-visual-dna') {
-        const { imageUrl } = payload;
-        const mockResponse = {
-            choices: [{ message: { content: JSON.stringify({
-                species: "Unknown (Image Analysis Pending)",
-                hair_fur: "TBD",
-                primary_colors: ["Red", "Blue"] 
-            }) } }]
-       };
-       return new Response(JSON.stringify(mockResponse), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
-    }
-
-    if (action === 'generate-initial-ideas') {
-          const ideas = await callGemini(
-             [{ role: "user", content: "Dej mi 3 náhodné začátky dětských příběhů." }],
-             "You are a Creative Story Starter. Generate 3 distinct, one-sentence story prompts for a children's book. Each should be imaginative and start a potential adventure. Output them as a semicolon-separated string (e.g. Idea 1; Idea 2; Idea 3). Language: Czech.",
-             false,
-             apiKey,
-             "gemini-3-flash-preview"
-          );
-          const mockResponse = { choices: [{ message: { content: ideas } }] };
-          return new Response(JSON.stringify(mockResponse), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
-    }
-
-    if (action === 'generate-card-text') {
-        const { occasion, recipient, mood } = payload;
-        
-        const text = await callGemini(
-            [{ role: "user", content: `Příležitost: ${occasion}\nPříjemce: ${recipient}\nNálada: ${mood}\n\nNapiš krátké přání:` }],
-            `Jsi kreativní asistent pro psaní přáníček v češtině. Tvým úkolem je vymyslet KRÁTKÝ, ORIGINÁLNÍ a VTIPNÝ text na přání (max 15 slov). Výstup: pouze čistý text přání.`,
-            false,
-            apiKey,
-            "gemini-3-flash-preview"
-        );
-         const mockResponse = { choices: [{ message: { content: text } }] };
-         return new Response(JSON.stringify(mockResponse), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
-    }
-
-    if (action === 'moderate-text') {
-        const { text } = payload;
-        const result = await callGemini(
-            [{ role: "user", content: `Text to classify: "${text}"` }],
-            `You are a Safety Bot. Analyze the text for hate speech, self-harm, sexual content, or violence. Return JSON: { "flagged": boolean, "reason": "..." }. Strictly sensitive for children's content.`,
+            [{ role: "user", content: `Generate a new story idea concept in English and Czech. REQUIRED THEME: ${randomTheme}. Current priority language: ${lang}` }],
+            getIdeaSystemPrompt(lang),
             true,
-            apiKey,
-            "gemini-3-flash-preview"
+            apiKey!,
+            "gemini-2.0-flash"
         );
-        // OpenAI format: { results: [ { flagged: true/false } ] }
-        const mockResponse = { results: [ result ] };
-        return new Response(JSON.stringify(mockResponse), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+        return new Response(JSON.stringify({ choices: [{ message: { content: JSON.stringify(data) } }] }), { headers: corsHeaders });
     }
 
     if (action === 'chat-turn') {
-        const { messages, currentParams } = payload;
-        
-        // Map messages
-        // Gemini expects "user" or "model" roles. OpenAI uses "assistant".
-        const geminiMessages = messages.map((m: any) => ({
+        const geminiMessages = payload.messages.map((m: any) => ({
             role: m.role === 'assistant' ? 'model' : 'user',
             content: m.content
         }));
 
         const result = await callGemini(
             geminiMessages,
-            CHAT_SYSTEM_PROMPT + `\n\nCURRENT KNOWN PARAMS: ${JSON.stringify(currentParams)}`,
+            getChatSystemPrompt(lang) + `\n\nCURRENT KNOWN PARAMS: ${JSON.stringify(payload.currentParams)}`,
             true,
-            apiKey,
-            "gemini-3-flash-preview"
+            apiKey!,
+            "gemini-2.0-flash"
         );
 
-        const mockResponse = {
-            choices: [{ message: { content: JSON.stringify(result) } }]
-        };
-
-        return new Response(JSON.stringify(mockResponse), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+        return new Response(JSON.stringify({ choices: [{ message: { content: JSON.stringify(result) } }] }), { headers: corsHeaders });
     }
 
-    if (action === 'ask-architect') {
-        const { question } = payload;
-        
-        const answer = await callGemini(
-            [{ role: "user", content: question }],
-            ARCHITECT_SYSTEM_PROMPT,
+    // --- CUSTOM BOOK EDITOR ACTIONS ---
+
+    if (action === 'generate-suggestion') {
+        const { storySoFar, currentText, pageIndex, totalPages } = payload;
+        const systemPrompt = `You are a helpful children's story writing assistant. You help continue stories in a creative, age-appropriate way. Write in ${lang === 'cs' ? 'Czech' : 'English'}. Return ONLY the suggested continuation text (1-3 sentences), no JSON, no formatting.`;
+        const userPrompt = `Story so far:\n${storySoFar}\n\nCurrent page text:\n${currentText}\n\nThis is page ${pageIndex} of ${totalPages}. Suggest a natural continuation.`;
+
+        const result = await callGemini(
+            [{ role: "user", content: userPrompt }],
+            systemPrompt,
             false,
-            apiKey,
-            "gemini-3-flash-preview"
+            apiKey!,
+            "gemini-2.0-flash"
         );
 
-        const mockResponse = {
-            choices: [{ message: { content: answer } }]
-        };
-        return new Response(JSON.stringify(mockResponse), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+        return new Response(JSON.stringify({ choices: [{ message: { content: result } }] }), { headers: corsHeaders });
     }
 
-    if (action === 'list-models') {
-         const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
-         const data = await response.json();
-         return new Response(JSON.stringify(data), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    if (action === 'generate-image-prompt') {
+        const { storyText } = payload;
+        const systemPrompt = `You are an expert at creating visual art prompts for children's book illustrations. Given a story text in any language, create a detailed English image generation prompt. Focus on: scene composition, lighting, mood, characters, and setting. Return ONLY the English prompt text, no JSON, no formatting.`;
+
+        const result = await callGemini(
+            [{ role: "user", content: `Create an illustration prompt for this story text:\n${storyText}` }],
+            systemPrompt,
+            false,
+            apiKey!,
+            "gemini-2.0-flash"
+        );
+
+        return new Response(JSON.stringify({ choices: [{ message: { content: result } }] }), { headers: corsHeaders });
+    }
+
+    if (action === 'generate-initial-ideas') {
+        const systemPrompt = `You are a creative children's story idea generator. Generate exactly 5 short, fun story ideas for children aged 4-10. Write in ${lang === 'cs' ? 'Czech' : 'English'}. Return the ideas separated by semicolons (;). No numbering, no formatting, just the ideas.`;
+
+        const result = await callGemini(
+            [{ role: "user", content: "Generate 5 creative children's story ideas." }],
+            systemPrompt,
+            false,
+            apiKey!,
+            "gemini-2.0-flash"
+        );
+
+        return new Response(JSON.stringify({ choices: [{ message: { content: result } }] }), { headers: corsHeaders });
+    }
+
+    if (action === 'dictionary-lookup') {
+        const { term } = payload;
+        const systemPrompt = `You are a creative bilingual dictionary for children's story writers. Given a Czech word, return a JSON object with: "emoji" (relevant emoji), "primary_en" (English translation), "synonyms" (array of 3-5 creative English synonyms useful for art prompts), "related_adjectives" (array of 3-5 English adjectives that pair well with this word for visual descriptions). Return ONLY valid JSON.`;
+
+        const result = await callGemini(
+            [{ role: "user", content: `Translate and expand this Czech word: "${term}"` }],
+            systemPrompt,
+            true,
+            apiKey!,
+            "gemini-2.0-flash"
+        );
+
+        return new Response(JSON.stringify({ choices: [{ message: { content: JSON.stringify(result) } }] }), { headers: corsHeaders });
+    }
+
+    if (action === 'extract-visual-dna') {
+        const { imageUrl } = payload;
+        
+        // VISUAL DNA EXTRACTION PROMPT
+        const systemPrompt = `You are an expert Visual Character Analyst for AI Art generation. 
+        Analyze the provided image and extract a precise 'Visual DNA' description.
+        Focus on:
+        1. Species/Type (e.g. Human Boy, Robot, Fox)
+        2. Age Group / Scale
+        3. Detailed Appearance (Hair, Eyes, Skin/Material)
+        4. Clothing/Equipment (distinctive colors/items)
+        5. Vibe/Style
+
+        Return a JSON object:
+        {
+          "species": "...",
+          "age_group": "...",
+          "hair_fur": "...",
+          "outfit_top": "...",
+          "outfit_bottom": "...",
+          "distinctive_marks": "...",
+          "visual_summary": "A full sentence description..."
+        }`;
+
+        console.log(`👁️ Fetching image for analysis: ${imageUrl}`);
+        const imgResp = await fetch(imageUrl);
+        const imgBlob = await imgResp.blob();
+        const arrayBuffer = await imgBlob.arrayBuffer();
+        const base64Image = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
+        
+        const mimeType = imgBlob.type || 'image/jpeg';
+
+        const result = await callGemini(
+            [{ 
+                role: "user", 
+                content: [
+                    { text: "Analyze this image and extract Visual DNA JSON." },
+                    { inline_data: { mime_type: mimeType, data: base64Image } }
+                ] 
+            }],
+            systemPrompt,
+            true,
+            apiKey!,
+            "gemini-2.0-flash" // Verified & Multimodal
+        );
+
+        return new Response(JSON.stringify({ choices: [{ message: { content: JSON.stringify(result) } }] }), { headers: corsHeaders });
     }
 
     throw new Error(`Unknown action: ${action}`);
 
   } catch (error) {
-    console.error("Function Error:", error);
-    return new Response(JSON.stringify({ error: error.message }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 });
+    return new Response(JSON.stringify({ error: error.message }), { headers: corsHeaders, status: 500 });
   }
 })
+
+// --- GEMINI HELPER ---
+
+async function callGemini(
+    messages: { role: string; content?: any; parts?: any[] }[],
+    systemInstruction: string,
+    jsonMode: boolean,
+    apiKey: string,
+    model: string = 'gemini-1.5-pro'
+) {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+    
+    // Normalize messages to Gemini 'parts' format for robustness
+    const normalizedContents = messages.map(m => {
+        // If already has parts (multimodal), use them
+        if (m.parts) return { role: m.role, parts: m.parts };
+        // If content is string (legacy), wrap in parts
+        if (typeof m.content === 'string') return { role: m.role, parts: [{ text: m.content }] };
+        // If content is array (legacy but structured?), try to use it if parts missing
+        if (Array.isArray(m.content)) return { role: m.role, parts: m.content };
+        // Fallback
+        return { role: m.role, parts: [{ text: JSON.stringify(m.content || "") }] };
+    });
+
+    const payload = {
+        contents: normalizedContents,
+        systemInstruction: { parts: [{ text: systemInstruction }] },
+        generationConfig: {
+            temperature: 0.7,
+            responseMimeType: jsonMode ? 'application/json' : 'text/plain'
+        }
+    };
+
+    console.log(`🤖 Gemini Call [${model}]:`, JSON.stringify(payload, null, 2));
+
+    const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+    });
+
+    if (!response.ok) {
+        const errText = await response.text();
+        console.error('❌ Gemini Error:', errText);
+        throw new Error(`Gemini API Error: ${response.statusText} (${errText})`);
+    }
+
+    const data = await response.json();
+    console.log('✅ Gemini Response OK');
+    
+    // Extract text content safely
+    let content = data.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (!content) throw new Error('Gemini returned no content');
+    
+    // CLEANUP: Strip Markdown Code Blocks if present (Gemini 2.0 Flash loves to add them)
+    if (jsonMode) {
+        content = content.replace(/^```json\s*/, '').replace(/^```\s*/, '').replace(/\s*```$/, '');
+    }
+
+    return jsonMode ? JSON.parse(content) : content;
+}

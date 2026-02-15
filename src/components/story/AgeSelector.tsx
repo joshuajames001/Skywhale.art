@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { Egg, Ship, Shield } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface AgeSelectorProps {
     selected: string;
@@ -7,10 +8,11 @@ interface AgeSelectorProps {
 }
 
 export const AgeSelector = ({ selected, onSelect }: AgeSelectorProps) => {
+    const { t } = useTranslation();
     const options = [
-        { id: '1-3', label: 'Batole', icon: Egg, desc: '1-3 roky' },
-        { id: '4-7', label: 'Průzkumník', icon: Ship, desc: '4-7 let' },
-        { id: '8-11', label: 'Hrdina', icon: Shield, desc: '8-11 let' },
+        { id: '1-3', label: t('setup.ages.toddler'), icon: Egg, desc: t('setup.ages.years_1_3') },
+        { id: '4-7', label: t('setup.ages.explorer'), icon: Ship, desc: t('setup.ages.years_4_7') },
+        { id: '8-11', label: t('setup.ages.hero'), icon: Shield, desc: t('setup.ages.years_8_11') },
     ];
 
     return (

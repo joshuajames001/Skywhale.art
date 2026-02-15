@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Send, Sparkles, User, Bot, AlertCircle, Terminal, Code2 } from 'lucide-react';
-import { invokeEdgeFunction } from '../../lib/edge-functions';
+import { supabase } from '../../lib/supabase';
+import { useTranslation } from 'react-i18next';
 
 interface StoryChatProps {
     onComplete: (data: any) => void;
@@ -17,6 +18,7 @@ interface Message {
 }
 
 export const StoryChat: React.FC<StoryChatProps> = ({ onComplete, onCancel, mode = 'muse' }) => {
+    const { t, i18n } = useTranslation();
     const isArchitect = mode === 'architect';
 
     const [messages, setMessages] = useState<Message[]>([
@@ -24,8 +26,8 @@ export const StoryChat: React.FC<StoryChatProps> = ({ onComplete, onCancel, mode
             id: 'init',
             role: 'assistant',
             content: isArchitect
-                ? "Zdravím. Jsem Architekt projektu Skywhale. 🏗️\nZeptej se mě na cokoliv ohledně protokolů, databáze nebo pravidel světa."
-                : "Ahoj! Jsem tvá Múza. ✨\n\nPojďme spolu vymyslet úžasný příběh. O čem by měl být? (Můžeš napsat třeba 'O modrém drakovi, který ztratil oheň' nebo cokoliv tě napadne!)"
+                ? t('muse.architect_welcome')
+                : t('muse.welcome')
         }
     ]);
     const [inputValue, setInputValue] = useState('');
@@ -68,9 +70,11 @@ export const StoryChat: React.FC<StoryChatProps> = ({ onComplete, onCancel, mode
 
             if (isArchitect) {
                 // ARCHITECT MODE
-                const { data, error } = await invokeEdgeFunction('generate-story-content', {
-                    action: 'ask-architect',
-                    payload: { question: userMsg.content }
+                const { data, error } = await supabase.functions.invoke('generate-story-content', {
+                    body: {
+                        action: 'ask-architect',
+                        payload: { question: userMsg.content, language: i18n.language }
+                    }
                 });
 
                 if (error) throw new Error(error.message);
@@ -94,11 +98,14 @@ export const StoryChat: React.FC<StoryChatProps> = ({ onComplete, onCancel, mode
             } else {
                 // MUSE MODE
                 const apiMessages = newMessages.map(m => ({ role: m.role, content: m.content }));
-                const { data, error } = await invokeEdgeFunction('generate-story-content', {
-                    action: 'chat-turn',
-                    payload: {
-                        messages: apiMessages,
-                        currentParams: currentParams
+                const { data, error } = await supabase.functions.invoke('generate-story-content', {
+                    body: {
+                        action: 'chat-turn',
+                        payload: {
+                            messages: apiMessages,
+                            currentParams: currentParams,
+                            language: i18n.language
+                        }
                     }
                 });
 
@@ -114,7 +121,7 @@ export const StoryChat: React.FC<StoryChatProps> = ({ onComplete, onCancel, mode
                     if (jsonContent.is_ready) setIsReady(true);
                 } catch (e) {
                     // Fallback for legacy format or direct string
-                    aiReply = data.choices?.[0]?.message?.content || "Nerozumím datech.";
+                    aiReply = data.choices?.[0]?.message?.content || t('muse.error_content');
                 }
             }
 
@@ -130,7 +137,7 @@ export const StoryChat: React.FC<StoryChatProps> = ({ onComplete, onCancel, mode
             setMessages(prev => [...prev, {
                 id: crypto.randomUUID(),
                 role: 'assistant',
-                content: "Spojení přerušeno. Zkus to prosím znovu.",
+                content: t('muse.error_connection'),
                 isError: true
             }]);
         } finally {
@@ -166,8 +173,8 @@ export const StoryChat: React.FC<StoryChatProps> = ({ onComplete, onCancel, mode
                         {theme.icon}
                     </div>
                     <div>
-                        <h3 className="text-white font-bold text-sm">{isArchitect ? 'Architekt' : 'Múza'}</h3>
-                        <p className={`${theme.accent} opacity-60 text-xs`}>{isArchitect ? 'System Guide v1.0' : 'AI Spoluautor'}</p>
+                        <h3 className="text-white font-bold text-sm">{isArchitect ? t('muse.role_architect') : t('muse.role_muse')}</h3>
+                        <p className={`${theme.accent} opacity-60 text-xs`}>{isArchitect ? t('muse.subtitle_architect') : t('muse.subtitle_muse')}</p>
                     </div>
                 </div>
             </div>
@@ -218,7 +225,7 @@ export const StoryChat: React.FC<StoryChatProps> = ({ onComplete, onCancel, mode
                         value={inputValue}
                         onChange={(e) => setInputValue(e.target.value)}
                         onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-                        placeholder={isArchitect ? "Zadejte dotaz na systém..." : "Napiš svou myšlenku..."}
+                        placeholder={isArchitect ? t('muse.architect_placeholder') : t('muse.placeholder')}
                         className={`w-full bg-black/30 border border-white/10 rounded-full py-4 pl-6 pr-14 text-white placeholder:text-slate-500 focus:outline-none focus:ring-1 transition-all ${isArchitect ? 'focus:border-emerald-500/50 focus:ring-emerald-500/50 font-mono text-sm' : 'focus:border-cyan-500/50 focus:ring-cyan-500/50'}`}
                         disabled={isTyping}
                         autoFocus
@@ -233,7 +240,7 @@ export const StoryChat: React.FC<StoryChatProps> = ({ onComplete, onCancel, mode
                 </div>
                 <div className="text-center mt-2 flex justify-center gap-4">
                     <button onClick={onCancel} className="text-xs text-slate-500 hover:text-slate-300 uppercase tracking-widest font-bold">
-                        Zrušit
+                        {t('muse.cancel')}
                     </button>
                     {!isArchitect && isReady && (
                         <motion.button
@@ -243,7 +250,7 @@ export const StoryChat: React.FC<StoryChatProps> = ({ onComplete, onCancel, mode
                             className="flex items-center gap-2 px-6 py-2 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-full text-white font-bold shadow-lg hover:scale-105 transition-transform"
                         >
                             <Sparkles size={16} />
-                            Vytvořit příběh
+                            {t('muse.create_story')}
                         </motion.button>
                     )}
                 </div>

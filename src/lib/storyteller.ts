@@ -11,20 +11,19 @@ export interface StoryParams {
     visual_dna?: string; 
     user_identity_image?: string; 
     length?: number;
+    language?: string;
 }
 
 export const generateStoryStructure = async (params: StoryParams): Promise<{ pages: StoryPage[], coverPrompt: string, identityPrompt: string, visualDna: string }> => {
-    console.log("📖 Storyteller: Calling Edge Function (generate-structure)...");
+    // console.log("📖 Storyteller: Calling Edge Function (generate-structure)...");
 
     try {
         const { data, error } = await invokeEdgeFunction('generate-story-content', {
             action: 'generate-structure',
-            payload: params
+            payload: { ...params, language: params.language || 'cs' }
         });
 
         if (error) throw error;
-        if (!data) throw new Error("No data received from Edge Function.");
-        
         if (!data) throw new Error("No data received from Edge Function.");
         
         // FIX: Parse OpenAI Response Wrapper
@@ -49,14 +48,14 @@ export const generateStoryStructure = async (params: StoryParams): Promise<{ pag
         }
 
         const metadata = parsed.metadata || {};
-        console.log("🧠 RCI Criticism Log:", metadata.criticism || "No internal critique provided.");
+        // console.log("🧠 RCI Criticism Log:", metadata.criticism || "No internal critique provided.");
 
         const titleCz = storyContent.title_cz || parsed.title_cz || storyContent.title || parsed.title;
-        console.log(`🇨🇿 Czech Title: "${titleCz}"`);
+        // console.log(`🇨🇿 Czech Title: "${titleCz}"`);
 
         const pages: StoryPage[] = rawPages.map((p: any) => ({
             page_number: p.page_number,
-            text: p.text_cz || p.text, 
+            text: p.text_cz || p.text_en || p.text, 
             art_prompt: p.art_prompt_en || p.art_prompt || p.image_prompt,
             image_url: null,
             is_generated: false
@@ -91,60 +90,119 @@ export const generateStoryStructure = async (params: StoryParams): Promise<{ pag
     }
 };
 
-export const generateStoryIdea = async (): Promise<StoryParams> => {
-    console.log("💡 Muse Agent: Calling Edge Function (generate-idea)...");
+export const generateStoryIdea = async (params?: { language?: string }): Promise<StoryParams> => {
+    const language = (params?.language || 'cs').substring(0, 2).toLowerCase();
+    // console.log(`💡 Muse Agent: Calling Edge Function (generate-idea) in ${language}...`);
 
     let attempts = 0;
     while (attempts < 2) { 
         try {
             const { data: ideaWrapper, error } = await invokeEdgeFunction('generate-story-content', {
                 action: 'generate-idea',
-                payload: {}
+                payload: { language }
             });
 
             if (error || !ideaWrapper) throw error || new Error("No data");
 
-            // FIX: Parse OpenAI Response Wrapper
+            // FIX: Handle both OpenAI-wrapped and raw JSON responses
             let idea;
             try {
-                // Type assertion since we know the shape but TS doesn't
-                const content = (ideaWrapper as any).choices[0].message.content;
-                idea = JSON.parse(content);
+                // console.log("📦 Raw Edge Function Response:", ideaWrapper);
+
+                // DEFENSIVE: Parse if response is a string
+                let wrapper = ideaWrapper as any;
+                if (typeof wrapper === 'string') {
+                    wrapper = JSON.parse(wrapper);
+                }
+                
+                if (wrapper && wrapper.choices && wrapper.choices[0]) {
+                    // OpenAI-wrapped format
+                    const content = wrapper.choices[0].message.content;
+                    idea = typeof content === 'string' ? JSON.parse(content) : content;
+                } else if (wrapper && (wrapper.concept || wrapper.technical_dna)) {
+                    // Raw Muse concept format (what we are seeing in the logs)
+                    idea = wrapper;
+                } else if (wrapper && typeof wrapper === 'object') {
+                    // Last resort fallback
+                    idea = wrapper;
+                } else {
+                     console.error("❌ Invalid Response Structure:", wrapper);
+                     throw new Error("Invalid response structure from Edge Function");
+                }
+
+                // --- SCHEMA MAPPING (Safely extract nested data if present) ---
+                let concept = idea.concept || {};
+                let technical_dna = idea.technical_dna || {};
+
+                // Map root fields to concept if concept is missing or fields are at root
+                // RESILIENCE FIX: Check for both _cz and _cs suffixes
+                const mapField = (fieldBase: string) => {
+                    const obj = idea as any;
+                    const conceptObj = idea.concept as any || {};
+                    
+                    const enKey = `${fieldBase}_en`;
+                    const czKey = `${fieldBase}_cz`;
+                    const csKey = `${fieldBase}_cs`;
+
+                    // Check Root
+                    if (!concept[enKey] && obj[enKey]) concept[enKey] = obj[enKey];
+                    if (!concept[czKey] && obj[czKey]) concept[czKey] = obj[czKey];
+                    if (!concept[czKey] && obj[csKey]) concept[czKey] = obj[csKey];
+
+                    // Check Concept Object (for _cs fallback)
+                    if (!concept[czKey] && conceptObj[csKey]) concept[czKey] = conceptObj[csKey];
+                    
+                    // Legacy 'main_character' -> 'character_desc' mapping
+                    if (fieldBase === 'character_desc') {
+                        if (!concept.character_desc_cz && obj.main_character) concept.character_desc_cz = obj.main_character;
+                    }
+                    if (fieldBase === 'short_blurb') {
+                        if (!concept.short_blurb_cz && obj.setting) concept.short_blurb_cz = obj.setting;
+                    }
+                };
+
+                mapField('title');
+                mapField('character_desc');
+                mapField('short_blurb');
+
+                // Final safety: ensure title_cz always exists if title exists
+                if (!concept.title_cz && concept.title_cs) concept.title_cz = concept.title_cs;
+                if (!concept.title_cz && idea.title) concept.title_cz = idea.title;
+                if (!technical_dna.recommended_style && idea.visual_style) technical_dna.recommended_style = idea.visual_style;
+
+                // --- DNA STRING CONSTRUCTION ---
+                const anchors = Array.isArray(technical_dna.visual_anchors_en) 
+                    ? technical_dna.visual_anchors_en.join(", ") 
+                    : (idea.visual_dna || "");
+                
+                const palette = technical_dna.color_palette || "";
+                const species = (technical_dna.species_en || "character").toLowerCase();
+                const isAnimal = ["unicorn", "dragon", "fox", "cat", "dog", "wolf", "bear", "rabbit", "horse", "lion", "tiger"].some(a => species.includes(a));
+                const isRobot = species.includes("robot") || species.includes("android");
+
+                let formFactor = "Humanoid Body"; 
+                if (isAnimal) formFactor = "STRICTLY ANIMAL BODY, NON-HUMANOID, QUADRUPED, NO HUMAN FACE";
+                if (isRobot) formFactor = "STRICTLY MECHANICAL ROBOT, METAL BODY, NON-HUMANOID, NO SKIN, NO CLOTHES";
+
+                const technicalDnaString = `VISUAL SPECIES: ${species.toUpperCase()} [${formFactor}]. Gender: ${technical_dna.gender_en || 'Neutral'}. Scale: ${technical_dna.size_age_en || 'Small'}. IDENTITY LOCK: ${anchors}. Colors: ${palette}.`;
+
+                // --- FINAL RETURN OBJECT (Flat format for StorySetup.tsx) ---
+                const isEn = language === 'en';
+                return {
+                    title: (isEn ? concept.title_en : concept.title_cz) || concept.title_en || concept.title_cz || concept.title || "Nový Příběh",
+                    author: concept.author_name || "Múza",
+                    main_character: (isEn ? concept.character_desc_en : concept.character_desc_cz) || concept.character_desc_en || concept.character_desc_cz || concept.short_blurb_cz || "Hrdina", 
+                    visual_dna: technicalDnaString,
+                    setting: (isEn ? concept.short_blurb_en : concept.short_blurb_cz) || concept.short_blurb_en || concept.short_blurb_cz || idea.setting || "V kouzelném světě", 
+                    target_audience: idea.target_audience || "4-7", 
+                    visual_style: technical_dna.recommended_style || 'Watercolor',
+                    language: language
+                };
             } catch (e) {
                 console.warn("Failed to parse Idea JSON", e);
                 attempts++;
                 continue;
             }
-
-            if (!idea.concept || !idea.technical_dna) {
-                console.warn("Invalid structure received, retrying...");
-                attempts++;
-                continue;
-            }
-
-            console.log("✅ Valid Concept Generated:", idea.concept.title_cz);
-
-            const anchors = idea.technical_dna.visual_anchors_en.join(", ");
-            const palette = idea.technical_dna.color_palette;
-            const speciesLower = idea.technical_dna.species_en.toLowerCase();
-            const isAnimal = ["unicorn", "dragon", "fox", "cat", "dog", "wolf", "bear", "rabbit", "horse", "lion", "tiger"].some(a => speciesLower.includes(a));
-            const isRobot = speciesLower.includes("robot") || speciesLower.includes("android");
-
-            let formFactor = "Humanoid Body"; 
-            if (isAnimal) formFactor = "STRICTLY ANIMAL BODY, NON-HUMANOID, QUADRUPED, NO HUMAN FACE";
-            if (isRobot) formFactor = "STRICTLY MECHANICAL ROBOT, METAL BODY, NON-HUMANOID, NO SKIN, NO CLOTHES";
-
-            const technicalDnaString = `VISUAL SPECIES: ${idea.technical_dna.species_en.toUpperCase()} [${formFactor}]. Gender: ${idea.technical_dna.gender_en || 'Neutral'}. Scale: ${idea.technical_dna.size_age_en}. IDENTITY LOCK: ${anchors}. Colors: ${palette}.`;
-
-            return {
-                title: idea.concept.title_cz,
-                author: idea.concept.author_name,
-                main_character: idea.concept.character_desc_cz || idea.concept.short_blurb_cz, 
-                visual_dna: technicalDnaString,
-                setting: idea.concept.short_blurb_cz, 
-                target_audience: "Children", 
-                visual_style: idea.technical_dna.recommended_style
-            };
 
         } catch (e) {
             console.error("Muse Error:", e);
@@ -164,7 +222,7 @@ export const generateStoryIdea = async (): Promise<StoryParams> => {
 };
 
 export const extractVisualIdentity = async (sheetUrl: string, characterName: string, fallbackDna?: string): Promise<string> => {
-    console.log("👁️ Visual DNA: Calling Edge Function (extract-visual-dna)...");
+    // console.log("👁️ Visual DNA: Calling Edge Function (extract-visual-dna)...");
 
     try {
         const { data, error } = await invokeEdgeFunction('generate-story-content', {
@@ -174,24 +232,10 @@ export const extractVisualIdentity = async (sheetUrl: string, characterName: str
 
         if (error) throw error;
         
-        // If Edge returns stringified JSON, parse it? invokeEdgeFunction parses JSON response already.
-        // The Edge function returns { species: ... } object directly.
-        // We need stringified for DNA though? 
-        // The original code returned a stringified JSON.
-        // Let's ensure consistency.
-        
-        if (error) throw error;
-        
-        // FIX: Parse OpenAI Response Wrapper
         if (data.choices && data.choices[0]?.message?.content) {
-             // The content is ALREADY a JSON string from OpenAI (e.g. "{\"species\":...}")
-             // We want to return that string as-is because extractVisualIdentity returns a Promise<string> (DNA string)
-             // Actually, the original code returned JSON.stringify(data). 
-             // If the AI returns a JSON string, we can just return that string directly as the DNA.
              const content = data.choices[0].message.content;
-             // Ensure it's valid JSON
              try {
-                 JSON.parse(content); // check validity
+                 JSON.parse(content); 
                  return content;
              } catch {
                  return JSON.stringify({ species: characterName });

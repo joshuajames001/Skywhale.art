@@ -1,9 +1,10 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { Book, Home, Sparkles, Palette, Gamepad2, Compass, PenTool, Zap, MessageSquare, LogIn, User, LogOut, Shield } from 'lucide-react';
+import { Book, Home, Sparkles, Palette, Gamepad2, Compass, PenTool, Zap, MessageSquare, LogIn, User, LogOut, Shield, Languages } from 'lucide-react';
 import { ScrollableRow } from './ui/ScrollableRow';
 import { useState, useEffect } from 'react';
 import { useEnergy } from '../hooks/useEnergy';
 import { supabase } from '../lib/supabase';
+import { useTranslation } from 'react-i18next';
 
 interface NavigationHubProps {
     onNavigate: (view: 'landing' | 'library' | 'setup' | 'card_studio' | 'arcade' | 'discovery' | 'create_custom' | 'energy_store' | 'terms' | 'privacy' | 'feedback_board' | 'profile' | 'pricing') => void;
@@ -14,6 +15,7 @@ interface NavigationHubProps {
 }
 
 export const NavigationHub = ({ onNavigate, currentView, user, onLogin, onLogout }: NavigationHubProps) => {
+    const { t, i18n } = useTranslation();
     const [isExpanded, setIsExpanded] = useState(false);
     const [showProfileMenu, setShowProfileMenu] = useState(false);
     const { balance } = useEnergy();
@@ -41,52 +43,35 @@ export const NavigationHub = ({ onNavigate, currentView, user, onLogin, onLogout
     }, [user]);
 
     const navItems = [
-        { id: 'landing', icon: Home, label: 'Domů' },
-        { id: 'discovery', icon: Compass, label: 'Encyklopedie' },
-        { id: 'library', icon: Book, label: 'Knihovna' },
-        { id: 'create_custom', icon: PenTool, label: 'Vlastní Kniha' },
-        { id: 'card_studio', icon: Palette, label: 'Ateliér Přání' },
-        { id: 'arcade', icon: Gamepad2, label: 'Herna' },
-        { id: 'feedback_board', icon: MessageSquare, label: 'Nápady' }, // [NEW] Feedback Hub
-        { id: 'setup', icon: Sparkles, label: 'Příběh', badge: 'NOVINKA' },
+        { id: 'landing', icon: Home, label: t('nav.home') },
+        { id: 'discovery', icon: Compass, label: t('nav.encyclopedia') },
+        { id: 'library', icon: Book, label: t('nav.library') },
+        { id: 'create_custom', icon: PenTool, label: t('nav.custom_book') },
+        { id: 'card_studio', icon: Palette, label: t('nav.atelier') },
+        { id: 'arcade', icon: Gamepad2, label: t('nav.arcade') },
+        { id: 'feedback_board', icon: MessageSquare, label: t('nav.feedback') },
+        { id: 'setup', icon: Sparkles, label: t('nav.story'), badge: t('nav.badge_new') },
     ];
-    // ... rest of component
 
     const homeItem = navItems.find(i => i.id === 'landing')!;
     const mainItems = navItems.filter(i => i.id !== 'landing');
 
-    // DESKTOP: Always show Profile instead of Login
-    // If user is null, Profile click will trigger Login or show Profile with "Please Login"
-    const desktopNavItems = [
-        navItems.find(i => i.id === 'library')!,
-        navItems.find(i => i.id === 'card_studio')!,
-        navItems.find(i => i.id === 'arcade')!,
-        navItems.find(i => i.id === 'discovery')!,
-        navItems.find(i => i.id === 'store')!,
-        navItems.find(i => i.id === 'feedback_board')!,
-        // Profile Item (Handles Auth internally)
-        { id: 'profile' as const, icon: User, label: 'Profil' }
-    ];
-
     const mobileNavItems = [
         homeItem,
-        // Mobile: Profile instead of Login (Moved to 2nd position)
-        { id: 'profile', icon: User, label: 'Profil' } as any,
+        { id: 'profile', icon: User, label: t('nav.profile') } as any,
         navItems.find(i => i.id === 'library')!,
-        navItems.find(i => i.id === 'create_custom')!, // Vlastní Kniha
-        navItems.find(i => i.id === 'setup')!, // New Story (Primary)
-        navItems.find(i => i.id === 'card_studio')!,   // Card Atelier
-        // Mobile: Add Energy Store
-        navItems.find(i => i.id === 'energy_store') || { id: 'energy_store', icon: Zap, label: 'Obchod' } as any,
+        navItems.find(i => i.id === 'create_custom')!,
+        navItems.find(i => i.id === 'setup')!,
+        navItems.find(i => i.id === 'card_studio')!,
+        navItems.find(i => i.id === 'energy_store') || { id: 'energy_store', icon: Zap, label: t('nav.store') } as any,
         navItems.find(i => i.id === 'discovery')!,
-        // Legal shortcuts
-        { id: 'terms', icon: MessageSquare, label: 'Podmínky' } as any,
-        { id: 'privacy', icon: Shield, label: 'Ochrana' } as any
+        { id: 'terms', icon: MessageSquare, label: t('nav.terms') } as any,
+        { id: 'privacy', icon: Shield, label: t('nav.privacy') } as any
     ];
 
     return (
         <>
-            {/* DESKTOP LEFT DOCK: Hidden on Mobile */}
+            {/* DESKTOP LEFT DOCK */}
             <div
                 className={`hidden sm:flex fixed z-[100] flex-col gap-4 items-start pointer-events-auto transition-all duration-500
                     ${(currentView === 'landing' || currentView === 'library' || currentView === 'setup' || currentView === 'book' || currentView === 'arcade' || currentView === 'energy_store') ? 'top-6 left-6' :
@@ -96,7 +81,7 @@ export const NavigationHub = ({ onNavigate, currentView, user, onLogin, onLogout
                 onMouseEnter={() => setIsExpanded(true)}
                 onMouseLeave={() => setIsExpanded(false)}
             >
-                {/* HOME BUTTON (Always Visible Anchor) */}
+                {/* HOME BUTTON */}
                 <motion.div
                     layout
                     className={`relative flex items-center gap-3 cursor-pointer group ${currentView === 'landing' ? 'opacity-100' : 'opacity-80 hover:opacity-100'}`}
@@ -148,7 +133,6 @@ export const NavigationHub = ({ onNavigate, currentView, user, onLogin, onLogout
                                         whileHover={{ scale: 1.1 }}
                                         whileTap={{ scale: 0.95 }}
                                     >
-                                        {/* Icon */}
                                         <div className={`relative p-3 rounded-full backdrop-blur-md transition-all duration-300 border shadow-lg ${isActive
                                             ? 'bg-white text-purple-600 border-white shadow-purple-500/30'
                                             : 'bg-black/40 text-white/80 border-white/10 hover:bg-black/60'
@@ -162,7 +146,6 @@ export const NavigationHub = ({ onNavigate, currentView, user, onLogin, onLogout
                                             )}
                                         </div>
 
-                                        {/* Label */}
                                         <motion.span
                                             initial={{ opacity: 0, x: -10 }}
                                             animate={{ opacity: 1, x: 0 }}
@@ -183,71 +166,84 @@ export const NavigationHub = ({ onNavigate, currentView, user, onLogin, onLogout
                         </motion.div>
                     )}
                 </AnimatePresence>
-                {/* LEGAL LINKS */}
+
+                {/* LEGAL LINKS & LANGUAGE SWITCHER */}
                 <AnimatePresence>
                     {isExpanded && (
                         <motion.div
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
-                            className="mt-6 flex flex-col items-start gap-1 ml-2"
+                            className="mt-6 flex flex-col items-start gap-4 ml-2"
                         >
-                            <button onClick={() => onNavigate('terms' as any)} className="text-[10px] text-white/40 hover:text-white/80 transition-colors uppercase tracking-widest font-bold">Podmínky</button>
-                            <button onClick={() => onNavigate('privacy' as any)} className="text-[10px] text-white/40 hover:text-white/80 transition-colors uppercase tracking-widest font-bold">Soukromí</button>
+                            <div className="flex flex-col gap-1">
+                                <button onClick={() => onNavigate('terms' as any)} className="text-[10px] text-white/40 hover:text-white/80 transition-colors uppercase tracking-widest font-bold">{t('nav.terms')}</button>
+                                <button onClick={() => onNavigate('privacy' as any)} className="text-[10px] text-white/40 hover:text-white/80 transition-colors uppercase tracking-widest font-bold">{t('nav.privacy')}</button>
+                            </div>
+
+                            {/* LANGUAGE SWITCHER */}
+                            <motion.div
+                                layout
+                                className="relative flex items-center gap-3 cursor-pointer group"
+                                onClick={() => i18n.changeLanguage(i18n.language === 'cs' ? 'en' : 'cs')}
+                                whileHover={{ scale: 1.1 }}
+                                whileTap={{ scale: 0.95 }}
+                            >
+                                <div className="p-2 rounded-full backdrop-blur-md transition-all duration-300 border shadow-lg bg-black/40 text-sky-400 border-sky-500/20 hover:bg-black/60">
+                                    <Languages size={18} strokeWidth={2.5} />
+                                </div>
+                                <span className="bg-black/50 text-white text-[10px] font-bold px-2 py-1 rounded-full backdrop-blur-md whitespace-nowrap border border-white/10">
+                                    {i18n.language === 'cs' ? 'CZ' : 'EN'}
+                                </span>
+                            </motion.div>
                         </motion.div>
                     )}
                 </AnimatePresence>
             </div >
 
-            {/* UNIVERSAL BACK BUTTON (Mobile Top-Left) - Visible on all non-landing mobile views */}
-            {
-                currentView !== 'landing' && currentView !== 'card_studio' && currentView !== 'discovery' && currentView !== 'create_custom' && currentView !== 'book' && (
-                    <div className="sm:hidden fixed top-4 left-4 z-[9990] pointer-events-auto">
-                        <button
-                            onClick={() => onNavigate('landing')}
-                            className="flex items-center gap-2 bg-black/50 backdrop-blur-md px-3 py-2 rounded-full border border-white/10 text-white/80 text-xs font-bold uppercase tracking-widest shadow-lg active:scale-95 transition-transform"
-                        >
-                            ← Zpět
-                        </button>
-                    </div>
-                )
-            }
+            {/* UNIVERSAL BACK BUTTON (Mobile) */}
+            {currentView !== 'landing' && currentView !== 'card_studio' && currentView !== 'discovery' && currentView !== 'create_custom' && currentView !== 'book' && (
+                <div className="sm:hidden fixed top-4 left-4 z-[9990] pointer-events-auto">
+                    <button
+                        onClick={() => onNavigate('landing')}
+                        className="flex items-center gap-2 bg-black/50 backdrop-blur-md px-3 py-2 rounded-full border border-white/10 text-white/80 text-xs font-bold uppercase tracking-widest shadow-lg active:scale-95 transition-transform"
+                    >
+                        {t('common.back')}
+                    </button>
+                </div>
+            )}
 
             {/* MOBILE BOTTOM NAVIGATION BAR */}
-            {
-                currentView !== 'card_studio' && currentView !== 'create_custom' && currentView !== 'game-hub' && (
-                    <div className="sm:hidden fixed bottom-0 left-0 w-full z-[9999] pb-safe bg-black/90 backdrop-blur-xl border-t border-white/10 pointer-events-auto">
-                        <ScrollableRow className="px-2 py-3" itemClassName="gap-6 px-2 justify-between min-w-full">
-                            {mobileNavItems.map((item) => {
-                                const isActive = currentView === item.id;
+            {currentView !== 'card_studio' && currentView !== 'create_custom' && currentView !== 'game-hub' && (
+                <div className="sm:hidden fixed bottom-0 left-0 w-full z-[9999] pb-safe bg-black/90 backdrop-blur-xl border-t border-white/10 pointer-events-auto">
+                    <ScrollableRow className="px-2 py-3" itemClassName="gap-6 px-2 justify-between min-w-full">
+                        {mobileNavItems.map((item) => {
+                            const isActive = currentView === item.id;
 
-                                return (
-                                    <motion.button
-                                        key={item.id}
-                                        onClick={() => {
-                                            if (item.id === ('login_action' as any)) {
-                                                if (user) onNavigate('profile');
-                                                else onLogin();
-                                            } else {
-                                                onNavigate(item.id as any);
-                                            }
-                                        }}
-                                        className={`relative flex flex-col items-center gap-1 shrink-0 ${isActive ? 'text-purple-400' : 'text-white/50'}`}
-                                        whileTap={{ scale: 0.9 }}
-                                    >
-                                        <div className="p-1">
-                                            <item.icon size={22} strokeWidth={isActive ? 2.5 : 2} />
-                                        </div>
-                                        <span className="text-[9px] font-medium whitespace-nowrap">{item.label}</span>
-                                    </motion.button>
-                                )
-                            })}
-                        </ScrollableRow>
-                    </div>
-                )
-            }
-
-            {/* RIGHT DOCK REMOVED - Replaced by ElevenLabsProfile in App.tsx */}
+                            return (
+                                <motion.button
+                                    key={item.id}
+                                    onClick={() => {
+                                        if (item.id === ('login_action' as any)) {
+                                            if (user) onNavigate('profile');
+                                            else onLogin();
+                                        } else {
+                                            onNavigate(item.id as any);
+                                        }
+                                    }}
+                                    className={`relative flex flex-col items-center gap-1 shrink-0 ${isActive ? 'text-purple-400' : 'text-white/50'}`}
+                                    whileTap={{ scale: 0.9 }}
+                                >
+                                    <div className="p-1">
+                                        <item.icon size={22} strokeWidth={isActive ? 2.5 : 2} />
+                                    </div>
+                                    <span className="text-[9px] font-medium whitespace-nowrap">{item.label}</span>
+                                </motion.button>
+                            )
+                        })}
+                    </ScrollableRow>
+                </div>
+            )}
         </>
     );
 };

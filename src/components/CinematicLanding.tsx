@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { Sparkles, Loader2, BookOpen, Wand2, Star, ChevronRight, Play, Clapperboard, Music, Lock, Globe, GraduationCap, Heart, Rocket } from 'lucide-react';
+import { useTranslation, Trans } from 'react-i18next';
 import { supabase } from '../lib/supabase';
 
 interface CinematicLandingProps {
@@ -15,6 +16,7 @@ interface ShowcaseBook {
 }
 
 export const CinematicLanding = ({ onEnter, onNavigate }: CinematicLandingProps) => {
+    const { t } = useTranslation();
     const containerRef = useRef<HTMLDivElement>(null);
     const [books, setBooks] = useState<ShowcaseBook[]>([]);
     const [loading, setLoading] = useState(true);
@@ -144,7 +146,7 @@ export const CinematicLanding = ({ onEnter, onNavigate }: CinematicLandingProps)
                     {/* [NEW] STUDIO DROPDOWN (Hover Trigger) */}
                     <div className="relative group">
                         <button className="flex items-center gap-2 hover:text-white hover:drop-shadow-[0_0_8px_rgba(255,255,255,0.5)] transition-all py-2">
-                            Studio <ChevronRight size={12} className="rotate-90 group-hover:-rotate-90 transition-transform duration-300" />
+                            {t('landing.nav.studio')} <ChevronRight size={12} className="rotate-90 group-hover:-rotate-90 transition-transform duration-300" />
                         </button>
 
                         {/* Dropdown Menu */}
@@ -160,8 +162,8 @@ export const CinematicLanding = ({ onEnter, onNavigate }: CinematicLandingProps)
                                         <BookOpen size={16} />
                                     </div>
                                     <div className="flex flex-col">
-                                        <span className="text-xs font-bold text-white tracking-widest">Příběhy</span>
-                                        <span className="text-[10px] text-zinc-400 normal-case tracking-normal">Vytvořit ilustrovanou knihu</span>
+                                        <span className="text-xs font-bold text-white tracking-widest">{t('landing.nav.stories')}</span>
+                                        <span className="text-[10px] text-zinc-400 normal-case tracking-normal">{t('landing.nav.stories_desc')}</span>
                                     </div>
                                 </button>
 
@@ -172,10 +174,10 @@ export const CinematicLanding = ({ onEnter, onNavigate }: CinematicLandingProps)
                                     </div>
                                     <div className="flex flex-col">
                                         <div className="flex items-center gap-2">
-                                            <span className="text-xs font-bold text-white tracking-widest">Filmy</span>
+                                            <span className="text-xs font-bold text-white tracking-widest">{t('landing.nav.movies')}</span>
                                             <span className="text-[8px] bg-blue-500/20 text-blue-200 px-1.5 rounded border border-blue-500/30">SOON</span>
                                         </div>
-                                        <span className="text-[10px] text-zinc-400 normal-case tracking-normal">Animovat postavy z knih</span>
+                                        <span className="text-[10px] text-zinc-400 normal-case tracking-normal">{t('landing.nav.movies_desc')}</span>
                                     </div>
                                 </div>
 
@@ -186,10 +188,10 @@ export const CinematicLanding = ({ onEnter, onNavigate }: CinematicLandingProps)
                                     </div>
                                     <div className="flex flex-col">
                                         <div className="flex items-center gap-2">
-                                            <span className="text-xs font-bold text-white tracking-widest">Zvuky</span>
+                                            <span className="text-xs font-bold text-white tracking-widest">{t('landing.nav.sounds')}</span>
                                             <span className="text-[8px] bg-emerald-500/20 text-emerald-200 px-1.5 rounded border border-emerald-500/30">SOON</span>
                                         </div>
-                                        <span className="text-[10px] text-zinc-400 normal-case tracking-normal">Generovat hudbu a efekty</span>
+                                        <span className="text-[10px] text-zinc-400 normal-case tracking-normal">{t('landing.nav.sounds_desc')}</span>
                                     </div>
                                 </div>
 
@@ -203,19 +205,19 @@ export const CinematicLanding = ({ onEnter, onNavigate }: CinematicLandingProps)
                         }}
                         className="hover:text-white hover:drop-shadow-[0_0_8px_rgba(255,255,255,0.5)] transition-all"
                     >
-                        O Nás
+                        {t('landing.nav.about')}
                     </button>
                     <button
                         onClick={() => onNavigate?.('terms')}
                         className="hover:text-white hover:drop-shadow-[0_0_8px_rgba(255,255,255,0.5)] transition-all"
                     >
-                        Pravidla
+                        {t('landing.nav.rules')}
                     </button>
                     <button
                         onClick={() => window.location.href = 'mailto:support@skywhale.art'}
                         className="hover:text-white hover:drop-shadow-[0_0_8px_rgba(255,255,255,0.5)] transition-all"
                     >
-                        Kontakt
+                        {t('landing.nav.contact')}
                     </button>
                 </div>
 
@@ -224,7 +226,7 @@ export const CinematicLanding = ({ onEnter, onNavigate }: CinematicLandingProps)
                     onClick={() => onNavigate?.('landing')}
                     className="px-6 py-2 rounded-full border border-white/20 bg-white/5 hover:bg-white/10 backdrop-blur-md text-white text-xs font-bold uppercase tracking-widest transition-all hover:scale-105 hover:border-purple-400/50 hover:shadow-[0_0_15px_rgba(168,85,247,0.3)]"
                 >
-                    Vstoupit do Aplikace
+                    {t('landing.nav.enter_app')}
                 </button>
             </nav>
 
@@ -242,7 +244,7 @@ export const CinematicLanding = ({ onEnter, onNavigate }: CinematicLandingProps)
                 </h1>
 
                 <p className="font-sans text-lg md:text-xl text-zinc-300 max-w-xl mx-auto leading-relaxed mb-10 text-pretty">
-                    Vytvářejte filmové příběhy pomocí generativní umělé inteligence.
+                    {t('landing.hero.cinematic_subtitle')}
                 </p>
 
                 <div className="flex flex-col items-center mt-12">
@@ -251,7 +253,7 @@ export const CinematicLanding = ({ onEnter, onNavigate }: CinematicLandingProps)
                         className="group relative px-10 py-4 rounded-full border border-white/30 hover:border-white bg-transparent hover:bg-white/5 transition-all w-64 text-center overflow-hidden"
                     >
                         <span className="relative z-10 font-bold text-lg tracking-widest uppercase flex items-center justify-center gap-2 text-white">
-                            Vstoupit <ChevronRight size={16} />
+                            {t('landing.hero.enter')} <ChevronRight size={16} />
                         </span>
                     </button>
                 </div>
@@ -263,7 +265,7 @@ export const CinematicLanding = ({ onEnter, onNavigate }: CinematicLandingProps)
 
                 {/* GALLERY CAROUSEL */}
                 <div className="w-full py-24 border-t border-white/5 bg-[#050510]/50 backdrop-blur-sm">
-                    <h2 className="text-center font-title text-3xl mb-12 text-white/60">Poslední výtvory</h2>
+                    <h2 className="text-center font-title text-3xl mb-12 text-white/60">{t('landing.carousel.recent_creations')}</h2>
 
                     <div className="w-full overflow-hidden">
                         {loading ? (
@@ -303,7 +305,7 @@ export const CinematicLanding = ({ onEnter, onNavigate }: CinematicLandingProps)
                 {/* FEATURES GRID */}
                 <div id="why-skywhale" className="max-w-7xl mx-auto px-6 py-24">
                     <h2 className="text-center font-title text-3xl md:text-5xl mb-16 text-white/80 drop-shadow-lg">
-                        Proč Skywhale.?
+                        {t('landing.usp.title')}
                     </h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                         {/* 1. VISUAL CONSISTENCY */}
@@ -311,9 +313,9 @@ export const CinematicLanding = ({ onEnter, onNavigate }: CinematicLandingProps)
                             <div className="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center mb-6 shadow-lg group-hover:scale-110 transition-transform">
                                 <Sparkles size={32} className="text-white" />
                             </div>
-                            <h3 className="text-2xl font-title font-bold mb-4 text-white group-hover:text-cyan-300 transition-colors">Vizuální Konzistence</h3>
+                            <h3 className="text-2xl font-title font-bold mb-4 text-white group-hover:text-cyan-300 transition-colors">{t('landing.usp.consistency_title')}</h3>
                             <p className="font-sans text-lg text-white/60 leading-relaxed">
-                                Unikátní technologie Identity™ zajistí, že hrdina vaší knihy bude vypadat stejně na první i poslední stránce.
+                                {t('landing.usp.consistency_desc')}
                             </p>
                         </div>
 
@@ -322,9 +324,9 @@ export const CinematicLanding = ({ onEnter, onNavigate }: CinematicLandingProps)
                             <div className="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-fuchsia-600 to-purple-600 flex items-center justify-center mb-6 shadow-lg group-hover:scale-110 transition-transform">
                                 <Rocket size={32} className="text-white" />
                             </div>
-                            <h3 className="text-2xl font-title font-bold mb-4 text-white group-hover:text-fuchsia-300 transition-colors">Blesková Tvorba</h3>
+                            <h3 className="text-2xl font-title font-bold mb-4 text-white group-hover:text-fuchsia-300 transition-colors">{t('landing.usp.speed_title')}</h3>
                             <p className="font-sans text-lg text-white/60 leading-relaxed">
-                                Žádné zbytečné čekání. Od prvotního nápadu k plnohodnotné ilustrované knize během krátké chvíle.
+                                {t('landing.usp.speed_desc')}
                             </p>
                         </div>
 
@@ -333,9 +335,9 @@ export const CinematicLanding = ({ onEnter, onNavigate }: CinematicLandingProps)
                             <div className="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-emerald-500 to-green-500 flex items-center justify-center mb-6 shadow-lg group-hover:scale-110 transition-transform">
                                 <Heart size={32} className="text-white" />
                             </div>
-                            <h3 className="text-2xl font-title font-bold mb-4 text-white group-hover:text-emerald-300 transition-colors">Bezpečný Přístav</h3>
+                            <h3 className="text-2xl font-title font-bold mb-4 text-white group-hover:text-emerald-300 transition-colors">{t('landing.usp.safety_title')}</h3>
                             <p className="font-sans text-lg text-white/60 leading-relaxed">
-                                Garantujeme 100% bezpečné prostředí pro děti. Každý příběh prochází naší etickou AI ochranou.
+                                {t('landing.usp.safety_desc')}
                             </p>
                         </div>
 
@@ -344,9 +346,9 @@ export const CinematicLanding = ({ onEnter, onNavigate }: CinematicLandingProps)
                             <div className="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center mb-6 shadow-lg group-hover:scale-110 transition-transform">
                                 <Globe size={32} className="text-white" />
                             </div>
-                            <h3 className="text-2xl font-title font-bold mb-4 text-white group-hover:text-amber-300 transition-colors">První Svého Druhu</h3>
+                            <h3 className="text-2xl font-title font-bold mb-4 text-white group-hover:text-amber-300 transition-colors">{t('landing.usp.first_kind_title')}</h3>
                             <p className="font-sans text-lg text-white/60 leading-relaxed">
-                                Jsme jediná platforma na světě spojující generování knih, filmů a audia do jednoho rodinného studia.
+                                {t('landing.usp.first_kind_desc')}
                             </p>
                         </div>
 
@@ -355,9 +357,9 @@ export const CinematicLanding = ({ onEnter, onNavigate }: CinematicLandingProps)
                             <div className="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-500 flex items-center justify-center mb-6 shadow-lg group-hover:scale-110 transition-transform">
                                 <GraduationCap size={32} className="text-white" />
                             </div>
-                            <h3 className="text-2xl font-title font-bold mb-4 text-white group-hover:text-indigo-300 transition-colors">Vzdělávání Budoucnosti</h3>
+                            <h3 className="text-2xl font-title font-bold mb-4 text-white group-hover:text-indigo-300 transition-colors">{t('landing.usp.education_title')}</h3>
                             <p className="font-sans text-lg text-white/60 leading-relaxed">
-                                Rozvíjíme kreativitu a učíme děti komunikovat s technologií. Prompting je jazyk 21. století.
+                                {t('landing.usp.education_desc')}
                             </p>
                         </div>
 
@@ -366,9 +368,9 @@ export const CinematicLanding = ({ onEnter, onNavigate }: CinematicLandingProps)
                             <div className="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-rose-500 to-pink-500 flex items-center justify-center mb-6 shadow-lg group-hover:scale-110 transition-transform">
                                 <BookOpen size={32} className="text-white" />
                             </div>
-                            <h3 className="text-2xl font-title font-bold mb-4 text-white group-hover:text-rose-300 transition-colors">Rodinné Dědictví</h3>
+                            <h3 className="text-2xl font-title font-bold mb-4 text-white group-hover:text-rose-300 transition-colors">{t('landing.usp.legacy_title')}</h3>
                             <p className="font-sans text-lg text-white/60 leading-relaxed">
-                                Tvořte příběhy, které zůstanou navždy. Od digitální podoby v cloudu až po možnost tisku fyzické knihy.
+                                {t('landing.usp.legacy_desc')}
                             </p>
                         </div>
                     </div>
@@ -378,16 +380,16 @@ export const CinematicLanding = ({ onEnter, onNavigate }: CinematicLandingProps)
                 <div id="about-us-cinematic" className="relative z-30 w-full bg-[#050510] border-t border-white/5">
                     <div className="max-w-4xl mx-auto px-6 py-32 text-center">
                         <h2 className="font-title text-3xl md:text-5xl mb-8 text-white/90 drop-shadow-lg">
-                            Náš Příběh
+                            {t('landing.about.title')}
                         </h2>
                         <div className="font-serif text-lg md:text-xl text-white/70 leading-relaxed mb-12 text-center">
-                            <p>
-                                Dnešní děti vnímají svět skrze digitální okna. Místo zákazů jsme zvolili jinou cestu – <span className="text-cyan-300 italic">dali jsme tomuto světu hlubší smysl.</span>
+                            <p className="mb-6">
+                                <Trans i18nKey="landing.about.cinematic_text_p1">
+                                    Dnešní děti vnímají svět skrze digitální okna. Místo zákazů jsme zvolili jinou cestu – <span className="text-cyan-300 italic">dali jsme tomuto světu hlubší smysl.</span>
+                                </Trans>
                             </p>
-                            <br />
                             <p>
-                                Skywhale. proměňuje pasivní čas u obrazovky v radost z tvoření. Spojujeme nejmodernější technologie s lidským citem, abychom vytvořili bezpečný prostor, kde se z malých konzumentů stávají velcí vypravěči.
-                                Do každého detailu dáváme srdce, protože věříme, že technologie mají sloužit snům, ne je nahrazovat.
+                                {t('landing.about.cinematic_text_p2')}
                             </p>
                         </div>
 
@@ -395,11 +397,11 @@ export const CinematicLanding = ({ onEnter, onNavigate }: CinematicLandingProps)
                             {/* Stats ... */}
                             <div className="px-8 py-4 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md hover:bg-white/10 transition-colors">
                                 <span className="block text-3xl font-bold text-white mb-1">1000+</span>
-                                <span className="text-xs uppercase tracking-widest text-zinc-500">Příběhů</span>
+                                <span className="text-xs uppercase tracking-widest text-zinc-500">{t('landing.about.stats_stories')}</span>
                             </div>
                             <div className="px-8 py-4 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md hover:bg-white/10 transition-colors">
                                 <span className="block text-3xl font-bold text-white mb-1">AI</span>
-                                <span className="text-xs uppercase tracking-widest text-zinc-500">Powered</span>
+                                <span className="text-xs uppercase tracking-widest text-zinc-500">{t('landing.about.stats_powered')}</span>
                             </div>
                         </div>
                     </div>
@@ -408,9 +410,9 @@ export const CinematicLanding = ({ onEnter, onNavigate }: CinematicLandingProps)
                 {/* LEGAL FOOTER */}
                 <footer className="w-full py-12 px-6 border-t border-white/5 flex flex-col md:flex-row items-center justify-between text-xs text-zinc-500 uppercase tracking-widest gap-4 max-w-7xl mx-auto">
                     <div className="flex gap-6">
-                        <button onClick={() => { window.location.hash = 'why-skywhale'; onNavigate?.('landing'); }} className="hover:text-white transition-colors">O Nás</button>
-                        <button onClick={() => onNavigate?.('terms')} className="hover:text-white transition-colors">Podmínky</button>
-                        <button onClick={() => onNavigate?.('privacy')} className="hover:text-white transition-colors">Soukromí</button>
+                        <button onClick={() => { window.location.hash = 'why-skywhale'; onNavigate?.('landing'); }} className="hover:text-white transition-colors">{t('landing.nav.about')}</button>
+                        <button onClick={() => onNavigate?.('terms')} className="hover:text-white transition-colors">{t('landing.footer.terms')}</button>
+                        <button onClick={() => onNavigate?.('privacy')} className="hover:text-white transition-colors">{t('landing.footer.privacy')}</button>
                     </div>
                     <div>&copy; {new Date().getFullYear()} Skywhale.</div>
                 </footer>

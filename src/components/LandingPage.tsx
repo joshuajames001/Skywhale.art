@@ -4,6 +4,7 @@ import { Sparkles, Loader2, BookOpen, PenTool, Globe, GraduationCap, Heart, Rock
 import { supabase } from '../lib/supabase';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
 import { ElevenLabsProfile } from './layout/ElevenLabsProfile';
+import { useTranslation, Trans } from 'react-i18next';
 
 interface LandingPageProps {
     onEnter: (bookId?: string) => void;
@@ -21,6 +22,7 @@ interface ShowcaseBook {
 }
 
 export const LandingPage = ({ onEnter, onNavigate, user, onLogin, hideUI = false }: LandingPageProps) => {
+    const { t } = useTranslation();
     // Parallax Logic
     const mouseX = useMotionValue(0);
     const mouseY = useMotionValue(0);
@@ -162,7 +164,7 @@ export const LandingPage = ({ onEnter, onNavigate, user, onLogin, hideUI = false
                         className="fixed bottom-6 left-6 z-50 pointer-events-auto px-4 py-2 bg-white/5 backdrop-blur-md text-white/50 hover:text-white text-xs font-bold rounded-full border border-white/10 hover:bg-white/10 transition-all flex items-center gap-2 group"
                     >
                         <Sparkles size={14} className="group-hover:rotate-12 transition-transform" />
-                        <span>Zpět na Intro</span>
+                        <span>{t('landing.nav.back_to_intro')}</span>
                     </button>
                 )}
 
@@ -173,7 +175,7 @@ export const LandingPage = ({ onEnter, onNavigate, user, onLogin, hideUI = false
                         className="fixed top-6 right-6 z-50 pointer-events-auto px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-bold rounded-full border border-white/20 shadow-lg hover:shadow-purple-500/50 transition-all flex items-center gap-2 group hover:scale-105 active:scale-95"
                     >
                         <LogIn size={18} className="group-hover:translate-x-0.5 transition-transform" />
-                        <span>Přihlásit se</span>
+                        <span>{t('landing.nav.login')}</span>
                     </button>
                 ) : profile && (
                     <div className="fixed top-6 right-6 z-50">
@@ -195,13 +197,13 @@ export const LandingPage = ({ onEnter, onNavigate, user, onLogin, hideUI = false
                     className="mb-8"
                 >
                     <span className="inline-block px-4 py-1 mb-4 rounded-full bg-white/5 border border-white/10 text-purple-200 text-sm font-bold tracking-widest uppercase backdrop-blur-md">
-                        Nová generace vyprávění příběhů
+                        {t('landing.hero.badge')}
                     </span>
                     <h1 className="font-title text-5xl md:text-8xl lg:text-9xl mb-2 bg-clip-text text-transparent bg-gradient-to-br from-white via-purple-100 to-purple-400 drop-shadow-[0_0_30px_rgba(168,85,247,0.5)]">
                         Skywhale.
                     </h1>
                     <p className="font-serif italic text-xl md:text-2xl text-purple-200/60 max-w-2xl mx-auto">
-                        "Kde příběhy ožívají jediným dotykem..."
+                        {t('landing.hero.subtitle')}
                     </p>
                     <div
                         className="mt-8 animate-bounce text-purple-300/50 text-sm font-bold uppercase tracking-widest pointer-events-auto cursor-pointer flex flex-col items-center gap-2"
@@ -209,7 +211,7 @@ export const LandingPage = ({ onEnter, onNavigate, user, onLogin, hideUI = false
                             window.scrollTo({ top: window.innerHeight, behavior: 'smooth' });
                         }}
                     >
-                        <span>Zjistit Více</span>
+                        <span>{t('landing.hero.learn_more')}</span>
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="opacity-50">
                             <path d="M7 13l5 5 5-5M7 6l5 5 5-5" />
                         </svg>
@@ -224,7 +226,7 @@ export const LandingPage = ({ onEnter, onNavigate, user, onLogin, hideUI = false
                     {loading ? (
                         <div className="flex justify-center items-center h-32 gap-4">
                             <Loader2 size={24} className="animate-spin text-purple-500" />
-                            <span className="text-purple-300 text-sm">Přivolávám knihy...</span>
+                            <span className="text-purple-300 text-sm">{t('landing.carousel.loading')}</span>
                         </div>
                     ) : (
                         <div className="flex w-max marquee-content animate-marquee gap-6">
@@ -268,7 +270,7 @@ export const LandingPage = ({ onEnter, onNavigate, user, onLogin, hideUI = false
             <div id="why-skywhale" className="relative z-10 w-full py-24 px-6 md:px-12 bg-[#050510] border-t border-white/5">
                 <div className="max-w-7xl mx-auto">
                     <h2 className="text-center font-title text-3xl md:text-5xl mb-16 text-white/80 drop-shadow-lg">
-                        Proč Skywhale.?
+                        {t('landing.usp.title')}
                     </h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                         {/* 1. VISUAL CONSISTENCY */}
@@ -283,9 +285,9 @@ export const LandingPage = ({ onEnter, onNavigate, user, onLogin, hideUI = false
                             <div className="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center mb-6 shadow-lg group-hover:scale-110 transition-transform">
                                 <Sparkles size={32} className="text-white" />
                             </div>
-                            <h3 className="text-2xl font-title font-bold mb-4 text-white group-hover:text-cyan-300 transition-colors">Vizuální Konzistence</h3>
+                            <h3 className="text-2xl font-title font-bold mb-4 text-white group-hover:text-cyan-300 transition-colors">{t('landing.usp.consistency_title')}</h3>
                             <p className="font-sans text-lg text-white/60 leading-relaxed">
-                                Unikátní technologie Identity™ zajistí, že hrdina vaší knihy bude vypadat stejně na první i poslední stránce.
+                                {t('landing.usp.consistency_desc')}
                             </p>
                         </motion.div>
 
@@ -301,9 +303,9 @@ export const LandingPage = ({ onEnter, onNavigate, user, onLogin, hideUI = false
                             <div className="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-fuchsia-600 to-purple-600 flex items-center justify-center mb-6 shadow-lg group-hover:scale-110 transition-transform">
                                 <Rocket size={32} className="text-white" />
                             </div>
-                            <h3 className="text-2xl font-title font-bold mb-4 text-white group-hover:text-fuchsia-300 transition-colors">Blesková Tvorba</h3>
+                            <h3 className="text-2xl font-title font-bold mb-4 text-white group-hover:text-fuchsia-300 transition-colors">{t('landing.usp.speed_title')}</h3>
                             <p className="font-sans text-lg text-white/60 leading-relaxed">
-                                Žádné zbytečné čekání. Od prvotního nápadu k plnohodnotné ilustrované knize během krátké chvíle.
+                                {t('landing.usp.speed_desc')}
                             </p>
                         </motion.div>
 
@@ -319,9 +321,9 @@ export const LandingPage = ({ onEnter, onNavigate, user, onLogin, hideUI = false
                             <div className="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-emerald-500 to-green-500 flex items-center justify-center mb-6 shadow-lg group-hover:scale-110 transition-transform">
                                 <Heart size={32} className="text-white" />
                             </div>
-                            <h3 className="text-2xl font-title font-bold mb-4 text-white group-hover:text-emerald-300 transition-colors">Bezpečný Přístav</h3>
+                            <h3 className="text-2xl font-title font-bold mb-4 text-white group-hover:text-emerald-300 transition-colors">{t('landing.usp.safety_title')}</h3>
                             <p className="font-sans text-lg text-white/60 leading-relaxed">
-                                Garantujeme 100% bezpečné prostředí pro děti. Každý příběh prochází naší etickou AI ochranou.
+                                {t('landing.usp.safety_desc')}
                             </p>
                         </motion.div>
 
@@ -337,9 +339,9 @@ export const LandingPage = ({ onEnter, onNavigate, user, onLogin, hideUI = false
                             <div className="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center mb-6 shadow-lg group-hover:scale-110 transition-transform">
                                 <Globe size={32} className="text-white" />
                             </div>
-                            <h3 className="text-2xl font-title font-bold mb-4 text-white group-hover:text-amber-300 transition-colors">První Svého Druhu</h3>
+                            <h3 className="text-2xl font-title font-bold mb-4 text-white group-hover:text-amber-300 transition-colors">{t('landing.usp.first_kind_title')}</h3>
                             <p className="font-sans text-lg text-white/60 leading-relaxed">
-                                Jsme jediná platforma na světě spojující generování knih, filmů a audia do jednoho rodinného studia.
+                                {t('landing.usp.first_kind_desc')}
                             </p>
                         </motion.div>
 
@@ -355,9 +357,9 @@ export const LandingPage = ({ onEnter, onNavigate, user, onLogin, hideUI = false
                             <div className="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-500 flex items-center justify-center mb-6 shadow-lg group-hover:scale-110 transition-transform">
                                 <GraduationCap size={32} className="text-white" />
                             </div>
-                            <h3 className="text-2xl font-title font-bold mb-4 text-white group-hover:text-indigo-300 transition-colors">Vzdělávání Budoucnosti</h3>
+                            <h3 className="text-2xl font-title font-bold mb-4 text-white group-hover:text-indigo-300 transition-colors">{t('landing.usp.education_title')}</h3>
                             <p className="font-sans text-lg text-white/60 leading-relaxed">
-                                Rozvíjíme kreativitu a učíme děti komunikovat s technologií. Prompting je jazyk 21. století.
+                                {t('landing.usp.education_desc')}
                             </p>
                         </motion.div>
 
@@ -373,9 +375,9 @@ export const LandingPage = ({ onEnter, onNavigate, user, onLogin, hideUI = false
                             <div className="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-rose-500 to-pink-500 flex items-center justify-center mb-6 shadow-lg group-hover:scale-110 transition-transform">
                                 <BookOpen size={32} className="text-white" />
                             </div>
-                            <h3 className="text-2xl font-title font-bold mb-4 text-white group-hover:text-rose-300 transition-colors">Rodinné Dědictví</h3>
+                            <h3 className="text-2xl font-title font-bold mb-4 text-white group-hover:text-rose-300 transition-colors">{t('landing.usp.legacy_title')}</h3>
                             <p className="font-sans text-lg text-white/60 leading-relaxed">
-                                Tvořte příběhy, které zůstanou navždy. Od digitální podoby v cloudu až po možnost tisku fyzické knihy.
+                                {t('landing.usp.legacy_desc')}
                             </p>
                         </motion.div>
                     </div>
@@ -386,22 +388,29 @@ export const LandingPage = ({ onEnter, onNavigate, user, onLogin, hideUI = false
             <div id="about-us" className="relative z-10 w-full py-24 px-6 md:px-12 bg-[#050510] border-t border-white/5 bg-gradient-to-b from-transparent to-purple-900/5">
                 <div className="max-w-4xl mx-auto text-center">
                     <h2 className="font-title text-3xl md:text-5xl mb-8 text-white/90 drop-shadow-lg">
-                        Náš Příběh
+                        {t('landing.about.title')}
                     </h2>
-                    <p className="font-serif text-lg md:text-xl text-white/70 leading-relaxed mb-12">
-                        Dnešní děti vnímají svět skrze digitální okna. Místo zákazů jsme zvolili jinou cestu – <span className="text-purple-300 italic">dali jsme tomuto světu hlubší smysl.</span><br /><br />
-                        Skywhale. není jen aplikace, je to kreativní ateliér, který proměňuje pasivní čas u obrazovky v radost z tvoření. Spojujeme nejmodernější technologie s lidským citem, abychom vytvořili bezpečný prostor, kde se z malých konzumentů stávají velcí vypravěči.
-                        <br /><br />
-                        Do každého detailu dáváme srdce, protože věříme, že technologie mají sloužit snům, ne je nahrazovat.
-                    </p>
+                    <div className="font-serif text-lg md:text-xl text-white/70 leading-relaxed mb-12">
+                        <p className="mb-6">
+                            <Trans i18nKey="landing.about.text_p1">
+                                Dnešní děti vnímají svět skrze digitální okna. Místo zákazů jsme zvolili jinou cestu – <span className="text-purple-300 italic">dali jsme tomuto světu hlubší smysl.</span>
+                            </Trans>
+                        </p>
+                        <p className="mb-6">
+                            {t('landing.about.text_p2')}
+                        </p>
+                        <p>
+                            {t('landing.about.text_p3')}
+                        </p>
+                    </div>
                     <div className="flex justify-center gap-4">
                         <div className="px-6 py-3 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm">
                             <span className="block text-2xl font-bold text-white mb-1">1000+</span>
-                            <span className="text-xs uppercase tracking-widest text-white/40">Příběhů</span>
+                            <span className="text-xs uppercase tracking-widest text-white/40">{t('landing.about.stats_stories')}</span>
                         </div>
                         <div className="px-6 py-3 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm">
                             <span className="block text-2xl font-bold text-white mb-1">AI</span>
-                            <span className="text-xs uppercase tracking-widest text-white/40">Powered</span>
+                            <span className="text-xs uppercase tracking-widest text-white/40">{t('landing.about.stats_powered')}</span>
                         </div>
                     </div>
                 </div>
@@ -414,35 +423,35 @@ export const LandingPage = ({ onEnter, onNavigate, user, onLogin, hideUI = false
                         onClick={() => document.getElementById('about-us')?.scrollIntoView({ behavior: 'smooth' })}
                         className="hover:text-purple-400 transition-colors uppercase tracking-widest"
                     >
-                        O Nás
+                        {t('landing.nav.about')}
                     </button>
                     <button
                         onClick={() => onNavigate?.('terms')}
                         className="hover:text-purple-400 transition-colors uppercase tracking-widest"
                     >
-                        Podmínky služby
+                        {t('landing.footer.terms')}
                     </button>
                     <button
                         onClick={() => onNavigate?.('pricing')}
                         className="hover:text-purple-400 transition-colors uppercase tracking-widest"
                     >
-                        Ceník
+                        {t('landing.footer.pricing')}
                     </button>
                     <button
                         onClick={() => onNavigate?.('privacy')}
                         className="hover:text-purple-400 transition-colors uppercase tracking-widest"
                     >
-                        Ochrana soukromí
+                        {t('landing.footer.privacy')}
                     </button>
                     <a
                         href="mailto:support@skywhale.art"
                         className="hover:text-purple-400 transition-colors uppercase tracking-widest"
                     >
-                        Kontakt
+                        {t('landing.nav.contact')}
                     </a>
                 </div>
                 <div className="text-white/20 text-xs">
-                    &copy; {new Date().getFullYear()} Skywhale. Inc. All rights reserved.
+                    &copy; {new Date().getFullYear()} Skywhale. Inc. {t('landing.footer.rights')}
                 </div>
             </footer>
 

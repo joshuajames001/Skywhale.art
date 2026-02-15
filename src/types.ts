@@ -48,3 +48,29 @@ export interface StoryBook {
 
     pages: StoryPage[];
 }
+
+export interface UserProfile {
+    id: string;
+    nickname?: string;
+    username?: string;
+    avatar_emoji?: string;
+    energy_balance: number;
+    claim_streak?: number;
+    last_claim_date?: string;
+}
+
+export interface Achievement {
+    id: string;
+    title: string;
+    description: string;
+    icon: string;
+    xp: number;
+    unlockedAt?: string;
+}
+
+export interface CardProject {
+    id: string;
+    title: string;
+    pages: any[]; // Specific CardPage type can be defined later if needed
+    thumbnailBlob?: Blob;
+}

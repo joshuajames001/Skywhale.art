@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { Sparkles } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface StyleSelectorProps {
     selected: string;
@@ -7,22 +8,23 @@ interface StyleSelectorProps {
 }
 
 export const StyleSelector = ({ selected, onSelect }: StyleSelectorProps) => {
+    const { t } = useTranslation();
     const options = [
-        { id: 'watercolor', label: 'Akvarel', color: 'from-blue-200 to-purple-200' },
-        { id: 'pixar_3d', label: 'Pixar 3D', color: 'from-orange-200 to-yellow-200' },
-        { id: 'futuristic', label: 'Futuristický', color: 'from-cyan-400 to-blue-500 text-white' },
-        { id: 'sketch', label: 'Kresba', color: 'from-stone-200 to-stone-300' },
-        { id: 'ghibli_anime', label: 'Studio Ghibli', color: 'from-green-100 to-emerald-200' },
-        { id: 'cyberpunk', label: 'Cyberpunk', color: 'from-fuchsia-600 to-purple-900 text-white' },
-        { id: 'felted_wool', label: 'Plstěný', color: 'from-amber-100 to-orange-200' },
-        { id: 'paper_cutout', label: 'Vystřihovánka', color: 'from-red-100 to-rose-200' },
-        { id: 'claymation', label: 'Hliněný', color: 'from-amber-700 to-orange-800 text-white' },
-        { id: 'pop_art', label: 'Pop Art', color: 'from-yellow-400 to-red-500 text-white' },
-        { id: 'dark_oil', label: 'Temná malba', color: 'from-slate-800 to-black text-white' },
-        { id: 'vintage_parchment', label: 'Starý pergamen', color: 'from-orange-50/50 to-amber-100/50' },
-        { id: 'pixel_art', label: 'Pixel Art', color: 'from-green-400 to-blue-500 text-white' },
-        { id: 'frozen_crystal', label: 'Ledové království', color: 'from-cyan-100 to-blue-200' },
-        { id: 'happy_cloud', label: 'Veselý mráček', color: 'from-pink-200 via-orange-200 to-yellow-200' },
+        { id: 'watercolor', label: t('setup.styles.watercolor'), color: 'from-blue-200 to-purple-200' },
+        { id: 'pixar_3d', label: t('setup.styles.pixar_3d'), color: 'from-orange-200 to-yellow-200' },
+        { id: 'futuristic', label: t('setup.styles.futuristic'), color: 'from-cyan-400 to-blue-500 text-white' },
+        { id: 'sketch', label: t('setup.styles.sketch'), color: 'from-stone-200 to-stone-300' },
+        { id: 'ghibli_anime', label: t('setup.styles.ghibli_anime'), color: 'from-green-100 to-emerald-200' },
+        { id: 'cyberpunk', label: t('setup.styles.cyberpunk'), color: 'from-fuchsia-600 to-purple-900 text-white' },
+        { id: 'felted_wool', label: t('setup.styles.felted_wool'), color: 'from-amber-100 to-orange-200' },
+        { id: 'paper_cutout', label: t('setup.styles.paper_cutout'), color: 'from-red-100 to-rose-200' },
+        { id: 'claymation', label: t('setup.styles.claymation'), color: 'from-amber-700 to-orange-800 text-white' },
+        { id: 'pop_art', label: t('setup.styles.pop_art'), color: 'from-yellow-400 to-red-500 text-white' },
+        { id: 'dark_oil', label: t('setup.styles.dark_oil'), color: 'from-slate-800 to-black text-white' },
+        { id: 'vintage_parchment', label: t('setup.styles.vintage_parchment'), color: 'from-orange-50/50 to-amber-100/50' },
+        { id: 'pixel_art', label: t('setup.styles.pixel_art'), color: 'from-green-400 to-blue-500 text-white' },
+        { id: 'frozen_crystal', label: t('setup.styles.frozen_crystal'), color: 'from-cyan-100 to-blue-200' },
+        { id: 'happy_cloud', label: t('setup.styles.happy_cloud'), color: 'from-pink-200 via-orange-200 to-yellow-200' },
     ];
 
     return (

@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 // CORS hlavičky jsou nutné, aby tvoje webová aplikace mohla funkci volat přímo
 const corsHeaders = {
@@ -13,6 +14,22 @@ serve(async (req) => {
   }
 
   try {
+    // --- AUTHENTICATION CHECK ---
+    const authHeader = req.headers.get('Authorization')!;
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      { global: { headers: { Authorization: authHeader } } }
+    );
+
+    const {
+      data: { user },
+    } = await supabaseClient.auth.getUser();
+
+    if (!user) {
+      return new Response("Unauthorized", { status: 401, headers: corsHeaders });
+    }
+
     // 1. Přijetí dat z tvého webu (Reactu)
     const { prompt, image_prompt_url, seed } = await req.json();
 
@@ -23,7 +40,10 @@ serve(async (req) => {
       seed: seed ? Number(seed) : undefined,  // Fixní seed pro stabilitu postavy
       aspect_ratio: "16:9",
       guidance: 3.5,
-      output_format: "webp"
+      output_format: "webp",
+      extra_lora_scale: 0.8, // Optional fine-tuning
+      disable_safety_checker: true,
+      negative_prompt: "text, watermark, signature, letters, words, writing, label, title, sign, copyright, watermark, logo" 
     };
 
     // 3. Volání Replicate API

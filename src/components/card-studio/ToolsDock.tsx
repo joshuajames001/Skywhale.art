@@ -1,4 +1,6 @@
-import { Image, Layers, Type, Sparkles, Layout, X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Image, Layers, Type, Sparkles, Layout, X, ChevronLeft, ChevronRight, Languages, Book, Search, Loader2, Star } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { useGemini } from '../../hooks/useGemini';
 import { clsx } from 'clsx';
 import { motion, AnimatePresence, useDragControls } from 'framer-motion';
 import { useState } from 'react';
@@ -46,17 +48,51 @@ const FONTS = [
  * This ensures consistency between Mobile and Desktop as requested.
  */
 export const ToolsDock = ({ activeTool, onToolChange, onAddSticker, stickers, onGenerateAI, isGenerating, onAddText, onChangeBackground, textColor, textFont, onTextColorChange, onTextFontChange, onSelectTemplate }: ToolsDockProps) => {
-
+    const { t } = useTranslation();
     const [aiPrompt, setAiPrompt] = useState("");
     const [textInput, setTextInput] = useState("");
     const dragControls = useDragControls(); // Initialize controls
 
+    // --- AI & DICTIONARY LOGIC ---
+    const { searchDictionary, generateImagePrompt } = useGemini();
+    const [showDictionary, setShowDictionary] = useState(false);
+    const [dictionaryQuery, setDictionaryQuery] = useState('');
+    const [dictionaryResult, setDictionaryResult] = useState<any>(null);
+    const [isSearchingDict, setIsSearchingDict] = useState(false);
+    const [isTranslating, setIsTranslating] = useState(false);
+
+    const handleTranslate = async () => {
+        if (!aiPrompt.trim()) return;
+        setIsTranslating(true);
+        try {
+            const translated = await generateImagePrompt(aiPrompt);
+            if (translated) setAiPrompt(translated);
+        } catch (e) {
+            console.error("Translation failed", e);
+        } finally {
+            setIsTranslating(false);
+        }
+    };
+
+    const handleSearchDict = async () => {
+        if (!dictionaryQuery.trim()) return;
+        setIsSearchingDict(true);
+        try {
+            const result = await searchDictionary(dictionaryQuery);
+            setDictionaryResult(result);
+        } catch (e) {
+            console.error("Dictionary search failed", e);
+        } finally {
+            setIsSearchingDict(false);
+        }
+    };
+
     const tools = [
-        { id: 'templates' as const, icon: Layout, label: 'Šablony' },
-        { id: 'background' as const, icon: Image, label: 'Pozadí' },
-        { id: 'stickers' as const, icon: Layers, label: 'Nálepky' },
-        { id: 'text' as const, icon: Type, label: 'Text' },
-        { id: 'ai' as const, icon: Sparkles, label: 'AI Studio' },
+        { id: 'templates' as const, icon: Layout, label: t('tools.templates') },
+        { id: 'background' as const, icon: Image, label: t('tools.background') },
+        { id: 'stickers' as const, icon: Layers, label: t('tools.stickers') },
+        { id: 'text' as const, icon: Type, label: t('tools.text') },
+        { id: 'ai' as const, icon: Sparkles, label: t('tools.ai') },
     ];
 
     const handleGenerate = (mode: 'sticker' | 'background') => {
@@ -74,7 +110,7 @@ export const ToolsDock = ({ activeTool, onToolChange, onAddSticker, stickers, on
             <AnimatePresence>
                 {activeTool && (
                     <motion.div
-                        className="fixed bottom-[90px] left-0 right-0 md:left-auto md:right-auto md:w-[360px] md:bottom-28 md:shadow-2xl md:bg-slate-900/90 md:rounded-2xl z-[9998]"
+                        className="fixed bottom-[90px] left-0 right-0 md:left-16 md:top-0 md:bottom-0 md:my-auto md:h-[400px] md:w-[350px] md:shadow-2xl md:z-[9998]"
                         initial={{ y: '110%', opacity: 0 }}
                         animate={{ y: 0, opacity: 1 }}
                         exit={{ y: '110%', opacity: 0 }}
@@ -122,12 +158,13 @@ export const ToolsDock = ({ activeTool, onToolChange, onAddSticker, stickers, on
                                     setAiPrompt={setAiPrompt}
                                     handleGenerate={handleGenerate}
                                     isGenerating={isGenerating}
+                                    t={t}
                                 />
                             </div>
                         </div>
 
                         {/* Desktop Drawer Style (Floating Card) */}
-                        <div className="hidden md:flex flex-col bg-slate-900/95 backdrop-blur-xl border border-white/10 rounded-2xl h-[400px] shadow-2xl relative overflow-hidden">
+                        <div className="hidden md:flex flex-col bg-slate-900/95 backdrop-blur-xl border border-white/10 rounded-[2rem] h-[400px] shadow-2xl relative overflow-hidden">
                             <div className="p-4 border-b border-white/10 flex items-center justify-between">
                                 <h3 className="text-white font-bold text-lg flex items-center gap-2">
                                     {tools.find(t => t.id === activeTool)?.icon &&
@@ -136,7 +173,33 @@ export const ToolsDock = ({ activeTool, onToolChange, onAddSticker, stickers, on
                                             return <Icon size={20} className="text-indigo-400" />
                                         })()
                                     }
-                                    <span>{tools.find(t => t.id === activeTool)?.label}</span>
+                                    <span className="mr-2">{tools.find(t => t.id === activeTool)?.label}</span>
+
+                                    {/* --- REPOSITIONED BUTTONS (Header) --- */}
+                                    {activeTool === 'ai' && (
+                                        <div className="flex gap-1.5 animate-in fade-in slide-in-from-left-2">
+                                            <button
+                                                onClick={() => setShowDictionary(!showDictionary)}
+                                                className={clsx(
+                                                    "p-1 rounded-md border transition-all hover:scale-105 flex items-center gap-1 px-1.5",
+                                                    showDictionary ? "bg-amber-500 text-black border-amber-500 shadow-[0_0_15px_rgba(245,158,11,0.4)]" : "bg-white/5 text-amber-500 border-amber-500/30 hover:bg-white/10"
+                                                )}
+                                                title={t('ai_studio.dictionary_tooltip')}
+                                            >
+                                                <Book size={10} />
+                                                <span className="text-[8px] uppercase font-black tracking-widest hidden sm:inline">{t('ai_studio.dictionary')}</span>
+                                            </button>
+                                            <button
+                                                onClick={handleTranslate}
+                                                disabled={isTranslating || !aiPrompt}
+                                                className="p-1 bg-white/5 text-indigo-400 border border-indigo-500/30 rounded-md hover:scale-105 transition-all disabled:opacity-30 hover:bg-white/10 flex items-center gap-1 px-1.5"
+                                                title={t('ai_studio.translate_tooltip')}
+                                            >
+                                                {isTranslating ? <Loader2 size={10} className="animate-spin" /> : <Languages size={10} />}
+                                                <span className="text-[8px] uppercase font-black tracking-widest hidden sm:inline">{t('ai_studio.translate')}</span>
+                                            </button>
+                                        </div>
+                                    )}
                                 </h3>
                                 <button onClick={closeDrawer} className="p-2 hover:bg-white/10 rounded-full text-slate-400 hover:text-white transition-colors">
                                     <X size={20} />
@@ -160,8 +223,102 @@ export const ToolsDock = ({ activeTool, onToolChange, onAddSticker, stickers, on
                                     setAiPrompt={setAiPrompt}
                                     handleGenerate={handleGenerate}
                                     isGenerating={isGenerating}
+                                    // Translation & Dict Props
+                                    onTranslate={handleTranslate}
+                                    isTranslating={isTranslating}
+                                    onToggleDictionary={() => setShowDictionary(!showDictionary)}
+                                    showDictionary={showDictionary}
+                                    t={t}
                                 />
                             </div>
+
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* --- REPOSITIONED DICTIONARY (Right Side for Desktop, Full Overlay for Mobile) --- */}
+            <AnimatePresence>
+                {showDictionary && (
+                    <motion.div
+                        initial={{ opacity: 0, x: 50, y: "-50%" }}
+                        animate={{ opacity: 1, x: 0, y: "-50%" }}
+                        exit={{ opacity: 0, x: 50, y: "-50%" }}
+                        style={{ top: "50%" }}
+                        className="fixed right-4 md:right-16 w-[92vw] left-4 md:left-auto md:w-[350px] h-fit max-h-[80vh] bg-slate-900/95 backdrop-blur-2xl border border-white/10 rounded-3xl md:rounded-[2rem] shadow-2xl z-[10000] flex flex-col overflow-hidden"
+                    >
+                        <div className="p-5 border-b border-amber-500/20 bg-amber-500/5 flex items-center justify-between shrink-0">
+                            <div className="flex items-center gap-3 text-amber-500">
+                                <div className="p-2 bg-amber-500/10 rounded-xl">
+                                    <Book size={18} />
+                                </div>
+                                <div>
+                                    <h3 className="font-bold text-base leading-none">{t('dictionary.title')}</h3>
+                                    <p className="text-[9px] text-amber-500/50 uppercase tracking-widest mt-1">{t('dictionary.subtitle')}</p>
+                                </div>
+                            </div>
+                            <button onClick={() => setShowDictionary(false)} className="p-2 hover:bg-white/10 rounded-full text-slate-400 transition-colors">
+                                <X size={20} />
+                            </button>
+                        </div>
+
+                        <div className="p-5 overflow-y-auto custom-scrollbar flex flex-col gap-5">
+                            <div className="relative">
+                                <input
+                                    type="text"
+                                    placeholder={t('dictionary.search_placeholder')}
+                                    value={dictionaryQuery}
+                                    onChange={(e) => setDictionaryQuery(e.target.value)}
+                                    onKeyDown={(e) => e.key === 'Enter' && handleSearchDict()}
+                                    className="w-full bg-white/5 border border-white/10 rounded-2xl p-3.5 pl-11 text-white text-sm outline-none focus:border-amber-500/50 focus:ring-4 focus:ring-amber-500/10 transition-all placeholder:text-slate-600"
+                                />
+                                <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" />
+                            </div>
+
+                            {isSearchingDict ? (
+                                <div className="flex flex-col items-center justify-center py-10 gap-4 opacity-50">
+                                    <div className="relative">
+                                        <Loader2 size={32} className="animate-spin text-amber-500" />
+                                        <Sparkles size={12} className="absolute -top-1 -right-1 text-amber-300 animate-pulse" />
+                                    </div>
+                                    <span className="text-xs font-medium text-slate-400">{t('dictionary.searching_hint')}</span>
+                                </div>
+                            ) : dictionaryResult ? (
+                                <div className="space-y-5 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                                    <div className="bg-white/5 p-6 rounded-3xl border border-white/5 text-center relative overflow-hidden group">
+                                        <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                                        <div className="text-6xl mb-3 transition-transform group-hover:scale-110 duration-500 drop-shadow-2xl">{dictionaryResult.emoji}</div>
+                                        <div className="text-2xl font-black text-white uppercase tracking-tighter">{dictionaryResult.primary_en}</div>
+                                        <div className="text-[10px] text-slate-500 italic mt-2 font-serif">"{dictionaryQuery}"</div>
+                                    </div>
+
+                                    {dictionaryResult.synonyms?.length > 0 && (
+                                        <div className="space-y-2.5">
+                                            <div className="text-[9px] uppercase font-bold text-slate-500 tracking-[0.2em] flex items-center gap-2">
+                                                <Sparkles size={10} className="text-amber-500" /> {t('dictionary.synonyms')}
+                                            </div>
+                                            <div className="flex flex-wrap gap-2">
+                                                {dictionaryResult.synonyms.map((s: string) => (
+                                                    <button
+                                                        key={s}
+                                                        onClick={() => setAiPrompt(prev => prev ? `${prev}, ${s}` : s)}
+                                                        className="px-3 py-1.5 bg-white/5 border border-white/10 rounded-xl text-xs text-slate-300 hover:border-amber-500/50 hover:text-amber-400 hover:bg-amber-500/5 transition-all shadow-sm active:scale-95"
+                                                    >
+                                                        {s}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            ) : (
+                                <div className="flex flex-col items-center justify-center py-10 opacity-30 text-center px-4 gap-4">
+                                    <div className="w-16 h-16 bg-white/5 rounded-[1.5rem] flex items-center justify-center">
+                                        <Book size={32} />
+                                    </div>
+                                    <p className="text-xs leading-relaxed">{t('dictionary.help_text')}</p>
+                                </div>
+                            )}
                         </div>
                     </motion.div>
                 )}
@@ -214,7 +371,7 @@ export const ToolsDock = ({ activeTool, onToolChange, onAddSticker, stickers, on
 // --- Sub-component to render content ---
 // (Unchanged logic, just re-used for consistency)
 const ContentRenderer = (props: any) => {
-    const { activeTool, onSelectTemplate, onChangeBackground, onAddSticker, stickers, textInput, setTextInput, onAddText, textFont, onTextFontChange, textColor, onTextColorChange, aiPrompt, setAiPrompt, handleGenerate, isGenerating } = props;
+    const { activeTool, onSelectTemplate, onChangeBackground, onAddSticker, stickers, textInput, setTextInput, onAddText, textFont, onTextFontChange, textColor, onTextColorChange, aiPrompt, setAiPrompt, handleGenerate, isGenerating, onTranslate, isTranslating, onToggleDictionary, showDictionary, t } = props;
 
     switch (activeTool) {
         case 'templates':
@@ -242,7 +399,7 @@ const ContentRenderer = (props: any) => {
                 <div className="flex flex-col gap-6 pb-8">
                     {Object.entries(
                         BACKGROUND_TEXTURES.reduce((acc: any, bg: any) => {
-                            const cat = bg.category || 'Ostatní';
+                            const cat = bg.category || t('tools.category_other');
                             if (!acc[cat]) acc[cat] = [];
                             acc[cat].push(bg);
                             return acc;
@@ -268,7 +425,7 @@ const ContentRenderer = (props: any) => {
                         </div>
                     ))}
                     <button onClick={() => onChangeBackground("#000000")} className="py-3 rounded-lg border border-white/10 bg-black text-xs text-white">
-                        Reset (Černá)
+                        {t('tools.reset_black')}
                     </button>
                 </div>
             );
@@ -295,7 +452,7 @@ const ContentRenderer = (props: any) => {
                 <div className="flex flex-col gap-4 pb-8">
                     {/* Font Selector */}
                     <div>
-                        <h3 className="text-white/80 text-xs font-bold uppercase mb-2">Písmo</h3>
+                        <h3 className="text-white/80 text-xs font-bold uppercase mb-2">{t('tools.font')}</h3>
                         <div className="grid grid-cols-2 gap-2">
                             {FONTS.map(f => (
                                 <button
@@ -315,7 +472,7 @@ const ContentRenderer = (props: any) => {
 
                     {/* Color Selector */}
                     <div>
-                        <h3 className="text-white/80 text-xs font-bold uppercase mb-2">Barva</h3>
+                        <h3 className="text-white/80 text-xs font-bold uppercase mb-2">{t('tools.color')}</h3>
                         <div className="flex gap-2 flex-wrap">
                             {COLORS.map(c => (
                                 <button
@@ -334,7 +491,7 @@ const ContentRenderer = (props: any) => {
                     <textarea
                         value={textInput}
                         onChange={(e) => setTextInput(e.target.value)}
-                        placeholder="Napiš přání..."
+                        placeholder={t('tools.text_placeholder')}
                         className="w-full h-24 bg-black/40 border border-white/10 rounded-lg p-3 text-white focus:ring-1 focus:ring-indigo-500 outline-none resize-none"
                         style={{ fontFamily: textFont, color: textColor === '#000000' && textInput ? 'white' : textColor }}
                     />
@@ -343,28 +500,32 @@ const ContentRenderer = (props: any) => {
                         disabled={!textInput.trim()}
                         className="w-full py-3 bg-indigo-600 rounded-xl text-white font-bold text-sm shadow-lg disabled:opacity-50"
                     >
-                        <Type size={14} className="inline mr-2" /> Vložit
+                        <Type size={14} className="inline mr-2" /> {t('tools.insert')}
                     </button>
                 </div>
             );
 
         case 'ai':
             return (
-                <div className="flex flex-col gap-4 pb-8">
-                    <textarea
-                        value={aiPrompt}
-                        onChange={(e) => setAiPrompt(e.target.value)}
-                        placeholder="Popiš, co chceš vytvořit..."
-                        className="w-full h-24 bg-black/40 border border-white/10 rounded-lg p-3 text-sm text-white focus:ring-1 focus:ring-indigo-500 outline-none resize-none"
-                    />
+                <div className="flex flex-col gap-4 pb-8 relative">
+                    <div className="relative">
+                        <textarea
+                            value={aiPrompt}
+                            onChange={(e) => setAiPrompt(e.target.value)}
+                            placeholder={t('tools.ai_placeholder')}
+                            className="w-full h-24 bg-black/40 border border-white/10 rounded-lg p-3 text-sm text-white focus:ring-1 focus:ring-indigo-500 outline-none resize-none"
+                        />
+                    </div>
+
                     <div className="flex flex-col gap-2">
                         <button
                             onClick={() => handleGenerate('sticker')}
                             disabled={isGenerating || !aiPrompt}
-                            className="py-3 bg-indigo-600 rounded-xl text-white font-bold text-sm shadow-lg flex items-center justify-center gap-2"
+                            className="py-3 bg-indigo-600 rounded-xl text-white font-bold text-sm shadow-lg flex items-center justify-center gap-2 group overflow-hidden relative"
                         >
+                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
                             {isGenerating ? <Sparkles size={16} className="animate-spin" /> : <Layers size={16} />}
-                            Nálepka
+                            {t('tools.create_sticker')}
                         </button>
                         <button
                             onClick={() => handleGenerate('background')}
@@ -372,7 +533,7 @@ const ContentRenderer = (props: any) => {
                             className="py-3 bg-slate-700 rounded-xl text-white font-bold text-sm shadow-lg flex items-center justify-center gap-2"
                         >
                             {isGenerating ? <Sparkles size={16} className="animate-spin" /> : <Image size={16} />}
-                            Pozadí
+                            {t('tools.create_background')}
                         </button>
                     </div>
                 </div>

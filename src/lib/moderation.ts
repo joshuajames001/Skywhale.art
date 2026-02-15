@@ -25,6 +25,7 @@ export interface ModerationResult {
  * @returns Promise<ModerationResult>
  */
 import { invokeEdgeFunction } from './edge-functions';
+import i18n from './i18n';
 
 /**
  * Check if text content is appropriate for children
@@ -55,7 +56,7 @@ export async function moderateContent(text: string): Promise<ModerationResult> {
             return {
                 flagged: true,
                 categories: result.categories,
-                reason: `Nevhodný obsah detekován: ${flaggedCategories.join(', ')}`
+                reason: i18n.t('common.errors.moderation_flagged', { categories: flaggedCategories.join(', ') })
             };
         }
 
@@ -79,7 +80,7 @@ export async function moderateContent(text: string): Promise<ModerationResult> {
                 'violence/graphic': false,
                 violence: false,
             },
-            reason: 'Nepodařilo se ověřit bezpečnost obsahu'
+            reason: i18n.t('common.errors.moderation_failed')
         };
     }
 }
@@ -91,6 +92,6 @@ export async function assertContentSafe(text: string): Promise<void> {
     const result = await moderateContent(text);
     
     if (result.flagged) {
-        throw new Error(result.reason || 'Obsah není vhodný pro děti');
+        throw new Error(result.reason || i18n.t('common.errors.moderation_generic'));
     }
 }

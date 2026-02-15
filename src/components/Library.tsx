@@ -10,6 +10,7 @@ import { PublicProfile } from './profile/PublicProfile';
 import { AudioConfirmDialog } from './audio/AudioConfirmDialog';
 import { useEnergy } from '../hooks/useEnergy';
 import { useGuide } from '../hooks/useGuide';
+import { useTranslation } from 'react-i18next';
 
 
 interface LibraryProps {
@@ -20,6 +21,7 @@ interface LibraryProps {
 }
 
 export const Library = ({ onOpenBook, onOpenMagic, onCreateCustom, onCreateCard }: LibraryProps) => {
+    const { t } = useTranslation();
     const [books, setBooks] = useState<StoryBook[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -231,7 +233,7 @@ export const Library = ({ onOpenBook, onOpenMagic, onCreateCustom, onCreateCard 
 
             } catch (err: any) {
                 console.error("Error fetching library:", err);
-                setError("Nepodařilo se načíst knihovnu.");
+                setError(t('library.errors.load_failed'));
             } finally {
                 setLoading(false);
             }
@@ -333,14 +335,14 @@ export const Library = ({ onOpenBook, onOpenMagic, onCreateCustom, onCreateCard 
 
         const fullText = audioDialog.book.pages?.map(p => p.text || '').join(' ') || '';
         if (!fullText) {
-            alert("Kniha neobsahuje žádný text!");
+            alert(t('library.errors.no_text'));
             setAudioDialog(prev => ({ ...prev, loading: false }));
             return;
         }
 
         const { data: { session } } = await supabase.auth.getSession();
         if (!session) {
-            alert("Nejsi přihlášený!");
+            alert(t('library.errors.not_logged_in'));
             setAudioDialog(prev => ({ ...prev, loading: false }));
             return;
         }
@@ -357,7 +359,7 @@ export const Library = ({ onOpenBook, onOpenMagic, onCreateCustom, onCreateCard 
 
         if (error || (data && data.error)) {
             console.error("Audio generation error:", error || data?.error);
-            alert("Chyba: " + (data?.error || error?.message || "Neznámá chyba"));
+            alert(t('common.error_retry') + ": " + (data?.error || error?.message || t('common.unknown_error')));
             setAudioDialog(prev => ({ ...prev, loading: false }));
             return;
         }
@@ -417,16 +419,16 @@ export const Library = ({ onOpenBook, onOpenMagic, onCreateCustom, onCreateCard 
                 <header className="flex flex-col md:flex-row items-center justify-between mb-16 gap-8">
                     <div className="text-center md:text-left">
                         <h1 className={`text-5xl md:text-6xl font-black mb-2 tracking-tight transition-colors duration-700 ${activeTheme ? 'text-white drop-shadow-lg' : 'text-slate-800'}`} style={{ fontFamily: 'Fredoka, sans-serif' }}>
-                            {activeTab === 'public' && 'Veřejná Knihovna'}
-                            {activeTab === 'private' && 'Moje Polička'}
-                            {activeTab === 'favorites' && 'Oblíbené Příběhy'}
-                            {activeTab === 'cards' && 'Moje Přáníčka'}
+                            {activeTab === 'public' && t('library.title_public')}
+                            {activeTab === 'private' && t('library.title_private')}
+                            {activeTab === 'favorites' && t('library.title_favorites')}
+                            {activeTab === 'cards' && t('library.title_cards')}
                         </h1>
                         <p className={`text-lg font-medium transition-colors duration-700 ${activeTheme ? 'text-white/80' : 'text-slate-500'}`} style={{ fontFamily: 'Quicksand, sans-serif' }}>
-                            {activeTab === 'public' && 'Objevujte příběhy ostatních tvůrců'}
-                            {activeTab === 'private' && 'Vaše soukromá sbírka magických knih'}
-                            {activeTab === 'favorites' && 'Příběhy, které vás chytily za srdce'}
-                            {activeTab === 'cards' && 'Vaše vytvořená přáníčka a pohlednice'}
+                            {activeTab === 'public' && t('library.subtitle_public')}
+                            {activeTab === 'private' && t('library.subtitle_private')}
+                            {activeTab === 'favorites' && t('library.subtitle_favorites')}
+                            {activeTab === 'cards' && t('library.subtitle_cards')}
                         </p>
 
                         {/* GUIDE RESTART BUTTON */}
@@ -435,7 +437,7 @@ export const Library = ({ onOpenBook, onOpenMagic, onCreateCustom, onCreateCard 
                             className="mt-2 text-xs font-bold text-slate-400 hover:text-sky-400 transition-colors flex items-center gap-1 opacity-60 hover:opacity-100"
                         >
                             <span className="w-4 h-4 rounded-full border border-current flex items-center justify-center text-[10px]">?</span>
-                            Spustit průvodce
+                            {t('library.guide.start')}
                         </button>
 
                         {/* TAB SWITCHER */}
@@ -446,7 +448,7 @@ export const Library = ({ onOpenBook, onOpenMagic, onCreateCustom, onCreateCard 
                                     ? 'bg-white text-slate-900 shadow-lg'
                                     : 'text-slate-500 hover:text-slate-800 hover:bg-white/50'}`}
                             >
-                                🌍 Veřejná
+                                🌍 {t('library.tabs.public')}
                             </button>
                             <button
                                 onClick={() => setActiveTab('favorites')}
@@ -454,7 +456,7 @@ export const Library = ({ onOpenBook, onOpenMagic, onCreateCustom, onCreateCard 
                                     ? 'bg-gradient-to-r from-rose-500 to-pink-500 text-white shadow-lg shadow-rose-500/30'
                                     : 'text-slate-500 hover:text-slate-800 hover:bg-white/50'}`}
                             >
-                                ❤️ Oblíbené
+                                ❤️ {t('library.tabs.favorites')}
                             </button>
                             <button
                                 onClick={() => setActiveTab('private')}
@@ -462,7 +464,7 @@ export const Library = ({ onOpenBook, onOpenMagic, onCreateCustom, onCreateCard 
                                     ? 'bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white shadow-lg shadow-violet-500/30'
                                     : 'text-slate-500 hover:text-slate-800 hover:bg-white/50'}`}
                             >
-                                👤 Moje
+                                👤 {t('library.tabs.private')}
                             </button>
                             <button
                                 onClick={() => setActiveTab('cards')}
@@ -470,7 +472,7 @@ export const Library = ({ onOpenBook, onOpenMagic, onCreateCustom, onCreateCard 
                                     ? 'bg-gradient-to-r from-amber-400 to-orange-500 text-white shadow-lg shadow-amber-500/30'
                                     : 'text-slate-500 hover:text-slate-800 hover:bg-white/50'}`}
                             >
-                                💌 Přáníčka
+                                💌 {t('library.tabs.cards')}
                             </button>
                         </div>
                     </div>
@@ -479,7 +481,7 @@ export const Library = ({ onOpenBook, onOpenMagic, onCreateCustom, onCreateCard 
                         {/* Use same "Deep Clean" button here... omitted for brevity if unchanged */}
                         <button
                             onClick={async () => {
-                                const confirmMsg = '⚠️ VAROVÁNÍ: Tato akce smaže VŠECHNY knihy, které nemají trvale uloženou obálku v Supabase.\n\nTo zahrnuje:\n- Prázdné obálky\n- Dočasné odkazy z Replicate (expirované)\n- Jakékoli externí URL\n\nOpravdu pokračovat?';
+                                const confirmMsg = t('library.cleanup.warning');
                                 if (confirm(confirmMsg)) {
                                     // ... existing cleanup logic ...
                                     const { data: candidates, error: fetchError } = await supabase
@@ -499,11 +501,11 @@ export const Library = ({ onOpenBook, onOpenMagic, onCreateCustom, onCreateCard 
                                     });
 
                                     if (brokenBooks.length === 0) {
-                                        alert("✨ Čisto! Všechny knihy jsou bezpečně uloženy v Supabase.");
+                                        alert(t('library.cleanup.success'));
                                         return;
                                     }
 
-                                    const msg = `Nalezeno ${brokenBooks.length} knih k promazání.\n(Tyto knihy nemají trvalý obrázek).\n\nSmazat je navždy?`;
+                                    const msg = t('library.cleanup.candidates', { count: brokenBooks.length });
                                     if (!confirm(msg)) return;
 
                                     const idsToDelete = brokenBooks.map(b => b.id);
@@ -513,16 +515,16 @@ export const Library = ({ onOpenBook, onOpenMagic, onCreateCustom, onCreateCard 
                                         .in('id', idsToDelete);
 
                                     if (deleteError) {
-                                        alert('Chyba při mazání: ' + deleteError.message);
+                                        alert(t('common.error_retry') + ": " + deleteError.message);
                                     } else {
-                                        alert(`🗑️ Úspěšně smazáno ${idsToDelete.length} knih.`);
+                                        alert(t('library.cleanup.delete_success', { count: idsToDelete.length }));
                                         window.location.reload();
                                     }
                                 }
                             }}
                             className="text-slate-400 hover:text-red-400 font-medium transition-colors text-sm px-4"
                         >
-                            🛠️ Hloubkové čištění
+                            {t('library.actions.deep_clean')}
                         </button>
 
 
@@ -539,7 +541,7 @@ export const Library = ({ onOpenBook, onOpenMagic, onCreateCustom, onCreateCard 
                                 <Plus size={20} className="stroke-[3px] text-white" />
                             </div>
                             <span className="tracking-wide">
-                                {activeTab === 'cards' ? 'Vytvořit Přáníčko' : 'Vytvořit Vlastní Knihu'}
+                                {activeTab === 'cards' ? t('library.actions.create_card') : t('library.actions.create_book')}
                             </span>
                         </button>
 
@@ -550,9 +552,9 @@ export const Library = ({ onOpenBook, onOpenMagic, onCreateCustom, onCreateCard 
                         >
                             <div className="absolute inset-0 bg-gradient-to-r from-sky-500/10 to-blue-600/10 opacity-0 group-hover:opacity-100 transition-opacity" />
                             <Sparkles size={18} className="text-sky-400 group-hover:text-white transition-colors" />
-                            <span className="tracking-wide text-sm">Zkusit Magický Příběh</span>
+                            <span className="tracking-wide text-sm">{t('library.actions.magic_story')}</span>
                             <span className="ml-2 text-[10px] bg-sky-500 text-white px-1.5 py-0.5 rounded-full uppercase tracking-wider font-bold shadow-lg shadow-sky-500/40 animate-pulse">
-                                NOVINKA
+                                {t('nav.badge_new')}
                             </span>
                         </button>
 
@@ -575,7 +577,7 @@ export const Library = ({ onOpenBook, onOpenMagic, onCreateCustom, onCreateCard 
                     <div className="flex flex-col items-center justify-center h-64 text-red-400 gap-4 bg-red-500/10 rounded-[32px] border border-red-500/20 backdrop-blur-md">
                         <AlertCircle size={48} />
                         <p className="font-bold">{error}</p>
-                        <button onClick={() => window.location.reload()} className="underline hover:text-red-300">Zkusit znovu</button>
+                        <button onClick={() => window.location.reload()} className="underline hover:text-red-300">{t('common.error_retry')}</button>
                     </div>
                 ) : books.length === 0 ? (
                     /* Empty State */
@@ -588,16 +590,16 @@ export const Library = ({ onOpenBook, onOpenMagic, onCreateCustom, onCreateCard 
                             <Sparkles size={64} className="text-violet-400" />
                         </div>
                         <h3 className="text-3xl font-black text-white mb-4" style={{ fontFamily: 'Fredoka, sans-serif' }}>
-                            Tvoje police zeje prázdnotou!
+                            {t('library.empty.title')}
                         </h3>
                         <p className="text-slate-400 text-xl max-w-md mb-8 leading-relaxed" style={{ fontFamily: 'Quicksand, sans-serif' }}>
-                            Pojďme společně vyčarovat tvůj první příběh. Stačí jeden klik a magie začne.
+                            {t('library.empty.subtitle')}
                         </p>
                         <button
                             onClick={activeTab === 'cards' && onCreateCard ? onCreateCard : onCreateCustom}
                             className="bg-white border-2 border-transparent hover:border-violet-500 text-violet-900 px-8 py-3 rounded-full font-bold transition-all shadow-lg animate-pulse"
                         >
-                            {activeTab === 'cards' ? 'Vytvořit první přáníčko' : 'Začít psát'}
+                            {activeTab === 'cards' ? t('library.empty.create_card') : t('library.empty.start_writing')}
                         </button>
                     </motion.div>
                 ) : (
@@ -631,7 +633,7 @@ export const Library = ({ onOpenBook, onOpenMagic, onCreateCustom, onCreateCard 
                                     onClick={() => setVisibleCount(prev => prev + 20)}
                                     className="px-8 py-3 bg-white/10 hover:bg-white/20 text-white rounded-full font-bold backdrop-blur-md transition-all border border-white/10 hover:border-white/30"
                                 >
-                                    Načíst další ({Math.min(20, books.length - visibleCount)})
+                                    {t('library.actions.load_more', { count: Math.min(20, books.length - visibleCount) })}
                                 </button>
                             </div>
                         )}
