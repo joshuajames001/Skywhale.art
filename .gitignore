@@ -139,3 +139,7 @@ MASTER_BLUEPRINT.md
 
 # External Skills
 external-skills/
+
+# Build and Public
+dist/
+public/
