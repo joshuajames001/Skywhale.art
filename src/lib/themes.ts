@@ -5,10 +5,10 @@ export interface ThemePalette {
     accentColor: string; // Hex for UI elements
     glowColor: string; // Hex for Magic Glow
     nebulaColors: {
-        aurora1: string; // Tailwind class
-        aurora2: string; // Tailwind class
-        dust: string; // Tailwind class
-    };
+        aurora1: string;
+        aurora2: string;
+        dust: string;
+    }
     variant: 'nebula' | 'aurora' | 'clean' | 'digital';
 }
 

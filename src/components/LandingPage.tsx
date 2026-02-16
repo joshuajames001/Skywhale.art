@@ -160,7 +160,7 @@ export const LandingPage = ({ onEnter, onNavigate, user, onLogin, hideUI = false
                 {/* RETURN TO PORTAL BUTTON - Hidden if hideUI is true */}
                 {!hideUI && (
                     <button
-                        onClick={() => onNavigate?.('cinematic')}
+                        onClick={() => onNavigate?.('intro')}
                         className="fixed bottom-6 left-6 z-50 pointer-events-auto px-4 py-2 bg-white/5 backdrop-blur-md text-white/50 hover:text-white text-xs font-bold rounded-full border border-white/10 hover:bg-white/10 transition-all flex items-center gap-2 group"
                     >
                         <Sparkles size={14} className="group-hover:rotate-12 transition-transform" />

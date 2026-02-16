@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client'
 import App from './App.tsx'
 import './index.css'
 import i18n from './lib/i18n'
+import { BrowserRouter } from 'react-router-dom'
 
 // Global Safety Checks
 if (window.location.hash.includes('error=')) {
@@ -43,7 +44,9 @@ class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { has
 ReactDOM.createRoot(document.getElementById('root')!).render(
     <React.StrictMode>
         <ErrorBoundary>
-            <App />
+            <BrowserRouter>
+                <App />
+            </BrowserRouter>
         </ErrorBoundary>
     </React.StrictMode>,
 )

@@ -43,7 +43,7 @@ export const PrivacyPolicy = ({ onBack }: { onBack: () => void }) => {
                     <ul className="list-disc pl-5 space-y-2">
                         <li><strong>Supabase:</strong> Hosting databáze a autentizace uživatelů.</li>
                         <li><strong>Stripe:</strong> Zpracování plateb.</li>
-                        <li><strong>Replicate / OpenAI / Black Forest Labs:</strong> Poskytovatelé AI modelů. Těmto službám jsou předávány pouze textové prompty pro generování, nikoliv vaše osobní identifikační údaje.</li>
+                        <li><strong>Replicate / OpenAI / Black Forest Labs:</strong> Poskytovatelé AI modelů. Těmto službám jsou předávány textové prompty a v případě funkce "Magic Mirror" dočasně i vaše nahraná fotografie jako vizuální předloha. Data jsou po vygenerování odstraněna.</li>
                     </ul>
                     <p>Všechna data jsou uložena na zabezpečených serverech a přenášena šifrovaným spojením (SSL/TLS).</p>
 

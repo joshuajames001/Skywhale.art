@@ -15,10 +15,12 @@ export interface GenerateImageParams {
     styleReference?: string | null;
     styleReferences?: string[]; // MULTI-REFERENCE
     artPrompt?: string;
-    tier?: 'basic' | 'premium';
+    tier?: 'basic' | 'premium' | 'pro';
     seed?: number | null; // Fallback for specific override
     baseSeed?: number;    // Flux 2.0: Kinetic Seeding Base
     pageIndex?: number;   // Flux 2.0: Kinetic Seeding Vector
+    steps?: number;       // Flux 2.0: Inference Steps (Target: 28 for Dev)
+    aspectRatio?: string;
 }
 
 export interface ImageGenerationResult {
@@ -147,7 +149,12 @@ export const generateImage = async (params: GenerateImageParams): Promise<ImageG
         }
         finalPrompt = JSON.stringify(jsonPayload);
     } else {
-        finalPrompt = `${styleInstruction}. ${safePrompt}. The character is: ${subjectAnchor}`.trim();
+        // DEFENSIVE: Ensure we have a scene description
+        const scene = safePrompt || "A detailed cinematic shot of the character in action";
+        // REMOVE "Reference Sheet" contamination if present in description
+        const cleanAnchor = subjectAnchor.replace(/Create a technical reference sheet/gi, "Character").replace(/Reference Sheet/gi, "Character");
+        
+        finalPrompt = `${styleInstruction}. ${scene}. The character is: ${cleanAnchor}`.trim();
     }
 
     let kineticSeed = seed;
@@ -160,7 +167,8 @@ export const generateImage = async (params: GenerateImageParams): Promise<ImageG
 
         const body: Record<string, any> = {
             seed: kineticSeed || undefined,
-            model: tier === 'basic' ? 'dev' : 'pro'
+            model: tier === 'basic' ? 'dev' : 'pro',
+            num_inference_steps: params.steps || undefined // Pass explicit steps if provided
         };
 
         if (finalPrompt) body.prompt = finalPrompt;

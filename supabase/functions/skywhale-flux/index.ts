@@ -37,8 +37,14 @@ serve(async (req) => {
     console.log(`🎨 Skywhale Flux Request. Mode: ${mode}, User: ${user_id}, Ref: ${image_prompt ? 'YES' : 'NO'}`);
 
     // Select Model & Param Tuning
+    // Select Model & Param Tuning
     // STICKER ENGINE UPDATE: Using FLUX 1 DEV for economy/speed (Sufficient for stickers)
-    const MODEL_VERSION = "black-forest-labs/flux-dev"; 
+    let MODEL_VERSION = "black-forest-labs/flux-dev";
+    
+    // Support for SCHNELL (Turbo Mode)
+    if (body.model === 'schnell') {
+        MODEL_VERSION = "black-forest-labs/flux-schnell";
+    }
     // Schnell is faster/cheaper for interactive sticker use. Pro/Dev for quality.
     
     let modifiedPrompt = prompt;

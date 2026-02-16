@@ -393,6 +393,42 @@ serve(async (req) => {
         return new Response(JSON.stringify({ choices: [{ message: { content: JSON.stringify(result) } }] }), { headers: corsHeaders });
     }
 
+    if (action === 'moderate-text') {
+        const { text } = payload;
+        
+        const systemPrompt = `You are a Content Safety Moderator. Analyze the following text for violation of safety policies (Sexual, Hate, Harassment, Self-Harm, Violence). 
+        Return a JSON object matching this EXACT structure:
+        {
+            "results": [
+                {
+                    "flagged": boolean,
+                    "categories": {
+                        "sexual": boolean,
+                        "hate": boolean,
+                        "harassment": boolean,
+                        "self-harm": boolean,
+                        "sexual/minors": boolean,
+                        "hate/threatening": boolean,
+                        "violence/graphic": boolean,
+                        "violence": boolean
+                    }
+                }
+            ]
+        }
+        
+        Strictness: HIGH for sexual/hate/self-harm. MEDIUM for violence (fantasy violence is allowed if not graphic).`;
+
+        const result = await callGemini(
+            [{ role: "user", content: `Analyze this text for safety: "${text}"` }],
+            systemPrompt,
+            true,
+            apiKey!,
+            "gemini-2.0-flash"
+        );
+
+        return new Response(JSON.stringify(result), { headers: corsHeaders });
+    }
+
     if (action === 'extract-visual-dna') {
         const { imageUrl } = payload;
         

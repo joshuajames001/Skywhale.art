@@ -27,6 +27,7 @@
     "react-dom": "^18.2.0",
     "react-i18next": "^16.5.4",
     "react-konva": "^18.2.14",
+    "react-router-dom": "^7.13.0",
     "tailwind-merge": "^2.2.1",
     "use-image": "^1.1.4",
     "zustand": "^5.0.10"

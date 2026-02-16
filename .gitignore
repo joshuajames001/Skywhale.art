@@ -136,3 +136,6 @@ supabase/functions/**/.env
 MASTER_BLUEPRINT.md
 
 .env
+
+# External Skills
+external-skills/

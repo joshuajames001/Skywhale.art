@@ -28,9 +28,10 @@ export const generateStoryStructure = async (params: StoryParams): Promise<{ pag
         
         // FIX: Parse OpenAI Response Wrapper
         let parsed;
-        if (data.choices && data.choices[0]?.message?.content) {
+        const responseData = data as any;
+        if (responseData.choices && responseData.choices[0]?.message?.content) {
             try {
-                parsed = JSON.parse(data.choices[0].message.content);
+                parsed = JSON.parse(responseData.choices[0].message.content);
             } catch (e) {
                 console.error("Failed to parse JSON content from AI:", e);
                 throw new Error("Invalid JSON in AI response");
@@ -61,11 +62,27 @@ export const generateStoryStructure = async (params: StoryParams): Promise<{ pag
             is_generated: false
         }));
 
+        const cleanVisualDna = (dna: string) => {
+            if (!dna) return "";
+            return dna
+                .replace(/Create a technical reference sheet for/gi, "")
+                .replace(/Create a character reference sheet for/gi, "")
+                .replace(/Reference sheet/gi, "")
+                .replace(/Character sheet/gi, "")
+                .replace(/Technical blueprint style/gi, "")
+                .replace(/Purely white background/gi, "")
+                .replace(/shown from front, side, and back/gi, "")
+                .trim();
+        };
+
+        const rawDna = metadata.visual_dna || params.visual_dna || params.main_character;
+        const safeDna = cleanVisualDna(rawDna);
+
         return {
             pages,
-            coverPrompt: `[STRICT VISUAL DNA: ${metadata.visual_dna || params.visual_dna}] ` + (storyContent.cover?.cover_prompt || storyContent.cover?.image_prompt || `Create a single-frame, high-quality storybook cover. MANDATORY ART STYLE: ${params.visual_style}. VISUAL REFERENCE: Use the character sheet. Environment: ${params.setting} rendered in ${params.visual_style}.`),
-            identityPrompt: params.user_identity_image || storyContent.cover?.identity_prompt || `Create a character reference sheet for ${params.visual_dna || params.main_character}. Plain white background.`,
-            visualDna: metadata.visual_dna || params.visual_dna || params.main_character
+            coverPrompt: `[STRICT VISUAL DNA: ${safeDna}] ` + (storyContent.cover?.cover_prompt || storyContent.cover?.image_prompt || `Create a single-frame, high-quality storybook cover. MANDATORY ART STYLE: ${params.visual_style}. VISUAL REFERENCE: Use the character sheet. Environment: ${params.setting} rendered in ${params.visual_style}.`),
+            identityPrompt: params.user_identity_image || storyContent.cover?.identity_prompt || `Create a character reference sheet for ${rawDna}. Plain white background.`,
+            visualDna: rawDna
         };
 
     } catch (error) {
@@ -105,7 +122,7 @@ export const generateStoryIdea = async (params?: { language?: string }): Promise
             if (error || !ideaWrapper) throw error || new Error("No data");
 
             // FIX: Handle both OpenAI-wrapped and raw JSON responses
-            let idea;
+            let idea: any = null;
             try {
                 // console.log("📦 Raw Edge Function Response:", ideaWrapper);
 
@@ -232,8 +249,9 @@ export const extractVisualIdentity = async (sheetUrl: string, characterName: str
 
         if (error) throw error;
         
-        if (data.choices && data.choices[0]?.message?.content) {
-             const content = data.choices[0].message.content;
+        const responseData = data as any;
+        if (responseData.choices && responseData.choices[0]?.message?.content) {
+             const content = responseData.choices[0].message.content;
              try {
                  JSON.parse(content); 
                  return content;

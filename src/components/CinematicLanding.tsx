@@ -94,7 +94,7 @@ export const CinematicLanding = ({ onEnter, onNavigate }: CinematicLandingProps)
                     loop
                     muted
                     playsInline
-                    className="absolute inset-0 w-full h-full object-cover opacity-100" // Removed mix-blend-screen for performance
+                    className="absolute inset-0 w-screen h-screen object-cover object-center opacity-100" // FORCE FULL VIEWPORT
                     poster="/portal-poster.jpg"
                 >
                     <source src="/portal.mp4" type="video/mp4" />
@@ -201,7 +201,6 @@ export const CinematicLanding = ({ onEnter, onNavigate }: CinematicLandingProps)
                     <button
                         onClick={() => {
                             window.location.hash = 'why-skywhale';
-                            onNavigate?.('landing');
                         }}
                         className="hover:text-white hover:drop-shadow-[0_0_8px_rgba(255,255,255,0.5)] transition-all"
                     >
@@ -228,12 +227,12 @@ export const CinematicLanding = ({ onEnter, onNavigate }: CinematicLandingProps)
                 >
                     {t('landing.nav.enter_app')}
                 </button>
-            </nav>
+            </nav >
 
 
 
             {/* 3. HERO SECTION */}
-            <motion.div
+            < motion.div
                 style={{ opacity: opacityHero, scale: scaleHero, y: yHero }}
                 className="relative z-20 h-screen flex flex-col items-center justify-center px-4 text-center"
             >
@@ -257,14 +256,14 @@ export const CinematicLanding = ({ onEnter, onNavigate }: CinematicLandingProps)
                         </span>
                     </button>
                 </div>
-            </motion.div>
+            </motion.div >
 
 
             {/* 4. CONTENT SECTIONS (Below Fold - Glass Panels) */}
-            <div className="relative z-20 pb-24">
+            < div className="relative z-20 pb-24" >
 
                 {/* GALLERY CAROUSEL */}
-                <div className="w-full py-24 border-t border-white/5 bg-[#050510]/50 backdrop-blur-sm">
+                < div className="w-full py-24 border-t border-white/5 bg-[#050510]/50 backdrop-blur-sm" >
                     <h2 className="text-center font-title text-3xl mb-12 text-white/60">{t('landing.carousel.recent_creations')}</h2>
 
                     <div className="w-full overflow-hidden">
@@ -299,7 +298,7 @@ export const CinematicLanding = ({ onEnter, onNavigate }: CinematicLandingProps)
                             </div>
                         )}
                     </div>
-                </div>
+                </div >
 
                 {/* FEATURES GRID */}
                 {/* FEATURES GRID */}
@@ -417,7 +416,7 @@ export const CinematicLanding = ({ onEnter, onNavigate }: CinematicLandingProps)
                     <div>&copy; {new Date().getFullYear()} Skywhale.</div>
                 </footer>
 
-            </div>
+            </div >
 
             <style>{`
                 @keyframes marquee {
@@ -431,6 +430,6 @@ export const CinematicLanding = ({ onEnter, onNavigate }: CinematicLandingProps)
                      box-shadow: 0 0 20px rgba(168,85,247,0.5);
                 }
             `}</style>
-        </div>
+        </div >
     );
 };
