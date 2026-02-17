@@ -39,7 +39,7 @@ import { PricingPage } from './features/store/components/PricingPage';
 import { PublishDialog } from './features/custom-book/components/PublishDialog';
 import { DailyRewardModal } from './features/gamification/components/DailyRewardModal';
 import { EnergyStore } from './features/store/components/EnergyStore';
-import { UserProfile } from './components/profile/UserProfile';
+import { UserProfile } from './features/profile/UserProfile';
 import { CardViewer } from './features/card-studio/CardViewer';
 import { DiscoveryHub } from './features/discovery/components/DiscoveryHub';
 import { Library } from './features/library/Library';

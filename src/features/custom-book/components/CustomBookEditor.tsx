@@ -3,7 +3,7 @@ import { AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '../../../lib/supabase';
 import { PublishDialog } from './PublishDialog';
-import { AchievementToast } from '../../../components/profile/AchievementToast';
+import { AchievementToast } from '../../profile/components/AchievementToast';
 import { useCustomBookEditor } from '../hooks/useCustomBookEditor';
 import { EditorToolbar } from './EditorToolbar';
 import { WriterPanel } from './WriterPanel';

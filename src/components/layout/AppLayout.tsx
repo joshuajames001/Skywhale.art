@@ -16,7 +16,7 @@ import { DailyRewardModal } from '../../features/gamification/components/DailyRe
 import { NavigationHub } from '../NavigationHub';
 import { Auth } from '../../features/auth/components/Auth';
 import { LegalAgreements } from '../legal/LegalAgreements';
-import { AchievementToast } from '../profile/AchievementToast';
+import { AchievementToast } from '../../features/profile/components/AchievementToast';
 import { PublishDialog } from '../../features/custom-book/components/PublishDialog';
 import { GuideOverlay } from '../guide/GuideOverlay';
 

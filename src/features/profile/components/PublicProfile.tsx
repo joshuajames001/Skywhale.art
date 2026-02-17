@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Calendar, Book, Trophy, Lock } from 'lucide-react';
-import { supabase } from '../../lib/supabase';
-import { StoryBook } from '../../types';
+import { supabase } from '../../../lib/supabase';
+import { StoryBook } from '../../../types';
 
 interface PublicProfileProps {
     userId: string;

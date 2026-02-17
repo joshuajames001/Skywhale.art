@@ -6,7 +6,7 @@ import { BookCard } from './BookCard';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Sparkles, AlertCircle, Globe, Lock, Heart, Calendar } from 'lucide-react';
 import { getTheme } from '../../lib/themes';
-import { PublicProfile } from '../../components/profile/PublicProfile';
+import { PublicProfile } from '../profile/components/PublicProfile';
 import { AudioConfirmDialog } from '../../features/audio/components/AudioConfirmDialog';
 import { useEnergy } from '../../hooks/useEnergy';
 import { useGuide } from '../../hooks/useGuide';
