@@ -21,7 +21,7 @@ export const DiscoveryBackground = ({ view, selectedCategory }: DiscoveryBackgro
     const showCustomBg = (isDinoCategory || isSpaceCategory) && view !== 'categories';
 
     return (
-        <div className={`fixed inset-0 z-[60] -z-10 absolute pointer-events-none transition-colors duration-500 ${showCustomBg ? 'bg-black' : 'bg-slate-900/95'}`}>
+        <div className={`fixed inset-0 -z-10 absolute pointer-events-none transition-colors duration-500 ${showCustomBg ? 'bg-black' : 'bg-slate-900/95'}`}>
             {/* Conditional Background Image (Dino) */}
             {isDinoCategory && view !== 'categories' && (
                 <div className="absolute inset-0 z-0">

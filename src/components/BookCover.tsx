@@ -4,7 +4,7 @@ import { StoryBook } from '../types';
 import { ImageGenerator } from '../features/story-builder/components/ImageGenerator';
 import { RefreshCw, BookOpen } from 'lucide-react';
 import { getTheme } from '../lib/themes';
-import { BackgroundOrchestrator } from './BackgroundOrchestrator';
+import { BackgroundOrchestrator } from '../features/core/components/BackgroundOrchestrator';
 import { useTranslation } from 'react-i18next';
 
 interface BookCoverProps {
@@ -175,8 +175,8 @@ export const BookCover = ({ book, onOpen, onUpdateCover, onUploadImage, tier, re
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.9 }}
                     className={`shrink - 0 group w - 20 h - 20 rounded - full shadow - [0_0_30px_rgba(124, 58, 237, 0.4)] flex items - center justify - center transition - all mb - 8 pointer - events - auto ${hasCover
-                            ? 'bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/30 text-white'
-                            : 'bg-[#1e1b4b] text-purple-200 hover:bg-[#2e1065] border border-purple-500/30'
+                        ? 'bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/30 text-white'
+                        : 'bg-[#1e1b4b] text-purple-200 hover:bg-[#2e1065] border border-purple-500/30'
                         } `}
                     title={t('book_cover.open_book')}
                 >

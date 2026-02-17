@@ -38,13 +38,13 @@ export const useDiscoveryNav = ({ categories, onLoadBook, onLoadCategoryBooks, i
             const pageNum = params.get('page');
 
             if (!catSlug) {
-                // Only reset if we are not already at root to prevent flashing
-                if (view !== 'categories') {
-                    setView('categories');
-                    setSelectedCategory(null);
-                    // We don't clear books here generally to keep cache, but Hub logic did
-                    // Hub logic: setBooks([]). The data hook handles books state, we handle View.
-                }
+                // FORCE RESET to Categories if URL param is missing
+                // We remove the (view !== 'categories') check to ensure robust history sync
+                setView('categories');
+                setSelectedCategory(null);
+                // Optional: Clear book too if you want to be safe
+                setSelectedBook(null);
+                setReaderPage(null); 
                 return;
             }
 
@@ -99,6 +99,7 @@ export const useDiscoveryNav = ({ categories, onLoadBook, onLoadCategoryBooks, i
     };
 
     const navigateToPage = (pageNum: number) => {
+        setReaderPage(pageNum.toString());
         updateUrl({ page: pageNum.toString() });
     };
 

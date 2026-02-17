@@ -14,7 +14,7 @@ import { MagicFlash } from '../MagicFlash';
 import { ElevenLabsProfile } from './ElevenLabsProfile';
 import { DailyRewardModal } from '../gamification/DailyRewardModal';
 import { NavigationHub } from '../NavigationHub';
-import { Auth } from '../Auth';
+import { Auth } from '../../features/auth/components/Auth';
 import { LegalAgreements } from '../legal/LegalAgreements';
 import { AchievementToast } from '../profile/AchievementToast';
 import { PublishDialog } from '../PublishDialog';

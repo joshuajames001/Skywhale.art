@@ -49,6 +49,7 @@ export const NavigationHub = ({ onNavigate, currentView, user, onLogin, onLogout
         { id: 'create_custom', icon: PenTool, label: t('nav.custom_book') },
         { id: 'card_studio', icon: Palette, label: t('nav.atelier') },
         { id: 'arcade', icon: Gamepad2, label: t('nav.arcade') },
+        { id: 'energy_store', icon: Zap, label: t('nav.store') },
         { id: 'feedback_board', icon: MessageSquare, label: t('nav.feedback') },
         { id: 'setup', icon: Sparkles, label: t('nav.story'), badge: t('nav.badge_new') },
     ];
@@ -167,7 +168,7 @@ export const NavigationHub = ({ onNavigate, currentView, user, onLogin, onLogout
                     )}
                 </AnimatePresence>
 
-                {/* LEGAL LINKS & LANGUAGE SWITCHER */}
+                {/* LEGAL LINKS & LANGUAGE SWITCHER & LOGOUT */}
                 <AnimatePresence>
                     {isExpanded && (
                         <motion.div
@@ -180,6 +181,18 @@ export const NavigationHub = ({ onNavigate, currentView, user, onLogin, onLogout
                                 <button onClick={() => onNavigate('terms' as any)} className="text-[10px] text-white/40 hover:text-white/80 transition-colors uppercase tracking-widest font-bold">{t('nav.terms')}</button>
                                 <button onClick={() => onNavigate('privacy' as any)} className="text-[10px] text-white/40 hover:text-white/80 transition-colors uppercase tracking-widest font-bold">{t('nav.privacy')}</button>
                             </div>
+
+                            {/* LOGOUT BUTTON (Only if user is logged in) */}
+                            {user && (
+                                <button
+                                    onClick={onLogout}
+                                    className="flex items-center gap-2 text-[10px] text-red-400/60 hover:text-red-400 transition-colors uppercase tracking-widest font-bold hover:bg-red-500/10 px-2 py-1 rounded"
+                                >
+                                    <LogOut size={12} />
+                                    {t('auth.logout')}
+                                </button>
+                            )}
+
 
                             {/* LANGUAGE SWITCHER */}
                             <motion.div

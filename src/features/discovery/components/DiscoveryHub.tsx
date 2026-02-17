@@ -1,15 +1,15 @@
 import { AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
-import { useDiscoveryNav } from '../../features/discovery/hooks/useDiscoveryNav';
-import { useDiscoveryData } from '../../features/discovery/hooks/useDiscoveryData';
-import { useTrailers } from '../../features/discovery/hooks/useTrailers';
+import { useDiscoveryNav } from '../hooks/useDiscoveryNav';
+import { useDiscoveryData } from '../hooks/useDiscoveryData';
+import { useTrailers } from '../hooks/useTrailers';
 
-import { DiscoveryBackground } from '../../features/discovery/components/DiscoveryBackground';
-import { DiscoveryHeader } from '../../features/discovery/components/DiscoveryHeader';
-import { CategoryGrid } from '../../features/discovery/components/CategoryGrid';
-import { BookList } from '../../features/discovery/components/BookList';
-import { DiscoveryReader } from '../../features/discovery/components/DiscoveryReader';
-import { TrailerOverlay } from '../../features/discovery/components/TrailerOverlay';
+import { DiscoveryBackground } from './DiscoveryBackground';
+import { DiscoveryHeader } from './DiscoveryHeader';
+import { CategoryGrid } from './CategoryGrid';
+import { BookList } from './BookList';
+import { DiscoveryReader } from './DiscoveryReader';
+import { TrailerOverlay } from './TrailerOverlay';
 
 interface DiscoveryHubProps {
     onClose: () => void;
@@ -89,7 +89,7 @@ export const DiscoveryHub = ({ onClose, isRestoring = false }: DiscoveryHubProps
     const handleBookSelect = async (book: any) => {
         navigateToBook(book);
         clearPages();
-        await loadPagesForBook(book.id);
+        await loadPagesForBook(book.id, book);
     };
 
     const handleBack = () => {

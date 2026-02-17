@@ -37,7 +37,7 @@ export interface DiscoveryPage {
   book_id: string;
   page_number: number;
   title: string;
-  content_text: string;
+  text_content: string;
   image_url: string;
   video_url?: string;
   audio_url?: string;

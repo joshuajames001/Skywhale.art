@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { Sparkles, Loader2, BookOpen, Wand2, Star, ChevronRight, Play, Clapperboard, Music, Lock, Globe, GraduationCap, Heart, Rocket } from 'lucide-react';
 import { useTranslation, Trans } from 'react-i18next';
-import { supabase } from '../lib/supabase';
+import { supabase } from '../../../lib/supabase';
 
 interface CinematicLandingProps {
     onEnter: (bookId?: string) => void;

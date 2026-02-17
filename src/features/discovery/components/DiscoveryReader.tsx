@@ -22,6 +22,7 @@ export const DiscoveryReader = ({
     loading,
     t
 }: DiscoveryReaderProps) => {
+    console.log("Discovery Page Array:", pages);
 
     return (
         <motion.div
@@ -64,11 +65,12 @@ export const DiscoveryReader = ({
                                         onPageChange(readerIndex - 1);
                                     }
                                 }}
-                                className={`w-full h-full flex items-center justify-center cursor-grab active:cursor-grabbing ${isSpaceCategory ? 'md:scale-90' : ''}`}
+                                className={`w-full h-full flex items-center justify-center cursor-grab active:cursor-grabbing`}
                             >
                                 <BookReader
                                     page={pages[readerIndex]}
                                     isDino={isDinoCategory}
+                                    isSpace={isSpaceCategory}
                                     onPageComplete={() => {
                                         if (readerIndex < pages.length - 1) {
                                             onPageChange(readerIndex + 1);
@@ -89,7 +91,7 @@ export const DiscoveryReader = ({
                         {/* NEXT BUTTON (Desktop) */}
                         <button
                             onClick={() => onPageChange(Math.min(pages.length - 1, readerIndex + 1))}
-                            disabled={readerIndex === pages.length - 1}
+                            disabled={readerIndex >= pages.length - 1}
                             className="hidden md:flex p-4 rounded-full bg-indigo-600 hover:bg-indigo-500 text-white disabled:opacity-0 disabled:pointer-events-none transition-all hover:scale-110 active:scale-95 shadow-lg shadow-indigo-500/20 shrink-0"
                         >
                             <ChevronRight size={48} strokeWidth={1} />
