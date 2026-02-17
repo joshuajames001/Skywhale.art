@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Send, Sparkles, User, Bot, AlertCircle, Terminal, Code2 } from 'lucide-react';
-import { supabase } from '../../lib/supabase';
+import { supabase } from '../../../../lib/supabase';
 import { useTranslation } from 'react-i18next';
 
 interface StoryChatProps {

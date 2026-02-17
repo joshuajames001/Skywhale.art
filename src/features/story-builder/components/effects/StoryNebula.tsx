@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { getTheme } from '../lib/themes';
+import { getTheme } from '../../../../lib/themes';
 import { useEffect, useState } from 'react';
 
 interface StoryNebulaProps {

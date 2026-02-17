@@ -2,14 +2,14 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Book, User, MapPin, Palette, ArrowRight, Sparkles, Mic } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { AnimatedInput } from '../../../../components/story/AnimatedInput';
-import { AgeSelector } from '../../../../components/story/AgeSelector';
-import { StyleSelector } from '../../../../components/story/StyleSelector';
+import { AnimatedInput } from '../shared/AnimatedInput';
+import { AgeSelector } from '../shared/AgeSelector';
+import { StyleSelector } from '../shared/StyleSelector';
 import { VoicePreviewButton } from '../../../../features/audio/components/VoicePreviewButton';
 import { VOICE_OPTIONS, DEFAULT_VOICE_ID } from '../../../../lib/audio-constants';
 import { generateCompleteStory } from '../../../../lib/ai/orchestrator';
 import { StoryBook } from '../../../../types';
-import { MagicLoading } from '../../../../components/MagicLoading';
+import { MagicLoading } from '../effects/MagicLoading';
 
 interface CustomModeProps {
     initialData?: any;

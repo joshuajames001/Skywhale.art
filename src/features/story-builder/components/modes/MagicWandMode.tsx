@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { generateStoryIdea } from '../../../../lib/storyteller'; // Calculated path
 import { StoryBook } from '../../../../types';
-import { MagicLoading } from '../../../../components/MagicLoading';
+import { MagicLoading } from '../effects/MagicLoading';
 
 interface MagicWandModeProps {
     onTransitionToCustom: (data: any) => void; // CHANGED: Handoff data instead of completing

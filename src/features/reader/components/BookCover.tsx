@@ -1,10 +1,10 @@
 
 import { motion } from 'framer-motion';
-import { StoryBook } from '../types';
-import { ImageGenerator } from '../features/story-builder/components/ImageGenerator';
+import { StoryBook } from '../../../types';
+import { ImageGenerator } from '../../story-builder/components/ImageGenerator';
 import { RefreshCw, BookOpen } from 'lucide-react';
-import { getTheme } from '../lib/themes';
-import { BackgroundOrchestrator } from '../features/core/components/BackgroundOrchestrator';
+import { getTheme } from '../../../lib/themes';
+import { BackgroundOrchestrator } from '../../core/components/BackgroundOrchestrator';
 import { useTranslation } from 'react-i18next';
 
 interface BookCoverProps {
@@ -34,7 +34,7 @@ export const BookCover = ({ book, onOpen, onUpdateCover, onUploadImage, tier, re
             if (sheetUrl) {
                 // 2. TRIGGER VISUAL DNA EXTRACTOR (THE VISION NODE)
                 // We analyze the ACTUAL image to create a bullet-proof text lock.
-                import('../lib/storyteller').then(async ({ extractVisualIdentity }) => {
+                import('../../../lib/storyteller').then(async ({ extractVisualIdentity }) => {
                     const visionLock = await extractVisualIdentity(sheetUrl, book.main_character || "Unknown Character", book.visual_dna);
                     console.log("👮‍♂️ VISION POLICE REPORT:", visionLock);
 
@@ -71,7 +71,7 @@ export const BookCover = ({ book, onOpen, onUpdateCover, onUploadImage, tier, re
 
     return (
         <div
-            className={`w - full h - full flex items - center justify - center p - 4 md: p - 8 relative overflow - hidden transition - all duration - 700 backdrop - blur - xl ${hasCover ? 'bg-black/60 border-l-4 border-white/10' : 'bg-black/40 border-l-4 border-indigo-500/20'
+            className={`w-full h-full flex items-center justify-center p-4 md:p-8 relative overflow-hidden transition-all duration-700 backdrop-blur-xl absolute inset-0 z-30 ${hasCover ? 'bg-slate-950/90 border-l-4 border-white/10' : 'bg-black/40 border-l-4 border-indigo-500/20'
                 } `}
             style={{
                 boxShadow: `0 20px 50px rgba(0, 0, 0, 0.6), 0 0 100px ${theme.glowColor} 40`,

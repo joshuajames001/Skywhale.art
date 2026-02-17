@@ -1,17 +1,17 @@
 import React from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
-import { supabase } from '../../lib/supabase';
-import { PublishDialog } from '../PublishDialog';
-import { AchievementToast } from '../profile/AchievementToast';
-import { useCustomBookEditor } from '../../features/custom-book/hooks/useCustomBookEditor';
-import { EditorToolbar } from '../../features/custom-book/components/EditorToolbar';
-import { WriterPanel } from '../../features/custom-book/components/WriterPanel';
-import { GeminiSuggestion } from '../../features/custom-book/components/GeminiSuggestion';
-import { IllustratorPanel } from '../../features/custom-book/components/IllustratorPanel';
-import { DictionarySidebar } from '../../features/custom-book/components/DictionarySidebar';
-import { TimelineFooter } from '../../features/custom-book/components/TimelineFooter';
-import { CustomBookEditorProps } from '../../features/custom-book/types';
+import { supabase } from '../../../lib/supabase';
+import { PublishDialog } from './PublishDialog';
+import { AchievementToast } from '../../../components/profile/AchievementToast';
+import { useCustomBookEditor } from '../hooks/useCustomBookEditor';
+import { EditorToolbar } from './EditorToolbar';
+import { WriterPanel } from './WriterPanel';
+import { GeminiSuggestion } from './GeminiSuggestion';
+import { IllustratorPanel } from './IllustratorPanel';
+import { DictionarySidebar } from './DictionarySidebar';
+import { TimelineFooter } from './TimelineFooter';
+import { CustomBookEditorProps } from '../types';
 
 const CustomBookEditor: React.FC<CustomBookEditorProps> = ({ onBack, onOpenStore }) => {
     const { t } = useTranslation();

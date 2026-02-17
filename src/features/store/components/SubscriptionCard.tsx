@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Zap, Check, Star } from 'lucide-react';
-import { useEnergy } from '../../hooks/useEnergy';
+import { useEnergy } from '../../../hooks/useEnergy';
 
 interface SubscriptionCardProps {
     id: string;

@@ -143,3 +143,9 @@ external-skills/
 # Build and Public
 dist/
 public/
+
+# User Requested Exclusions
+keys/
+public/
+dist/
+external_skills/

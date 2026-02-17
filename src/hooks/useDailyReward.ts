@@ -55,11 +55,21 @@ export const useDailyReward = () => {
         const isDay7 = newStreak % 7 === 0;
         const rewardAmount = isDay7 ? 30 : 10; // Original rewards (no inflation)
 
-        await supabase.from('profiles').update({
-            last_claim_date: new Date().toISOString(),
-            claim_streak: newStreak,
-            energy_balance: currentProfile.energy_balance + rewardAmount // Use fresh DB value as source of truth
-        }).eq('id', user.id);
+        // FIXED: Secure RPC call
+        const { error } = await supabase.rpc('claim_daily_reward', {
+            user_id: user.id,
+            streak: newStreak
+        });
+
+        if (error) {
+            console.error('Failed to claim reward:', error);
+            return;
+        }
+
+        // Optimistic UI Update (Verification: Real balance comes from subscription/listener)
+        // We don't reload window anymore
+        setRewardStreak(newStreak);
+        setShowDailyReward(false);
 
         // Refresh 
         window.location.reload(); // Simple refresh to update global state or just re-fetch

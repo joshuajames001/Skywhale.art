@@ -35,8 +35,10 @@ import { CinematicLanding } from './features/landing/components/CinematicLanding
 import { Auth } from './features/auth/components/Auth';
 import { LegalAgreements } from './components/legal/LegalAgreements';
 import { FeedbackBoard } from './components/community/FeedbackBoard';
-import { PricingPage } from './components/PricingPage';
-import { EnergyStore } from './components/store/EnergyStore';
+import { PricingPage } from './features/store/components/PricingPage';
+import { PublishDialog } from './features/custom-book/components/PublishDialog';
+import { DailyRewardModal } from './features/gamification/components/DailyRewardModal';
+import { EnergyStore } from './features/store/components/EnergyStore';
 import { UserProfile } from './components/profile/UserProfile';
 import { CardViewer } from './features/card-studio/CardViewer';
 import { DiscoveryHub } from './features/discovery/components/DiscoveryHub';
@@ -44,7 +46,7 @@ import { Library } from './features/library/Library';
 import { CreateStoryWrapper } from './features/story-builder/CreateStoryWrapper';
 import { CardStudioWrapper } from './features/card-studio/CardStudioWrapper';
 import { BookRouteWrapper } from './features/reader/BookRouteWrapper';
-import CustomBookEditor from './components/custom-book/CustomBookEditor';
+import CustomBookEditor from './features/custom-book/components/CustomBookEditor';
 
 function App() {
     // 1. Core Utils

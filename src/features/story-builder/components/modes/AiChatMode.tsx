@@ -1,5 +1,5 @@
 import React from 'react';
-import { StoryChat } from '../../../../components/story/StoryChat'; // Calculated path
+import { StoryChat } from '../shared/StoryChat';
 
 interface AiChatModeProps {
     onTransitionToCustom: (data: any) => void;

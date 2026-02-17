@@ -3,7 +3,8 @@ import { generateImage } from '../../../lib/ai';
 import { Sparkles, AlertCircle } from 'lucide-react';
 import { clsx } from 'clsx';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MagicLoading } from '../../../components/MagicLoading';
+import { MagicFairy } from './effects/MagicFairy';
+import { MagicLoading } from './effects/MagicLoading';
 
 interface ImageGeneratorProps {
     basePrompt: string;

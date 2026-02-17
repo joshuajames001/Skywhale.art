@@ -3,8 +3,9 @@ import { Book, Home, Sparkles, Palette, Gamepad2, Compass, PenTool, Zap, Message
 import { ScrollableRow } from './ui/ScrollableRow';
 import { useState, useEffect } from 'react';
 import { useEnergy } from '../hooks/useEnergy';
-import { supabase } from '../lib/supabase';
+import { PricingPage } from '../features/store/components/PricingPage';
 import { useTranslation } from 'react-i18next';
+import { supabase } from '../lib/supabase';
 
 interface NavigationHubProps {
     onNavigate: (view: 'landing' | 'library' | 'setup' | 'card_studio' | 'arcade' | 'discovery' | 'create_custom' | 'energy_store' | 'terms' | 'privacy' | 'feedback_board' | 'profile' | 'pricing') => void;

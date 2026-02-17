@@ -4,8 +4,10 @@ import { X, Download, Save, Loader2, Share2, Printer } from 'lucide-react';
 import { StoryBook, StoryPage } from '../../types';
 import { MiniPlayer } from '../../features/audio/components/MiniPlayer';
 import { AudioConfirmDialog } from '../../features/audio/components/AudioConfirmDialog';
-import { BookCover } from '../../components/BookCover';
+import { BookCover } from './components/BookCover';
 import { StorySpread } from './components/StorySpread';
+import { HiddenPdfTemplate } from './components/HiddenPdfTemplate';
+import { usePdfExport } from './hooks/usePdfExport';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useEnergy } from '../../hooks/useEnergy';
@@ -36,8 +38,9 @@ export const BookReader: React.FC<BookReaderProps> = ({
     // Internal State for Reader Navigation
     const [currentIndex, setCurrentIndex] = useState(0);
     const [direction, setDirection] = useState(0);
-    const [isExportingPdf, setIsExportingPdf] = useState(false);
-    const [pdfProgress, setPdfProgress] = useState<{ current: number; total: number } | null>(null);
+
+    // Custom Hooks
+    const { isExportingPdf, pdfProgress, handleExportPdf } = usePdfExport(story, t);
 
     // Audio Generation State
     const [isAudioDialogOpen, setIsAudioDialogOpen] = useState(false);
@@ -69,35 +72,6 @@ export const BookReader: React.FC<BookReaderProps> = ({
         }
     };
 
-    const handleExportPdf = async () => {
-        if (!story || !story.pages) return;
-
-        setIsExportingPdf(true);
-        setPdfProgress({ current: 0, total: story.pages.length });
-
-        try {
-            const pageIds = ['book-page-0', ...story.pages.map((p) => `book-page-${p.page_number}`)];
-            // Small delay to ensure render
-            await new Promise(r => setTimeout(r, 500));
-
-            const success = await import('../../utils/pdfGenerator').then(m =>
-                m.generatePdf(pageIds, `${story.title || 'story'}.pdf`, (current, total) => {
-                    setPdfProgress({ current, total });
-                })
-            );
-
-            if (success) alert(t('app.status.pdf_success'));
-            else throw new Error("PDF generation failed");
-
-        } catch (e) {
-            console.error("PDF Error:", e);
-            alert("Nepodařilo se vytvořit PDF. Zkuste to prosím znovu.");
-        } finally {
-            setIsExportingPdf(false);
-            setPdfProgress(null);
-        }
-    };
-
     const variants = {
         enter: (direction: number) => ({
             rotateY: direction > 0 ? 180 : -180,
@@ -106,7 +80,7 @@ export const BookReader: React.FC<BookReaderProps> = ({
             zIndex: 0
         }),
         center: {
-            zIndex: 1,
+            zIndex: 50,
             rotateY: 0,
             opacity: 1,
             scale: 1
@@ -141,7 +115,7 @@ export const BookReader: React.FC<BookReaderProps> = ({
                 </div>
 
                 {/* Book Toolbar (Top Right) */}
-                <div className="absolute top-4 right-4 z-50 flex gap-4 pointer-events-auto items-center">
+                <div className="absolute top-4 right-4 z-[60] flex gap-4 pointer-events-auto items-center">
                     {/* Audio Player and Generator */}
                     <div className="mr-2 flex items-center gap-2">
                         {story.audio_url ? (
@@ -254,7 +228,7 @@ export const BookReader: React.FC<BookReaderProps> = ({
             </motion.div>
 
             {/* Desktop Close Button (Outside) */}
-            <button onClick={onClose} className="hidden md:flex absolute top-8 left-8 text-white/50 hover:text-white transition-colors items-center gap-2">
+            <button onClick={onClose} className="hidden md:flex absolute top-8 left-8 z-[60] text-white/50 hover:text-white transition-colors items-center gap-2">
                 <X size={24} /> <span>Zavřít</span>
             </button>
 
@@ -263,7 +237,7 @@ export const BookReader: React.FC<BookReaderProps> = ({
                 !isCover && (
                     <button
                         onClick={handlePrev}
-                        className="hidden md:flex absolute top-1/2 -left-16 transform -translate-y-1/2 w-12 h-12 bg-white/10 hover:bg-white/20 rounded-full items-center justify-center text-white transition-all hover:scale-110"
+                        className="hidden md:flex absolute top-1/2 -left-16 transform -translate-y-1/2 w-12 h-12 bg-white/10 hover:bg-white/20 rounded-full items-center justify-center text-white transition-all hover:scale-110 z-[60]"
                     >
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6" /></svg>
                     </button>
@@ -274,7 +248,7 @@ export const BookReader: React.FC<BookReaderProps> = ({
                 currentIndex < story.pages.length && (
                     <button
                         onClick={handleNext}
-                        className="hidden md:flex absolute top-1/2 -right-16 transform -translate-y-1/2 w-12 h-12 bg-white/10 hover:bg-white/20 rounded-full items-center justify-center text-white transition-all hover:scale-110"
+                        className="hidden md:flex absolute top-1/2 -right-16 transform -translate-y-1/2 w-12 h-12 bg-white/10 hover:bg-white/20 rounded-full items-center justify-center text-white transition-all hover:scale-110 z-[60]"
                     >
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6" /></svg>
                     </button>
@@ -291,40 +265,7 @@ export const BookReader: React.FC<BookReaderProps> = ({
                 ))}
             </div>
             {/* OFF-SCREEN EXPORT CONTAINER */}
-            {isExportingPdf && (
-                <div style={{ position: 'absolute', left: '-9999px', top: 0, width: '794px', height: '1123px' }}>
-                    {/* Cover */}
-                    <div id="book-page-0" style={{ width: '794px', height: '1123px' }}>
-                        <BookCover
-                            book={story}
-                            onOpen={() => { }}
-                            onUpdateCover={() => { }}
-                            onUploadImage={async () => null}
-                            tier={story.tier}
-                            referenceImageUrl={story.character_sheet_url}
-                        />
-                    </div>
-
-                    {/* Pages */}
-                    {story.pages.map((page) => (
-                        <div key={page.page_number} id={`book-page-${page.page_number}`} style={{ width: '794px', height: '1123px' }}>
-                            <StorySpread
-                                page={page}
-                                bookId={story.book_id}
-                                onUpdatePage={() => { }}
-                                onUploadImage={async () => null}
-                                visualDna={story.visual_dna || story.main_character}
-                                mainCharacter={story.main_character}
-                                setting={story.setting}
-                                visualStyle={story.visual_style}
-                                tier={story.tier}
-                                referenceImageUrl={story.character_sheet_url || story.identity_image_slot || (story as any).visual_dna_image}
-                                characterSeed={story.character_seed}
-                            />
-                        </div>
-                    ))}
-                </div>
-            )}
+            <HiddenPdfTemplate story={story} isExportingPdf={isExportingPdf} />
         </div >
     );
 };

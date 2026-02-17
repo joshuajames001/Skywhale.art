@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Zap, Star, Gift, Crown, ShoppingBag, X, Check, Shield, Heart } from 'lucide-react';
-import { useEnergy } from '../../hooks/useEnergy';
+import { useEnergy } from '../../../hooks/useEnergy';
 import { SubscriptionCard } from './SubscriptionCard';
-import { useGuide } from '../../hooks/useGuide';
+import { useGuide } from '../../../hooks/useGuide';
 
 interface EnergyStoreProps {
     onClose: () => void;

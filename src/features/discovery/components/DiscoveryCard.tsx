@@ -10,75 +10,58 @@ export const DiscoveryCard = ({ book, onClick }: DiscoveryCardProps) => {
     return (
         <div
             onClick={() => onClick?.(book)}
-            className="relative w-full h-full bg-[#1c1917] flex flex-col group cursor-pointer"
+            className="relative w-full aspect-[3/4] md:aspect-[4/5] rounded-xl overflow-hidden group cursor-pointer shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-1 bg-slate-900"
         >
-            {/* OBRÁZEK: Horní část / Dominanta */}
-            <div className="w-full aspect-[4/5] md:aspect-video relative overflow-hidden bg-stone-900">
+            {/* 1. BACKGROUND IMAGE (Full Bleed) */}
+            <div className="absolute inset-0 z-0">
                 <img
                     src={book.cover_url}
                     alt={book.title}
-                    className="w-full h-full object-cover transform transition-transform duration-700 group-hover:scale-110"
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                    loading="lazy"
                 />
-
-                {/* Mobile Title Overlay (Reveals on hover/tap) */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10 flex flex-col items-center justify-end pb-8 px-4 pointer-events-none group-hover:pointer-events-auto">
-                    <h3 className="text-sm md:text-xl font-serif text-amber-50 text-center leading-tight uppercase italic tracking-wider drop-shadow-xl line-clamp-2 px-2">
-                        {book.title}
-                    </h3>
-                    <div className="w-10 h-0.5 bg-amber-500/50 mt-2 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500" />
-                </div>
-
-                {/* Papírová textura - overlay */}
-                <div className="absolute inset-0 opacity-10 pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/handmade-paper.png')]" />
-
-                {/* Dekorativní rohy (Vědecký styl) */}
-                <div className="absolute top-4 left-4 w-6 h-6 border-l border-t border-white/20" />
-                <div className="absolute top-4 right-4 w-6 h-6 border-r border-t border-white/20" />
+                {/* Fallback color/texture if image loads slow */}
+                <div className="absolute inset-0 bg-slate-800 -z-10" />
             </div>
 
-            {/* SPODNÍ ČÁST: Datové řádky na pískovci - Skryto na mobilu, vidět na desktopu */}
-            <div className="relative p-4 md:p-8 bg-[#292524] hidden md:block flex-1">
-                {/* Textura pískovce na pozadí */}
-                <div className="absolute inset-0 opacity-5 bg-[url('https://www.transparenttextures.com/patterns/sandpaper.png')] pointer-events-none" />
+            {/* 2. READABILITY OVERLAY (Gradient) */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent z-10 opacity-90 group-hover:opacity-100 transition-opacity duration-300" />
 
-                <div className="relative z-10 h-full flex flex-col">
-                    {/* Velký název jako nadpis protokolu */}
-                    <h3 className="text-xl md:text-3xl font-serif text-stone-100 uppercase italic tracking-tighter mb-4 md:mb-6 border-b border-stone-700/50 pb-2 md:pb-4 group-hover:text-amber-100 transition-colors truncate">
+            {/* 3. TEXT CONTENT (Bottom Aligned) */}
+            <div className="absolute inset-0 z-20 p-5 md:p-6 flex flex-col justify-end">
+
+                {/* Optional Top Decoration (e.g. Species Code or Badge) */}
+                <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 transform translate-x-2 group-hover:translate-x-0">
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-white/50 bg-black/30 backdrop-blur-sm px-2 py-1 rounded-full border border-white/10">
+                        {book.species_code}
+                    </span>
+                </div>
+
+                {/* Main Text Block */}
+                <div className="translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
+                    <h3 className="text-xl md:text-2xl font-bold font-serif text-white leading-tight mb-2 drop-shadow-md">
                         {book.title}
                     </h3>
 
-                    {/* DATA V ŘÁDCÍCH - čisté a vzdušné */}
-                    <div className="grid grid-cols-1 gap-y-1.5 md:gap-y-3 mt-auto">
-                        {/* Hidden on mobile to save space and avoid over-cluttering */}
-                        <div className="hidden md:flex justify-between items-end border-b border-stone-800/50 pb-1">
-                            <span className="text-[10px] uppercase tracking-[0.2em] text-stone-500 font-bold">Vědecké jméno</span>
-                            <span className="text-sm text-stone-300 italic font-serif tracking-wide truncate ml-2">{book.species_code}</span>
-                        </div>
+                    {/* Divider that expands on hover */}
+                    <div className="w-12 h-1 bg-amber-500 mb-3 rounded-full transition-all duration-300 group-hover:w-full group-hover:bg-amber-400/80" />
 
-                        <div className="flex justify-between items-end border-b border-stone-800/50 pb-1">
-                            <span className="text-[8px] md:text-[10px] uppercase tracking-[0.2em] text-stone-500 font-bold">Období</span>
-                            <span className="text-xs md:text-sm text-stone-300">{book.period_text}</span>
+                    {/* Metadata Grid */}
+                    <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs md:text-sm text-slate-300/90 font-medium">
+                        <div className="flex flex-col">
+                            <span className="text-[10px] uppercase text-slate-500 font-bold tracking-wider">Období</span>
+                            <span className="truncate">{book.period_text}</span>
                         </div>
-
-                        {/* Hidden on mobile to save space */}
-                        <div className="hidden md:flex justify-between items-end border-b border-stone-800/50 pb-1">
-                            <span className="text-[10px] uppercase tracking-[0.2em] text-stone-500 font-bold">Hlavní lokalita</span>
-                            <span className="text-sm text-stone-300">{book.discovery_coords}</span>
-                        </div>
-
-                        <div className="flex justify-between items-end border-b border-stone-800/50 md:border-none pb-1 md:pb-0">
-                            <span className="text-[8px] md:text-[10px] uppercase tracking-[0.2em] text-stone-500 font-bold">Hmotnost</span>
-                            <span className="text-xs md:text-sm text-stone-300 font-mono tracking-tighter">{book.weight_text}</span>
+                        <div className="flex flex-col">
+                            <span className="text-[10px] uppercase text-slate-500 font-bold tracking-wider">Váha</span>
+                            <span className="truncate">{book.weight_text}</span>
                         </div>
                     </div>
                 </div>
             </div>
 
-            {/* Spodní dekorační linka */}
-            <div className="h-1.5 w-full bg-gradient-to-r from-transparent via-stone-700/30 to-transparent" />
-
-            {/* BORDER OVERLAY - Fix pro problikávání rohů */}
-            <div className="absolute inset-0 rounded-3xl border border-stone-800 pointer-events-none z-50" />
+            {/* Decorative Border Overlay (Inner Ring) */}
+            <div className="absolute inset-0 border border-white/10 rounded-xl pointer-events-none z-30 group-hover:border-white/20 transition-colors" />
         </div>
     );
 };

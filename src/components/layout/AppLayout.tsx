@@ -9,15 +9,15 @@ import { useTranslation } from 'react-i18next';
 // Components
 import { CookieConsent } from '../legal/CookieConsent';
 import { StarryBackground } from '../StarryBackground';
-import { MagicFairy } from '../MagicFairy';
-import { MagicFlash } from '../MagicFlash';
+import { MagicFairy } from '../../features/story-builder/components/effects/MagicFairy';
+import { MagicFlash } from '../../features/story-builder/components/effects/MagicFlash';
 import { ElevenLabsProfile } from './ElevenLabsProfile';
-import { DailyRewardModal } from '../gamification/DailyRewardModal';
+import { DailyRewardModal } from '../../features/gamification/components/DailyRewardModal';
 import { NavigationHub } from '../NavigationHub';
 import { Auth } from '../../features/auth/components/Auth';
 import { LegalAgreements } from '../legal/LegalAgreements';
 import { AchievementToast } from '../profile/AchievementToast';
-import { PublishDialog } from '../PublishDialog';
+import { PublishDialog } from '../../features/custom-book/components/PublishDialog';
 import { GuideOverlay } from '../guide/GuideOverlay';
 
 interface AppLayoutProps {

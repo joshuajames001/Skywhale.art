@@ -248,7 +248,7 @@ const CardItem = ({ card, onClick }: { card: Card, onClick: () => void }) => {
                     <img
                         src={card.image}
                         alt="memory card"
-                        className={`w-full h-full object-cover transition-all duration-500 ${card.isMatched ? 'grayscale-0 brightness-110' : ''}`}
+                        className={`w-full h-full object-contain p-2 bg-slate-900 transition-all duration-500 ${card.isMatched ? 'grayscale-0 brightness-110' : ''}`}
                     />
                     {card.isMatched && (
                         <div className="absolute inset-0 flex items-center justify-center bg-green-500/20 backdrop-blur-[2px]">

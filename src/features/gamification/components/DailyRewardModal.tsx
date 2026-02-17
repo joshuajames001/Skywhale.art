@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Zap, Check, Lock, Gift, Star, X } from 'lucide-react';
-import { supabase } from '../../lib/supabase';
-import { confetti } from '../../utils/confetti';
+import { supabase } from '../../../lib/supabase';
+import { confetti } from '../../../utils/confetti';
 
 interface DailyRewardModalProps {
     isOpen: boolean;

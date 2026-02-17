@@ -225,7 +225,7 @@ const PuzzlePiece = ({ index, imageUrl, bgPosition, bgSize, onDrop, isCorrect, i
             <div
                 className="w-full h-full transition-all duration-300"
                 style={{
-                    backgroundImage: `url(${imageUrl})`,
+                    backgroundImage: `url("${imageUrl}")`,
                     backgroundSize: bgSize,
                     backgroundPosition: bgPosition,
                     filter: isSolved ? 'none' : 'contrast(1.1)'
