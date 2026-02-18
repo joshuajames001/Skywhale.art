@@ -3,7 +3,7 @@ import { motion, useSpring, useMotionValue, useTransform } from 'framer-motion';
 import { Sparkles, Loader2, BookOpen, PenTool, Globe, GraduationCap, Heart, Rocket, LogIn } from 'lucide-react';
 import { supabase } from '../../../lib/supabase';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
-import { ElevenLabsProfile } from '../../../components/layout/ElevenLabsProfile';
+import { ElevenLabsProfile } from '../../profile/components/ElevenLabsProfile';
 import { useTranslation, Trans } from 'react-i18next';
 
 interface LandingPageProps {

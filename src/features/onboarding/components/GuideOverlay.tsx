@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useGuide } from '../../hooks/useGuide';
+import { useGuide } from '../../../hooks/useGuide';
 import { CoachMark } from './CoachMark';
 
 // GUIDE DEFINITIONS

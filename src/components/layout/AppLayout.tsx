@@ -7,18 +7,18 @@ import { supabase, isSupabaseConfigured } from '../../lib/supabase';
 import { useTranslation } from 'react-i18next';
 
 // Components
-import { CookieConsent } from '../legal/CookieConsent';
+import { CookieConsent } from '../../features/legal/components/CookieConsent';
 import { StarryBackground } from '../StarryBackground';
 import { MagicFairy } from '../../features/story-builder/components/effects/MagicFairy';
 import { MagicFlash } from '../../features/story-builder/components/effects/MagicFlash';
-import { ElevenLabsProfile } from './ElevenLabsProfile';
+import { ElevenLabsProfile } from '../../features/profile/components/ElevenLabsProfile';
 import { DailyRewardModal } from '../../features/gamification/components/DailyRewardModal';
-import { NavigationHub } from '../NavigationHub';
+import { NavigationHub } from '../../features/navigation/NavigationHub';
 import { Auth } from '../../features/auth/components/Auth';
-import { LegalAgreements } from '../legal/LegalAgreements';
+import { LegalAgreements } from '../../features/legal/components/LegalAgreements';
 import { AchievementToast } from '../../features/profile/components/AchievementToast';
 import { PublishDialog } from '../../features/custom-book/components/PublishDialog';
-import { GuideOverlay } from '../guide/GuideOverlay';
+import { GuideOverlay } from '../../features/onboarding/components/GuideOverlay';
 
 interface AppLayoutProps {
     children: React.ReactNode;

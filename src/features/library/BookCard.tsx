@@ -3,7 +3,7 @@ import { motion, useMotionValue, useSpring, useTransform, AnimatePresence } from
 import { useTranslation } from 'react-i18next';
 import { StoryBook } from '../../types';
 import { BookOpen, AlertCircle, Loader2, Calendar, MoreVertical, Globe, Lock, Trash2, Heart, Headphones } from 'lucide-react';
-import { ReactionBar } from '../../components/social/ReactionBar';
+import { ReactionBar } from '../social/components/ReactionBar';
 import { supabase } from '../../lib/supabase';
 import { AudioConfirmDialog } from '../audio/components/AudioConfirmDialog';
 import { MiniPlayer } from '../audio/components/MiniPlayer';

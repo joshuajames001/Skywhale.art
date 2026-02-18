@@ -1,4 +1,4 @@
-import { StoryBook } from './types';
+import { StoryBook } from '../types';
 
 export const sampleStory: StoryBook = {
     book_id: "notebook-template",

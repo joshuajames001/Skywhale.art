@@ -1,11 +1,11 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { Book, Home, Sparkles, Palette, Gamepad2, Compass, PenTool, Zap, MessageSquare, LogIn, User, LogOut, Shield, Languages } from 'lucide-react';
-import { ScrollableRow } from './ui/ScrollableRow';
+import { ScrollableRow } from '../../components/ui/ScrollableRow';
 import { useState, useEffect } from 'react';
-import { useEnergy } from '../hooks/useEnergy';
-import { PricingPage } from '../features/store/components/PricingPage';
+// useEnergy removed: Dead code
+import { PricingPage } from '../store/components/PricingPage';
 import { useTranslation } from 'react-i18next';
-import { supabase } from '../lib/supabase';
+// supabase removed: Dead code
 
 interface NavigationHubProps {
     onNavigate: (view: 'landing' | 'library' | 'setup' | 'card_studio' | 'arcade' | 'discovery' | 'create_custom' | 'energy_store' | 'terms' | 'privacy' | 'feedback_board' | 'profile' | 'pricing') => void;
@@ -19,29 +19,8 @@ export const NavigationHub = ({ onNavigate, currentView, user, onLogin, onLogout
     const { t, i18n } = useTranslation();
     const [isExpanded, setIsExpanded] = useState(false);
     const [showProfileMenu, setShowProfileMenu] = useState(false);
-    const { balance } = useEnergy();
-    const [nickname, setNickname] = useState<string>('');
 
-    // Fetch nickname when user changes
-    useEffect(() => {
-        const fetchNickname = async () => {
-            if (user) {
-                const { data } = await supabase
-                    .from('profiles')
-                    .select('nickname')
-                    .eq('id', user.id)
-                    .single();
-
-                if (data?.nickname) {
-                    setNickname(data.nickname);
-                } else {
-                    setNickname('');
-                }
-            }
-        };
-
-        fetchNickname();
-    }, [user]);
+    // Nickname fetch removed: Dead code
 
     const navItems = [
         { id: 'landing', icon: Home, label: t('nav.home') },

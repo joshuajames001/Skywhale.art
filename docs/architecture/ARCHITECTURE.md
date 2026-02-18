@@ -11,11 +11,18 @@
 ## 2. Feature-Sliced Design (FSD) Paradigm
 This project strictly adheres to **Feature-Sliced Design (FSD)** constraints to maintain scalability and modularity.
 
-### Directory Structure
+### Directory Structure & Strict Rules
 - **`src/features/`**: The core of the application. Contains **Domain-Specific Modules**. Each folder here represents a distinct business domain with its own state, components, and logic.
-- **`src/components/`**: Strictly for **"Dumb", Shared UI Elements** (buttons, inputs, layout frames). These components contain **NO business logic**.
-- **`src/hooks/`**: Global, cross-cutting hooks (e.g., `useEnergy`, `useToast`).
-- **`src/lib/`**: configuration, helpers, and third-party integrations (Supabase, OpenAI).
+- **`src/components/`**: **RESTRICTED ZONE.** strictly for **"Dumb", Shared UI Elements** (buttons, inputs) and **Layout Wrappers**.
+    - **Prohibited:** Business logic, data fetching, state management, or feature-specific code.
+- **`src/hooks/`**: Global, cross-cutting hooks (e.g., `useToast`). Feature-specific hooks belong in `src/features/<domain>/hooks`.
+- **`src/lib/`**: Configuration, helpers, and third-party integrations (Supabase, OpenAI).
+- **`src/types/`**: Global TypeScript definitions (`src/types/index.ts`).
+- **`src/config/`**: Static configuration and data files (`src/config/data.ts`).
+- **`src/app/`**: Application startup and bootstrap logic.
+
+### Project Root Hygiene
+- **`logs/`**: All compilation logs, error reports, and temporary output files must be directed here. The project root should remain clean.
 
 ## 3. The Domains (Feature Inventory)
 The application logic is partitioned into the following domains within `src/features/`:
@@ -33,14 +40,18 @@ The application logic is partitioned into the following domains within `src/feat
 ### 🎮 Gamification & Engagement
 - **`game-hub` (Arcade)**: A collection of mini-games (Pexeso, Puzzle, Coloring) to engage users between reading sessions.
 - **`gamification`**: Manages retention mechanics like Daily Rewards, Streaks, and unlocking logic.
-- **`profile`**: Manages user identity, statistics (levels, badges), and settings. *Recently refactored to pure FSD.*
+- **`profile`**: Manages user identity, statistics (levels, badges), settings, and achievements.
+- **`social`**: Manages user interactions, reactions (likes/stars) on books, and community features.
+- **`feedback`**: Community feedback board for suggestions and bug reports.
+- **`onboarding`**: Guide overlays, coach marks, and tutorial flows.
 
 ### ⚙️ Core & Infrastructure
 - **`auth`**: Handles user authentication, registration, password recovery, and session management.
 - **`store`**: The commercial interface for purchasing "Energy" packs or managing subscriptions.
 - **`landing`**: Public-facing marketing pages and "Hero" sections to convert visitors.
+- **`navigation`**: The "NavigationHub" orchestrator that manages the main application dock and routing menu.
+- **`legal`**: Legal documents (Terms of Service, Privacy Policy, Cookie Consent).
 - **`audio`**: Manages background music, sound effects, and voice-overs.
-- **`core`**: Shared kernel logic used across multiple features.
 
 ## 4. The Financial & Energy Engine
 The economy of Skywhale relies on a strict **Server-Side Authority** model to prevent fraud.
@@ -56,6 +67,7 @@ All sensitive transactions are executed via atomic, `SECURITY DEFINER` PostgreSQ
 3.  **`claim_monthly_energy()`**: Processes subscription-based monthly grants.
 
 ## 5. State & Data Flow
-- **Adapters**: We utilizes the "Adapter Pattern" (e.g., `GameHubAdapter`) to decouple complex UI components from direct API calls. This allows for easier testing and mocking.
-- **Hooks**: Logic is extracted into custom hooks (e.g., `useProfileStats`, `useDailyReward`) to keep UI components clean and focused on rendering.
+- **Adapters**: We utilize the "Adapter Pattern" (e.g., `GameHubAdapter`) to decouple complex UI components from direct API calls. This allows for easier testing and mocking.
+- **Hooks**: Logic is extracted into custom hooks (e.g., `useProfileStats`, `useDailyReward`) to keep UI components clean.
+- **Ghost Code Prevention**: We actively audit components (especially layout/navigation) to ensure they do not fetch data they do not render. Unused database calls are treated as technical debt and removed.
 - **Local State**: Complex features (like `story-builder`) manage their transient state locally or via Context before persisting to Supabase.
