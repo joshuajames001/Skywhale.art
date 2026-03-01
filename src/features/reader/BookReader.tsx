@@ -11,6 +11,7 @@ import { usePdfExport } from './hooks/usePdfExport';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useEnergy } from '../../hooks/useEnergy';
+import { invokeEdgeFunction } from '../../lib/edge-functions';
 
 interface BookReaderProps {
     story: StoryBook;
@@ -44,6 +45,28 @@ export const BookReader: React.FC<BookReaderProps> = ({
 
     // Audio Generation State
     const [isAudioDialogOpen, setIsAudioDialogOpen] = useState(false);
+    const [isAudioLoading, setIsAudioLoading] = useState(false);
+    const [localAudioUrl, setLocalAudioUrl] = useState<string | null>(story.audio_url ?? null);
+
+    const fullText = story.pages.map(p => p.text).join(' ');
+    const charCount = fullText.length;
+    const audioCost = Math.max(1, Math.ceil(charCount / 20));
+
+    const handleGenerateAudio = async (voiceId?: string) => {
+        setIsAudioLoading(true);
+        const { data, error } = await invokeEdgeFunction<{ audioUrl: string; energyCost: number }>('generate-audio', {
+            bookId: story.book_id,
+            text: fullText,
+            voiceId,
+        });
+        setIsAudioLoading(false);
+        if (error || !data?.audioUrl) {
+            console.error('Audio generation failed:', error);
+            return;
+        }
+        setLocalAudioUrl(data.audioUrl);
+        setIsAudioDialogOpen(false);
+    };
 
     const isCover = currentIndex === 0;
 
@@ -118,8 +141,8 @@ export const BookReader: React.FC<BookReaderProps> = ({
                 <div className="absolute top-4 right-4 z-[60] flex gap-4 pointer-events-auto items-center">
                     {/* Audio Player and Generator */}
                     <div className="mr-2 flex items-center gap-2">
-                        {story.audio_url ? (
-                            <MiniPlayer audioUrl={story.audio_url} />
+                        {localAudioUrl ? (
+                            <MiniPlayer audioUrl={localAudioUrl} />
                         ) : (
                             <button
                                 onClick={() => setIsAudioDialogOpen(true)}
@@ -164,16 +187,12 @@ export const BookReader: React.FC<BookReaderProps> = ({
                     <AudioConfirmDialog
                         isOpen={isAudioDialogOpen}
                         onClose={() => setIsAudioDialogOpen(false)}
-                        onConfirm={() => {
-                            // Logic to refresh story would be needed here eventually
-                            setIsAudioDialogOpen(false);
-                            // Ideally, we'd trigger a refresh or callback to show the player immediately
-                        }}
+                        onConfirm={handleGenerateAudio}
                         bookTitle={story.title || 'Untitled Story'}
-                        charCount={100} // Placeholder, should be calculated from story.pages
-                        cost={0} // Logic handles cost server-side mostly, but UI needs estimate
+                        charCount={charCount}
+                        cost={audioCost}
                         currentEnergy={energyBalance || 0}
-                        loading={false}
+                        loading={isAudioLoading}
                     />
                 )}
 
