@@ -28,7 +28,8 @@ export const Library = ({ user, onOpenBook, onOpenMagic, onCreateCustom, onCreat
         fetchBooks,
         togglePublicStatus,
         deleteBook,
-        toggleFavorite
+        toggleFavorite,
+        getFavoriteIds,
     } = useLibrary();
 
     const [books, setBooks] = useState<StoryBook[]>([]);
@@ -79,45 +80,12 @@ export const Library = ({ user, onOpenBook, onOpenMagic, onCreateCustom, onCreat
             setLoading(true);
             setVisibleCount(20);
             try {
-                console.log("📚 Library Fetch: Current User:", user?.id, "Mode:", activeTab);
-
-                // Pass user.id if available, otherwise undefined (which adapter handles)
-                const mappedBooks = await fetchBooks(activeTab, user?.id);
-
+                const [mappedBooks, favIds] = await Promise.all([
+                    fetchBooks(activeTab, user?.id),
+                    user ? getFavoriteIds(user.id) : Promise.resolve([]),
+                ]);
                 setBooks(mappedBooks);
-
-                // Favorites handling is now inside Adapter mostly, but we might need IDs for UI state?
-                // The adapter implementation of fetchBooks handles the join. 
-                // But for the heart icon toggle state, we often keep a Set for O(1) lookups.
-                // The original code fetched favorites separately to populate `favoriteIds`.
-                // For now, I'll rely on the book object's state if possible, or we need to fetch favorites separately?
-                // The original code fetched favorites separately.
-                // My adapter implementation of `fetchBooks` for 'favorites' tab works.
-                // But for 'public' tab, how do we know if *I* favorited it?
-                // The adapter fetchBooks logic I wrote implies getting books. 
-                // It does NOT attach "is_favorited_by_me" metadata.
-                // This is a gap in the plan.
-                // I will quickly fix this by keeping the favoriteIds logic, but asking the adapter or just... 
-                // Wait, I claimed no direct Supabase. 
-                // I need `fetchFavoriteIds(userId)` in adapter?
-                // I didn't add it.
-                // I will ignore this minor degradation or assumed fix for now and implement it properly later/now?
-                // I'll stick to the original behavior as much as possible.
-                // I will assume for this strict extraction I might have to add a helper method to adapter later.
-                // actually, I can just use the provided actions.
-                // But to SHOW the heart...
-
-                // Strategy: I will add `getFavoriteIds` to the adapter in a follow-up or just use the existing `toggleFavorite` optimistically.
-                // But knowing INITIAL state is hard.
-                // I'll leave `favoriteIds` empty for now or add a `TODO` to update Adapter. 
-                // Wait, strict constraint: "NO VISUAL/FUNCTIONAL CHANGES".
-                // So I MUST fetch favorites.
-                // I will add `fetchUserFavorites` to the useLibraryAdapter hook in the previous file.
-                // But I can't backtrack easily.
-                // I will just use `fetchBooks('favorites', user.id)` to at least populate the set? No that gets full books.
-
-                // OK, I will have to edit the adapter file again to add `getFavoriteIds`.
-
+                setFavoriteIds(new Set(favIds));
             } catch (err: any) {
                 console.error("Error fetching library:", err);
                 setError(t('library.errors.load_failed'));
@@ -127,7 +95,7 @@ export const Library = ({ user, onOpenBook, onOpenMagic, onCreateCustom, onCreat
         };
 
         loadBooks();
-    }, [activeTab, user, fetchBooks]);
+    }, [activeTab, user, fetchBooks, getFavoriteIds]);
 
     // Handler for toggling public/private status
     const handleTogglePublic = useCallback(async (bookId: string, currentStatus: boolean) => {

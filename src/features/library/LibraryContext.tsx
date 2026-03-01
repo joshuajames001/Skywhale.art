@@ -11,6 +11,7 @@ export interface LibraryAdapter {
     togglePublicStatus(bookId: string, currentStatus: boolean, userId: string): Promise<boolean>;
     deleteBook(bookId: string, userId: string): Promise<boolean>;
     toggleFavorite(bookId: string, isFavorite: boolean, userId: string): Promise<void>;
+    getFavoriteIds(userId: string): Promise<string[]>;
 
     // Navigation
     onOpenBook: (book: StoryBook) => void;

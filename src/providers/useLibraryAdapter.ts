@@ -158,6 +158,15 @@ export const useLibraryAdapter = ({
         return !error;
     };
 
+    const getFavoriteIds = async (userId: string): Promise<string[]> => {
+        const { data, error } = await supabase
+            .from('user_favorites')
+            .select('book_id')
+            .eq('user_id', userId);
+        if (error || !data) return [];
+        return data.map((row: any) => row.book_id);
+    };
+
     const toggleFavorite = async (bookId: string, isFavorite: boolean, userId: string): Promise<void> => {
         if (isFavorite) {
             await supabase
@@ -177,6 +186,7 @@ export const useLibraryAdapter = ({
         togglePublicStatus,
         deleteBook,
         toggleFavorite,
+        getFavoriteIds,
         onOpenBook,
         onOpenMagic,
         onCreateCustom,
