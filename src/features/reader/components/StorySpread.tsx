@@ -88,7 +88,7 @@ export const StorySpread = ({
                 {!hasImage && (
                     <div className="absolute inset-0 w-full h-full z-20">
                         <ImageGenerator
-                            basePrompt={page.art_prompt || `Illustration of: ${page.text}`}
+                            basePrompt={(page.art_prompt || `Illustration of: ${page.text}`) + ", dynamic composition, varied camera angles (e.g., close-up, low angle, action shot), active poses, cinematic lighting"}
                             onImageGenerated={handleImageGenerated}
                             style={visualStyle}
                             characterDescription={mainCharacter}

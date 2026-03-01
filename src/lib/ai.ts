@@ -86,7 +86,7 @@ export const generateImage = async (params: GenerateImageParams): Promise<ImageG
         styleInstruction = "neon-noir aesthetic, high-contrast cyan and magenta lighting, lunar dust reflections, vacuum-clear depth of field, gritty urban lunar colony vibe";
     }
 
-    const processedPrompt = sanitizePrompt(prompt);
+    const processedPrompt = sanitizePrompt(prompt) + ", pure visual illustration, absolutely no text, no words, no typography, no speech bubbles, no labels, no watermark, clean art";
     const isJsonPrompt = processedPrompt.trim().startsWith('{');
     let jsonPayload: any = null;
     if (isJsonPrompt) {
@@ -168,8 +168,17 @@ export const generateImage = async (params: GenerateImageParams): Promise<ImageG
         const body: Record<string, any> = {
             seed: kineticSeed || undefined,
             model: tier === 'basic' ? 'dev' : 'pro',
-            num_inference_steps: params.steps || undefined // Pass explicit steps if provided
+            // OPTIMIZATION: Flux 2 Pro Sweet Spot is 28 steps
+            num_inference_steps: params.steps || (tier === 'pro' ? 28 : undefined),
+            // OPTIMIZATION: Maximize quality for Pro
+            image_quality: tier === 'pro' ? 'ultra' : 'standard',
+            safety_tolerance: '2' // Strict safety
         };
+
+        // HI-FI INJECTION: Ensure Pro tier gets the best pixels
+        if (tier === 'pro' && !finalPrompt.includes("8k resolution")) {
+             finalPrompt += ", extremely high detail, 8k resolution, cinematic lighting, photorealistic textures, depth of field, masterpiece";
+        }
 
         if (finalPrompt) body.prompt = finalPrompt;
         else body.prompt = processedPrompt;

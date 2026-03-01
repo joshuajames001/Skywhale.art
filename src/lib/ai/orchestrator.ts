@@ -7,8 +7,8 @@ import { StoryBook, StoryPage } from '../../types';
  * 
  * Flows:
  * 1. STRUCTURE: Text & Metadata (Edge Function)
- * 2. VISUAL DNA: Identity Sheet (Flux Dev, 28 Steps)
- * 3. ILLUSTRATION: Pages & Cover (Flux Pro, Multi-Ref)
+ * 2. VISUAL DNA: Hero Portrait (Flux Dev/Pro)
+ * 3. ILLUSTRATION: Pages & Cover (Flux Pro, Single-Ref)
  */
 export async function generateCompleteStory(
     params: StoryParams, 
@@ -28,18 +28,23 @@ export async function generateCompleteStory(
     let characterSheetUrl: string | undefined = undefined;
 
     if (identityPrompt) {
-        if (onProgress) onProgress("🧬 Sequencing Visual DNA...");
+        if (onProgress) onProgress("🧬 Sequencing Visual DNA (Hero Portrait)...");
         
         try {
-            // STRICT PROTOCOL: Flux 1 Dev + 28 Steps = Optimal Character Sheet
+            // STRICT PROTOCOL: Clean DNA of layout instructions
+            const cleanDna = visualDna.replace(/blueprint|schematic|turnaround|front view|side view|back view|character sheet|reference sheet|technical drawing|no shading|flat color/gi, "").trim();
+
+            const heroPortraitPrompt = `A stunning, high-quality cinematic portrait of ${cleanDna}, single character focus, dynamic lighting, plain neutral background, masterpiece, 8k`.trim();
+
+            // PHASE 2 now generates a HERO PORTRAIT, not a technical sheet.
             const { url } = await generateImage({
-                prompt: identityPrompt,
+                prompt: heroPortraitPrompt,
                 style: params.visual_style || "Watercolor",
-                characterDescription: visualDna, // Use the synthesized DNA string as anchor
-                setting: "Plain white background", // Force isolation
-                tier: 'basic', // Force Flux Dev
-                steps: 28, // Force 28 steps
-                isCover: true // Treat as high priority
+                characterDescription: cleanDna, // Use the sanitized DNA
+                setting: "Plain neutral background", 
+                tier: 'basic', // Flux Dev is sufficient for the base reference, or upgrade to 'pro' if budget allows
+                steps: 28, 
+                isCover: true 
             });
             
             if (url) {
@@ -183,8 +188,8 @@ export async function generateCompleteStory(
             const { url } = await generateImage({
                 prompt: coverPrompt,
                 style: params.visual_style || "Watercolor",
-                characterDescription: visualDna, // Text Anchor is sufficient for Cover
-                // characterReference: characterSheetUrl, // <--- DISABLED TO FIX SHEET SYNDROME
+                characterDescription: visualDna.replace(/blueprint|schematic|turnaround/gi, ""), // Sanitize again just in case
+                characterReference: characterSheetUrl, // <--- RE-ENABLED: Hero Portrait is now a valid reference!
                 setting: params.setting,
                 tier: 'pro', // Ultra
                 steps: 28, // High Quality

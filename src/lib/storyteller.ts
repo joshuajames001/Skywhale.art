@@ -194,14 +194,17 @@ export const generateStoryIdea = async (params?: { language?: string }): Promise
                 
                 const palette = technical_dna.color_palette || "";
                 const species = (technical_dna.species_en || "character").toLowerCase();
-                const isAnimal = ["unicorn", "dragon", "fox", "cat", "dog", "wolf", "bear", "rabbit", "horse", "lion", "tiger"].some(a => species.includes(a));
+                const isAnimal = ["unicorn", "dragon", "fox", "cat", "dog", "wolf", "bear", "rabbit", "horse", "lion", "tiger", "frog", "mouse", "rat", "owl"].some(a => species.includes(a));
                 const isRobot = species.includes("robot") || species.includes("android");
 
                 let formFactor = "Humanoid Body"; 
-                if (isAnimal) formFactor = "STRICTLY ANIMAL BODY, NON-HUMANOID, QUADRUPED, NO HUMAN FACE";
+                if (isAnimal) formFactor = "BIOLOGICAL ANIMAL ANATOMY. NATURAL POSTURE (Quadruped/Flying). ACCESSORIES/CLOTHING ALLOWED (Vests, Hats, etc.) BUT MUST FIT NATURAL BODY. NO HUMAN HANDS. NO STANDING ON TWO LEGS unless natural.";
                 if (isRobot) formFactor = "STRICTLY MECHANICAL ROBOT, METAL BODY, NON-HUMANOID, NO SKIN, NO CLOTHES";
 
-                const technicalDnaString = `VISUAL SPECIES: ${species.toUpperCase()} [${formFactor}]. Gender: ${technical_dna.gender_en || 'Neutral'}. Scale: ${technical_dna.size_age_en || 'Small'}. IDENTITY LOCK: ${anchors}. Colors: ${palette}.`;
+                // Sanitization: Allow clothing/accessories now
+                const cleanAnchors = anchors; 
+
+                const technicalDnaString = `VISUAL SPECIES: ${species.toUpperCase()} [${formFactor}]. Gender: ${technical_dna.gender_en || 'Neutral'}. Scale: ${technical_dna.size_age_en || 'Small'}. IDENTITY LOCK: ${cleanAnchors}. Colors: ${palette}.`;
 
                 // --- FINAL RETURN OBJECT (Flat format for StorySetup.tsx) ---
                 const isEn = language === 'en';

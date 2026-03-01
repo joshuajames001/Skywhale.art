@@ -56,6 +56,12 @@ const getStorySystemPrompt = (targetLength: number = 10, langCode: string = 'cs'
         0. **LANGUAGE RULE (ABSOLUTE PRIORITY)**: ALL story text (${textField} fields) MUST be in ${langName} language. Only art prompts (art_prompt_en) use English.
         1. TEXT: 40-60 words per page. Short, punchy, and engaging. Two to three clear sentences per page. USE "SHOW, DON'T TELL" PRINCIPLE. FOLLOW <storytelling_rules>.
         2. ART PROMPTS: Each page needs an 'art_prompt_en' – a vivid ENGLISH scene description for image generation.
+        3. STRICT LANGUAGE SEPARATION:
+           - Story Text = ${langName.toUpperCase()}
+           - Image Prompts = ENGLISH
+           - Visual DNA = ENGLISH
+           - Cover Prompt = ENGLISH
+           - NEVER mix languages in the prompts. Flux 2 Pro only understands English.
     </task>
 
     <storytelling_rules>
@@ -78,12 +84,12 @@ const getStorySystemPrompt = (targetLength: number = 10, langCode: string = 'cs'
            - DO NOT describe the character's physical features (hair, clothes, face) – the AI image system handles identity separately.
            - Focus ONLY on: What the character is DOING, WHERE they are, the ATMOSPHERE, and the CAMERA ANGLE.
            
-           FORMAT: "[Art Style]. [Camera angle], the [species/class] is [active verb] in [detailed setting]. [Lighting/mood description]."
+            FORMAT: "[Art Style]. [Camera angle], the [species/class] is [active verb] in [detailed setting]. [Lighting/mood description]."
            
-           EXAMPLES:
+           EXAMPLES (STRICTLY IN ENGLISH):
            - "Pixar 3D style. Low-angle shot, the small robot is rolling cautiously into a dark crystal cave, bioluminescent mushrooms casting blue light on wet stone walls."
            - "Watercolor style. Wide establishing shot, the young fox is standing at the edge of a golden wheat field at sunset, warm amber light painting long shadows."
-           - "Anime style. Close-up, the tiny fairy is peering through a rain-covered window, reflections of city lights sparkling in droplets."
+           - "Anime style. A small green frog with a red vest sitting on a mossy log next to a shimmering, rainbow-colored river in a sunlit forest. Wide angle landscape."
            
         DYNAMIC CAMERA (MANDATORY – vary every page):
            - Page 1: Wide Shot (Establish setting)
@@ -141,8 +147,8 @@ const getStorySystemPrompt = (targetLength: number = 10, langCode: string = 'cs'
               {
                 "page_number": 1,
                 "text_en": "[English Story Text - 40-60 words]",
-                "${textField}": "[${langName} Story Text - 40-60 words]",
-                "art_prompt_en": "[STYLE]. [Camera angle], the [species/class] is [action] in [detailed setting]. [Lighting/mood]."
+                "${textField}": "Byla jednou jedna malá žabička Kvák, která bydlela u kouzelné řeky.",
+                "art_prompt_en": "A small green frog with a red vest sitting on a mossy log next to a shimmering, rainbow-colored river in a sunlit forest. Wide angle landscape. (MUST BE ENGLISH)"
               }
             ]
           }
@@ -153,7 +159,7 @@ const getStorySystemPrompt = (targetLength: number = 10, langCode: string = 'cs'
     <dual_language_rules>
     1. THINK IN ENGLISH: Generate story content in English first (text_en).
     2. TRANSLATE TO ${langName.toUpperCase()}: Then translate to '${textField}'.
-    3. VISUALS FROM ENGLISH: 'art_prompt_en' derived from 'text_en' to preserve detail.
+    3. VISUALS MUST BE ENGLISH: 'art_prompt_en' must be in English. Do NOT translate it to ${langName}.
     </dual_language_rules>
     `};
 
@@ -172,7 +178,12 @@ const getIdeaSystemPrompt = (langCode: string = 'cs') => {
         1. THEMATIC LAW: Universal Scope. (History, Sci-Fi, Fairytale, Modern, Nature).
         2. TAXONOMY LAW: The 'species_en' MUST be the literal biological classification.
         3. COLOR & ADJECTIVE LAW: If the Title or Blurb mentions a specific color or state, these MUST be explicitly included in both the concept descriptions and 'technical_dna.visual_anchors_en'.
-        4. LOGIC LAW: Environments must have visual gravity.
+        4. ANIMAL PURITY LAW (CRITICAL): If 'species_en' is an animal (even magical like dragon/unicorn), it must have NATURAL ANATOMY.
+           - NO HUMAN HANDS.
+           - NO STANDING ON TWO LEGS (unless natural behavior).
+           - CLOTHING/ACCESSORIES ALLOWED (vests, hats, capes) BUT MUST FIT NATURAL BODY.
+           - The 'visual_anchors_en' MUST describe biological features AND accessories, but anatomy must remain 100% animal.
+        5. LOGIC LAW: Environments must have visual gravity.
         5. ENVIRONMENTAL DIVERSITY: Avoid defaulting to "Enchanted Forest".
         6. Technical DNA: You must output a JSON with a technical_dna field.
         7. Color Palette: Always include a color_palette field in the DNA.
@@ -180,7 +191,8 @@ const getIdeaSystemPrompt = (langCode: string = 'cs') => {
         9. DUAL LANGUAGE RULES (ABSOLUTE):
            - THINK IN ENGLISH: Generate the story concept in English first.
            - TRANSLATE TO CZECH: Then translate it to Czech.
-           - NO CZECH IN ENGLISH FIELDS: Fields with _en suffix MUST be purely English.
+           - NO CZECH IN ENGLISH FIELDS: Fields with _en suffix and 'technical_dna' MUST be purely English.
+           - NO CZECH IN VISUAL DNA: The 'visual_anchors_en' and 'color_palette' must be English words only.
         10. CHILD SAFETY & MODESTY (CRITICAL).
         11. SINGLE HERO RULE (ABSOLUTE).
         12. NAMING CONVENTION (SIMPLE).
@@ -351,7 +363,31 @@ serve(async (req) => {
 
     if (action === 'generate-image-prompt') {
         const { storyText } = payload;
-        const systemPrompt = `You are an expert at creating visual art prompts for children's book illustrations. Given a story text in any language, create a detailed English image generation prompt. Focus on: scene composition, lighting, mood, characters, and setting. Return ONLY the English prompt text, no JSON, no formatting.`;
+        const { storyText } = payload;
+        
+        // FROG PROTOCOL: Strict English Enforcement + Style Guidelines
+        const systemPrompt = `
+        <role>You are an expert Art Director for high-end children's books. Your goal is to translate story text into specific VISUAL INSTRUCTIONS for an illustrator.</role>
+        
+        <rules>
+        1. OUTPUT MUST BE ENGLISH ONLY.
+        2. NO TEXT IN IMAGE. Do not describe speech bubbles or words.
+        3. FOCUS: Composition, Lighting, Mood, Action, Setting.
+        4. ANATOMY: If the character is an animal, it must be BIOLOGICALLY ACCURATE (no human hands, no standing on two legs).
+        5. ACCESSORIES: Animals CAN wear clothes (hats, vests, etc.) but they must fit the natural quadruped/animal body.
+        6. STYLE: Pixar 3D or Watercolor (inferred from context).
+        </rules>
+
+        <examples>
+        Input: "Malý drak Plamínek dnes ulovil svou největší trofej..."
+        Output: "A tiny red dragon wearing a pilot's goggles sitting proudly on a mountain of colorful knitted socks, steampunk bedroom background, dramatic lighting. Low angle shot."
+
+        Input: "Byla jednou jedna malá žabička Kvák..."
+        Output: "A small green frog with a red vest sitting on a mossy log next to a shimmering, rainbow-colored river. Wide angle landscape."
+        </examples>
+
+        Return ONLY the English prompt text. No JSON.
+        `;
 
         const result = await callGemini(
             [{ role: "user", content: `Create an illustration prompt for this story text:\n${storyText}` }],

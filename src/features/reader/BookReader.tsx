@@ -205,24 +205,50 @@ export const BookReader: React.FC<BookReaderProps> = ({
                                 tier={story.tier}
                                 referenceImageUrl={story.character_sheet_url}
                             />
-                        ) : (
-                            <StorySpread
-                                page={story.pages[currentIndex - 1]}
-                                bookId={story.book_id}
-                                onUpdatePage={onUpdatePage || (() => { })}
-                                onUploadImage={onUploadImage || (async () => null)}
-                                // RESTORED VISUAL DNA PIPELINE
-                                visualDna={story.visual_dna || story.main_character}
-                                mainCharacter={story.main_character}
-                                setting={story.setting}
-                                visualStyle={story.visual_style}
-                                tier={story.tier}
-                                // FLUX 2 PRO: UNIFIED TRUTH PIPELINE
-                                // Priority: 1. Character Sheet (New) -> 2. Identity Slot (Alt) -> 3. Visual DNA Image (Legacy)
-                                referenceImageUrl={story.character_sheet_url || story.identity_image_slot || (story as any).visual_dna_image}
-                                characterSeed={story.character_seed}
-                            />
-                        )}
+                        ) : (() => {
+                            // CONTINUITY CHAIN LOGIC (Flux 2 Pro)
+                            // Page 1 uses the character sheet (Hero Portrait).
+                            // Subsequent pages use the PREVIOUS page's generated image (if available) to allow dynamic pose evolution.
+                            const getContinuityReference = () => {
+                                const currentPageNum = currentIndex; // 1-based index (1 = first story page)
+                                const previousPageIndex = currentPageNum - 2; // Array index for the previous page
+
+                                // Base Reference (Hero Portrait) - The "Anchor"
+                                const anchorReference = story.character_sheet_url || story.identity_image_slot || (story as any).visual_dna_image;
+
+                                // If it's the first page, we MUST use the anchor.
+                                if (currentPageNum === 1) return anchorReference;
+
+                                // For later pages, try to grab the previous page's image
+                                const previousPage = story.pages[previousPageIndex];
+                                if (previousPage?.image_url) {
+                                    return previousPage.image_url;
+                                }
+
+                                // Fallback: If previous page has no image, return to anchor to reset consistency.
+                                return anchorReference;
+                            };
+
+                            const activeReferenceUrl = getContinuityReference();
+
+                            return (
+                                <StorySpread
+                                    page={story.pages[currentIndex - 1]}
+                                    bookId={story.book_id}
+                                    onUpdatePage={onUpdatePage || (() => { })}
+                                    onUploadImage={onUploadImage || (async () => null)}
+                                    // RESTORED VISUAL DNA PIPELINE
+                                    visualDna={story.visual_dna || story.main_character}
+                                    mainCharacter={story.main_character}
+                                    setting={story.setting}
+                                    visualStyle={story.visual_style}
+                                    tier={story.tier}
+                                    // FLUX 2 PRO: UNIFIED TRUTH PIPELINE with CONTINUITY CHAIN
+                                    referenceImageUrl={activeReferenceUrl}
+                                    characterSeed={story.character_seed}
+                                />
+                            );
+                        })()}
                     </motion.div>
                 </AnimatePresence>
             </motion.div>
