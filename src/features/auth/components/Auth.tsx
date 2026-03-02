@@ -7,6 +7,7 @@ export const Auth = ({ onLogin }: { onLogin: () => void }) => {
     const [loading, setLoading] = useState(false);
     const [email, setEmail] = useState('');
     const [isSent, setIsSent] = useState(false);
+    const [consentAccepted, setConsentAccepted] = useState(false);
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -90,10 +91,28 @@ export const Auth = ({ onLogin }: { onLogin: () => void }) => {
                                 onSubmit={handleLogin}
                                 className="space-y-4"
                             >
+                                {/* GDPR Consent */}
+                                <label className="flex items-start gap-3 text-left cursor-pointer group">
+                                    <input
+                                        type="checkbox"
+                                        checked={consentAccepted}
+                                        onChange={(e) => setConsentAccepted(e.target.checked)}
+                                        className="mt-1 w-4 h-4 rounded accent-purple-600 shrink-0 cursor-pointer"
+                                    />
+                                    <span className="text-white/40 text-xs leading-relaxed group-hover:text-white/60 transition-colors">
+                                        Souhlasím s{' '}
+                                        <a href="/podminky" target="_blank" rel="noopener noreferrer" className="text-purple-400 hover:underline">Podmínkami použití</a>
+                                        {' '}a{' '}
+                                        <a href="/soukromi" target="_blank" rel="noopener noreferrer" className="text-purple-400 hover:underline">Zásadami ochrany osobních údajů</a>.
+                                        Potvrzuji, že mi je alespoň 16 let nebo mám souhlas rodiče/zákonného zástupce.
+                                    </span>
+                                </label>
+
                                 {/* Google Login */}
                                 <button
                                     type="button"
                                     onClick={async () => {
+                                        if (!consentAccepted) return;
                                         setLoading(true);
                                         try {
                                             const { error } = await supabase.auth.signInWithOAuth({
@@ -111,8 +130,8 @@ export const Auth = ({ onLogin }: { onLogin: () => void }) => {
                                             setLoading(false);
                                         }
                                     }}
-                                    disabled={loading}
-                                    className="w-full py-4 bg-white text-stone-900 rounded-xl font-bold shadow-lg hover:bg-stone-100 transition-all flex items-center justify-center gap-3 relative overflow-hidden group"
+                                    disabled={loading || !consentAccepted}
+                                    className="w-full py-4 bg-white text-stone-900 rounded-xl font-bold shadow-lg hover:bg-stone-100 transition-all flex items-center justify-center gap-3 relative overflow-hidden group disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     <svg className="w-5 h-5" viewBox="0 0 24 24">
                                         <path
@@ -157,7 +176,7 @@ export const Auth = ({ onLogin }: { onLogin: () => void }) => {
                                 </div>
 
                                 <button
-                                    disabled={loading}
+                                    disabled={loading || !consentAccepted}
                                     className="w-full py-4 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white rounded-xl font-bold shadow-lg shadow-purple-900/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed group flex items-center justify-center gap-2 relative overflow-hidden"
                                 >
                                     <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 pointer-events-none" />

@@ -10,6 +10,7 @@ import { VOICE_OPTIONS, DEFAULT_VOICE_ID } from '../../../../lib/audio-constants
 import { generateCompleteStory } from '../../../../lib/ai/orchestrator';
 import { StoryBook } from '../../../../types';
 import { MagicLoading } from '../effects/MagicLoading';
+import { checkTopicBlacklist } from '../../../../lib/content-policy';
 
 interface CustomModeProps {
     initialData?: any;
@@ -32,6 +33,7 @@ export const CustomMode: React.FC<CustomModeProps> = ({
     const [step, setStep] = useState(0);
     const [isGenerating, setIsGenerating] = useState(false);
     const [creationStatus, setCreationStatus] = useState<string | null>(null);
+    const [policyError, setPolicyError] = useState<string | null>(null);
 
     // CRITICAL FIX: Default length is 5
     const [formData, setFormData] = useState({
@@ -58,6 +60,14 @@ export const CustomMode: React.FC<CustomModeProps> = ({
     const hasEnoughEnergy = userBalance !== null && userBalance >= requiredEnergy;
 
     const handleSubmit = async () => {
+        const policyCheck = checkTopicBlacklist(
+            [formData.title, formData.main_character, formData.setting].filter(Boolean).join(' ')
+        );
+        if (policyCheck.blocked) {
+            setPolicyError(policyCheck.reason ?? 'Nevhodný obsah.');
+            return;
+        }
+        setPolicyError(null);
         setIsGenerating(true);
         setCreationStatus(t('setup.status.calling_muses'));
 
@@ -275,14 +285,19 @@ export const CustomMode: React.FC<CustomModeProps> = ({
                             >
                                 {t('setup.back')}
                             </button>
-                            <button
-                                onClick={handleSubmit}
-                                disabled={!hasEnoughEnergy}
-                                className={`bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white px-12 py-4 rounded-full font-bold text-lg hover:shadow-2xl hover:shadow-fuchsia-500/30 transition-all transform hover:scale-105 flex items-center gap-3 ${!hasEnoughEnergy ? 'opacity-50 grayscale cursor-not-allowed' : ''}`}
-                            >
-                                <Sparkles size={20} className="animate-spin-slow" />
-                                {hasEnoughEnergy ? t('setup.create_action') : t('setup.energy.insufficient_button')}
-                            </button>
+                            <div className="flex flex-col items-end gap-2">
+                                {policyError && (
+                                    <p className="text-red-400 text-sm text-right">{policyError}</p>
+                                )}
+                                <button
+                                    onClick={handleSubmit}
+                                    disabled={!hasEnoughEnergy}
+                                    className={`bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white px-12 py-4 rounded-full font-bold text-lg hover:shadow-2xl hover:shadow-fuchsia-500/30 transition-all transform hover:scale-105 flex items-center gap-3 ${!hasEnoughEnergy ? 'opacity-50 grayscale cursor-not-allowed' : ''}`}
+                                >
+                                    <Sparkles size={20} className="animate-spin-slow" />
+                                    {hasEnoughEnergy ? t('setup.create_action') : t('setup.energy.insufficient_button')}
+                                </button>
+                            </div>
                         </div>
                     </motion.div>
                 )}

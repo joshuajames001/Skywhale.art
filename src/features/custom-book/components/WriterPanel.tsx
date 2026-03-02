@@ -1,6 +1,7 @@
 import React from 'react';
 import { Cloud, Feather, Book, GraduationCap, Loader2, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { checkTopicBlacklist } from '../../../lib/content-policy';
 
 export const WriterPanel = ({ state, actions, t }: any) => {
     return (
@@ -19,7 +20,14 @@ export const WriterPanel = ({ state, actions, t }: any) => {
                         </span>
                         <button
                             id="gemini-assist-btn"
-                            onClick={actions.handleGeminiAssist}
+                            onClick={() => {
+                                const policy = checkTopicBlacklist(state.currentPage.text ?? '');
+                                if (policy.blocked) {
+                                    alert(policy.reason ?? 'Nevhodný obsah.');
+                                    return;
+                                }
+                                actions.handleGeminiAssist();
+                            }}
                             disabled={state.geminiLoading}
                             className={`p-2 md:p-3 rounded-full transition-all group shadow-sm ${state.geminiLoading ? 'bg-purple-100 text-purple-400' : 'bg-white hover:bg-purple-50 text-stone-400 hover:text-purple-600 border border-stone-100 hover:border-purple-200 hover:shadow-md'}`}
                             title="Gemini Asistent"

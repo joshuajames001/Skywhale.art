@@ -12,6 +12,7 @@ import { generateCompleteStory } from '../../../../lib/ai/orchestrator';
 import { StoryBook } from '../../../../types';
 import { MagicLoading } from '../effects/MagicLoading';
 import { MagicFlash } from '../effects/MagicFlash';
+import { checkTopicBlacklist } from '../../../../lib/content-policy';
 
 interface HeroModeProps {
     userBalance: number | null;
@@ -33,6 +34,7 @@ export const HeroMode: React.FC<HeroModeProps> = ({
     const [isGenerating, setIsGenerating] = useState(false);
     const [creationStatus, setCreationStatus] = useState<string | null>(null);
     const [isUploading, setIsUploading] = useState(false);
+    const [policyError, setPolicyError] = useState<string | null>(null);
 
     // CRITICAL FIX: Default length is 5
     const [formData, setFormData] = useState({
@@ -75,6 +77,14 @@ export const HeroMode: React.FC<HeroModeProps> = ({
     };
 
     const handleSubmit = async () => {
+        const policyCheck = checkTopicBlacklist(
+            [formData.title, formData.main_character, formData.setting].filter(Boolean).join(' ')
+        );
+        if (policyCheck.blocked) {
+            setPolicyError(policyCheck.reason ?? 'Nevhodný obsah.');
+            return;
+        }
+        setPolicyError(null);
         setIsGenerating(true);
         setCreationStatus(t('setup.status.dreaming'));
 
@@ -212,9 +222,14 @@ export const HeroMode: React.FC<HeroModeProps> = ({
 
                         <div className="mt-8 flex justify-between items-center pt-4 border-t border-emerald-500/10">
                             <button onClick={() => setStep(1)} className="text-slate-400 font-bold hover:text-white px-6 py-4">{t('setup.back')}</button>
-                            <button onClick={handleSubmit} disabled={!hasEnoughEnergy} className={`bg-emerald-600 text-white px-12 py-4 rounded-full font-bold text-lg hover:shadow-2xl hover:shadow-emerald-500/30 transition-all transform hover:scale-105 flex items-center gap-3 ${!hasEnoughEnergy ? 'opacity-50 cursor-not-allowed' : ''}`}>
-                                <Sparkles size={20} /> {hasEnoughEnergy ? t('setup.create_action') : t('setup.energy.insufficient_button')}
-                            </button>
+                            <div className="flex flex-col items-end gap-2">
+                                {policyError && (
+                                    <p className="text-red-400 text-sm text-right">{policyError}</p>
+                                )}
+                                <button onClick={handleSubmit} disabled={!hasEnoughEnergy} className={`bg-emerald-600 text-white px-12 py-4 rounded-full font-bold text-lg hover:shadow-2xl hover:shadow-emerald-500/30 transition-all transform hover:scale-105 flex items-center gap-3 ${!hasEnoughEnergy ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                                    <Sparkles size={20} /> {hasEnoughEnergy ? t('setup.create_action') : t('setup.energy.insufficient_button')}
+                                </button>
+                            </div>
                         </div>
                     </motion.div>
                 )}

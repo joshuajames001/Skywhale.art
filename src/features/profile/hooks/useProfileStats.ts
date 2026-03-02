@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../../../lib/supabase';
+import { validateNickname } from '../../../lib/content-policy';
 
 export interface Achievement {
     id: string;
@@ -185,7 +186,10 @@ export const useProfileStats = (user: any) => {
         }
     };
 
-    const updateNickname = async (newNickname: string) => {
+    const updateNickname = async (newNickname: string): Promise<string | null> => {
+        const policy = validateNickname(newNickname);
+        if (policy.blocked) return policy.reason ?? 'Neplatná přezdívka.';
+
         if (user && newNickname.trim()) {
             setNickname(newNickname);
             const { error } = await supabase
@@ -201,6 +205,7 @@ export const useProfileStats = (user: any) => {
                 console.error('Error saving nickname:', error);
             }
         }
+        return null;
     };
 
     return {

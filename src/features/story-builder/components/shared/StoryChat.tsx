@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Send, Sparkles, User, Bot, AlertCircle, Terminal, Code2 } from 'lucide-react';
 import { supabase } from '../../../../lib/supabase';
 import { useTranslation } from 'react-i18next';
+import { checkTopicBlacklist } from '../../../../lib/content-policy';
 
 interface StoryChatProps {
     onComplete: (data: any) => void;
@@ -53,6 +54,17 @@ export const StoryChat: React.FC<StoryChatProps> = ({ onComplete, onCancel, mode
 
     const handleSend = async () => {
         if (!inputValue.trim() || isTyping) return;
+
+        const policy = checkTopicBlacklist(inputValue.trim());
+        if (policy.blocked) {
+            setMessages(prev => [...prev, {
+                id: crypto.randomUUID(),
+                role: 'assistant' as const,
+                content: policy.reason ?? 'Nevhodný obsah.',
+                isError: true,
+            }]);
+            return;
+        }
 
         const userMsg: Message = {
             id: crypto.randomUUID(),
