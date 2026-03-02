@@ -12,7 +12,13 @@ export default defineConfig({
     css: false,
     alias: {
       '@': path.resolve(__dirname, './src')
-    }
+    },
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'html'],
+      include: ['src/lib/**', 'src/hooks/**', 'src/providers/**'],
+      exclude: ['src/tests/**', 'src/**/*.test.*', 'src/**/*.spec.*'],
+    },
   },
   resolve: {
     alias: {

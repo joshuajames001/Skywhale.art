@@ -210,7 +210,13 @@ export const StoryChat: React.FC<StoryChatProps> = ({ onComplete, onCancel, mode
                                 <p key={i} className={i > 0 ? 'mt-2' : ''}>
                                     {isArchitect && msg.role === 'assistant' ? (
                                         // Markdown-ish highlight for codes
-                                        <span dangerouslySetInnerHTML={{ __html: line.replace(/`([^`]+)`/g, '<code class="bg-black/30 px-1 rounded text-emerald-300 font-mono">$1</code>') }} />
+                                        <>
+                                            {line.split(/`([^`]+)`/g).map((part, i) =>
+                                                i % 2 === 1
+                                                    ? <code key={i} className="bg-black/30 px-1 rounded text-emerald-300 font-mono">{part}</code>
+                                                    : <span key={i}>{part}</span>
+                                            )}
+                                        </>
                                     ) : line}
                                 </p>
                             ))}
