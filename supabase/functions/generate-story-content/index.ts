@@ -37,6 +37,17 @@ const getTitleFieldName = (code: string) => {
 
 // --- PROMPTS ---
 
+const CREATIVE_TWISTS: string[] = [
+    "UNEXPECTED PERSPECTIVE: Begin in the middle of the action (IN MEDIAS RES). Show the world from an unusual vantage point or moment — not from the beginning.",
+    "ROLE REVERSAL: The apparent antagonist has a sympathetic motivation the hero discovers mid-story. The true conflict is a misunderstanding, not pure evil.",
+    "TINY HERO: The solution comes from the smallest, most overlooked character, creature, or object in the story — not from the strongest.",
+    "INNER JOURNEY: The external quest mirrors a personal emotional struggle. The hero must overcome an internal fear or flaw to unlock the physical solution.",
+    "UNEXPECTED ALLIANCE: The hero must form an alliance with someone or something completely unexpected — an enemy, a rival, or a feared creature.",
+    "FALSE VICTORY: The hero achieves their apparent goal by page 7–8 but discovers it was the wrong goal. A deeper, more meaningful quest emerges.",
+    "FORCE OF NATURE: The primary antagonist is not a creature or villain but an environmental challenge — a storm, a flood, a drought, a labyrinth.",
+    "THE GIFT OF FAILURE: The hero fails spectacularly at the midpoint. This failure is the key — it teaches the exact insight needed to truly succeed.",
+];
+
 const getStorySystemPrompt = (targetLength: number = 10, langCode: string = 'cs') => {
     const langName = getLanguageName(langCode);
     const textField = getTextFieldName(langCode);
@@ -70,6 +81,8 @@ const getStorySystemPrompt = (targetLength: number = 10, langCode: string = 'cs'
         3. CHARACTER AGENCY: The Hero must solve the problem, not a random event or magic.
         4. NO "WHITE ROOM": Interact with the environment. Describe the texture, light, and sound of the world.
         5. CONSISTENCY: Keep the character's appearance and the world's rules consistent (e.g. if it's night, it stays night).
+        6. IN MEDIAS RES (ABSOLUTE): Page 1 MUST begin in the middle of action — a discovery, a movement, a question, a sound. FORBIDDEN opening words: "Once upon a time", "There was once", "One day", "Long ago". Drop the reader directly into the scene.
+        7. NO CLICHÉS: BANNED resolutions: magic saves the day without consequence, hero wakes up and it was a dream, villain is evil for no reason, magical item appears from nowhere, happy ending via random luck. The resolution MUST follow logically from the hero's own choices and actions.
     </storytelling_rules>
 
     <art_prompt_rules>
@@ -294,14 +307,30 @@ serve(async (req) => {
     }
 
     if (action === 'generate-structure') {
-        const userPrompt = `Title: ${payload.title}\nAuthor: ${payload.author}\nMain Character: ${payload.main_character}\nSetting: ${payload.setting}\nVisual DNA: ${payload.visual_dna || payload.main_character}\nTarget Audience: ${payload.target_audience}\nVisual Style: ${payload.visual_style}`;
+        const anthropicKey = Deno.env.get('ANTHROPIC_API_KEY');
+        if (!anthropicKey) {
+            return new Response(JSON.stringify({ error: "Server configuration error: Anthropic key is missing." }), {
+                status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            });
+        }
 
-        const data = await callGemini(
-            [{ role: "user", content: userPrompt }],
+        const randomTwist = CREATIVE_TWISTS[Math.floor(Math.random() * CREATIVE_TWISTS.length)];
+        const userPrompt = `Title: ${payload.title}
+Author: ${payload.author}
+Main Character: ${payload.main_character}
+Setting: ${payload.setting}
+Visual DNA: ${payload.visual_dna || payload.main_character}
+Target Audience: ${payload.target_audience}
+Visual Style: ${payload.visual_style}
+
+NARRATIVE DIRECTIVE (apply this creative constraint throughout the story): ${randomTwist}`;
+
+        const data = await callAnthropic(
+            userPrompt,
             getStorySystemPrompt(payload.length || 10, lang),
-            true,
-            apiKey!,
-            "gemini-2.0-flash"
+            anthropicKey,
+            "claude-sonnet-4-6",
+            0.95
         );
 
         return new Response(JSON.stringify({ choices: [{ message: { content: JSON.stringify(data) } }] }), { headers: corsHeaders });
@@ -363,8 +392,7 @@ serve(async (req) => {
 
     if (action === 'generate-image-prompt') {
         const { storyText } = payload;
-        const { storyText } = payload;
-        
+
         // FROG PROTOCOL: Strict English Enforcement + Style Guidelines
         const systemPrompt = `
         <role>You are an expert Art Director for high-end children's books. Your goal is to translate story text into specific VISUAL INSTRUCTIONS for an illustrator.</role>
@@ -580,4 +608,47 @@ async function callGemini(
     }
 
     return jsonMode ? JSON.parse(content) : content;
+}
+
+// --- ANTHROPIC HELPER ---
+
+async function callAnthropic(
+    userPrompt: string,
+    systemPrompt: string,
+    apiKey: string,
+    model: string = 'claude-sonnet-4-6',
+    temperature: number = 1.0
+) {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+            'x-api-key': apiKey,
+            'anthropic-version': '2023-06-01',
+            'content-type': 'application/json',
+        },
+        body: JSON.stringify({
+            model,
+            max_tokens: 16384,
+            temperature,
+            system: systemPrompt,
+            messages: [{ role: 'user', content: userPrompt }],
+        }),
+    });
+
+    if (!response.ok) {
+        const errText = await response.text();
+        console.error('❌ Anthropic Error:', errText);
+        throw new Error(`Anthropic API Error: ${response.statusText} (${errText})`);
+    }
+
+    const data = await response.json();
+    console.log('✅ Anthropic Response OK');
+
+    let content = data.content?.[0]?.text;
+    if (!content) throw new Error('Anthropic returned no content');
+
+    // Strip markdown code fences if present
+    content = content.replace(/^```json\s*/m, '').replace(/^```\s*/m, '').replace(/\s*```$/m, '');
+
+    return JSON.parse(content);
 }
