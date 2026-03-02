@@ -27,40 +27,33 @@ export const useEnergy = () => {
         }
     };
 
-    const buyPackage = async (packageId: string, customAmount?: number) => {
+    const GUMROAD_URLS: Record<string, string> = {
+        'starter':          'https://ghostfactory.gumroad.com/l/Zvedavec',
+        'writer':           'https://ghostfactory.gumroad.com/l/Spisovatel',
+        'master_wordsmith': 'https://ghostfactory.gumroad.com/l/MistrSlova',
+        'sub_start':        'https://ghostfactory.gumroad.com/l/Start',
+        'sub_advanced':     'https://ghostfactory.gumroad.com/l/pokrocily',
+        'sub_expert':       'https://ghostfactory.gumroad.com/l/expert',
+        'sub_master':       'https://ghostfactory.gumroad.com/l/mistr',
+    };
+
+    const buyPackage = async (packageId: string) => {
         setLoading(true);
         try {
             const { data: { session } } = await supabase.auth.getSession();
-            if (!session?.user) throw new Error("Please log in to purchase energy.");
+            if (!session?.user) throw new Error('Nejsi přihlášen/a.');
 
-            const { data, error } = await supabase.functions.invoke('create-checkout', {
-                headers: {
-                    Authorization: `Bearer ${session.access_token}`
-                },
-                body: {
-                    packageId,
-                    userId: session.user.id,
-                    successUrl: window.location.href, // Return to current page
-                    cancelUrl: window.location.href,
-                    customAmount: customAmount, // Optional custom donation amount
-                }
-            });
+            const base = GUMROAD_URLS[packageId];
+            if (!base) throw new Error('Neplatný balíček.');
 
-            if (error) throw error;
-            
-            // Handle soft error (status 200 but contains error)
-            if (data?.error) {
-                throw new Error(data.error);
-            }
-
-            if (data?.url) {
-                window.location.href = data.url; // Redirect to Stripe
-            }
+            const email = session.user.email;
+            window.location.href = email
+                ? `${base}?email=${encodeURIComponent(email)}`
+                : base;
         } catch (err) {
-            console.error("Purchase failed:", err);
-            // DEBUG: Show actual error to user
+            console.error('Purchase failed:', err);
             const msg = err instanceof Error ? err.message : JSON.stringify(err);
-            alert(`Purchase failed: ${msg}`);
+            alert(`Nákup selhal: ${msg}`);
         } finally {
             setLoading(false);
         }

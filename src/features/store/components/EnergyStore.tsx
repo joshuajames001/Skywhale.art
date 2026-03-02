@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Zap, Star, Gift, Crown, ShoppingBag, X, Check, Shield, Heart } from 'lucide-react';
+import { Zap, Star, Gift, Crown, ShoppingBag, X, Check, Shield } from 'lucide-react';
 import { useEnergy } from '../../../hooks/useEnergy';
 import { SubscriptionCard } from './SubscriptionCard';
 import { useGuide } from '../../../hooks/useGuide';
@@ -50,12 +50,10 @@ const SUBSCRIPTION_TIERS = [
         monthly: {
             price: 259,
             energy: 1600,
-            id: 'sub_monthly_start'
         },
         yearly: {
             price: 3108,
-            energy: 19200,
-            id: 'sub_yearly_start',
+            energy: 1600,
             savings: ''
         },
         features: ['Ideální pro začátečníky', 'Energie na 2 knihy měsíčně', 'Zrušení kdykoliv']
@@ -68,12 +66,10 @@ const SUBSCRIPTION_TIERS = [
         monthly: {
             price: 599,
             energy: 4000,
-            id: 'sub_monthly_advanced'
         },
         yearly: {
             price: 7188,
-            energy: 48000,
-            id: 'sub_yearly_advanced',
+            energy: 4000,
             savings: ''
         },
         features: ['Pro časté tvůrce', 'Energie na 5 knih měsíčně', 'Prioritní podpora']
@@ -87,13 +83,11 @@ const SUBSCRIPTION_TIERS = [
         monthly: {
             price: 1199,
             energy: 9000,
-            id: 'sub_monthly_expert'
         },
         yearly: {
-            price: 13189,
-            energy: 108000,
-            id: 'sub_yearly_expert',
-            savings: '1 měsíc zdarma'
+            price: 11990,
+            energy: 9000,
+            savings: '2 měsíce zdarma'
         },
         features: ['Pro autory sérií', 'Energie na 12 knih měsíčně', 'Early access k funkcím']
     },
@@ -106,46 +100,13 @@ const SUBSCRIPTION_TIERS = [
         monthly: {
             price: 2499,
             energy: 21000,
-            id: 'sub_monthly_master'
         },
         yearly: {
             price: 24990,
-            energy: 252000,
-            id: 'sub_yearly_master',
+            energy: 21000,
             savings: '2 měsíce zdarma'
         },
         features: ['Pro školy a kroužky', 'Maximální hodnota', 'VIP status']
-    }
-];
-
-const DONATION_OPTIONS = [
-    {
-        id: 'donate_coffee',
-        name: 'Pozvi nás na kávu',
-        price: '79 Kč',
-        icon: Gift,
-        color: 'from-orange-400 to-amber-600',
-        description: 'Malé gesto, které nám dodá energii do další práce.',
-        energyBonus: 100 // Symbolic energy
-    },
-    {
-        id: 'donate_lunch',
-        name: 'Koupit tvůrcům oběd',
-        price: '199 Kč',
-        icon: Heart,
-        color: 'from-pink-500 to-rose-600',
-        description: 'Abychom u psaní kódu hlady nešilhali!',
-        energyBonus: 250
-    },
-    {
-        id: 'donate_treasure',
-        name: 'Hvězdný poklad',
-        price: '499 Kč',
-        icon: Star,
-        color: 'from-purple-500 to-indigo-600',
-        description: 'Významná podpora pro rozvoj nových magických funkcí.',
-        energyBonus: 600,
-        popular: true
     }
 ];
 
@@ -154,7 +115,7 @@ const DONATION_OPTIONS = [
 export const EnergyStore: React.FC<EnergyStoreProps> = ({ onClose }) => {
     const { balance, buyPackage, loading } = useEnergy();
     const { startGuide, hasSeenGroups } = useGuide();
-    const [activeTab, setActiveTab] = useState<'packages' | 'subscriptions' | 'support'>('packages'); // Added support
+    const [activeTab, setActiveTab] = useState<'packages' | 'subscriptions'>('packages');
     const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('monthly');
 
 
@@ -181,7 +142,6 @@ export const EnergyStore: React.FC<EnergyStoreProps> = ({ onClose }) => {
                     <p className="text-xl text-white/60 mb-8 font-light">
                         {activeTab === 'packages' && 'Doplňte energii jednorázově a pokračujte v psaní.'}
                         {activeTab === 'subscriptions' && 'Staňte se členem a získejte pravidelný přísun magie.'}
-                        {activeTab === 'support' && 'Podpořte vývoj Skywhale a staňte se patrony magie.'}
                     </p>
 
                     {/* MAIN TABS */}
@@ -190,7 +150,7 @@ export const EnergyStore: React.FC<EnergyStoreProps> = ({ onClose }) => {
                             {/* Animated Background Indicator */}
                             <div
                                 className={`absolute inset-y-1.5 rounded-full bg-white/10 transition-all duration-300 ease-out w-[140px] md:w-[160px]
-                                ${activeTab === 'packages' ? 'left-1.5' : activeTab === 'subscriptions' ? 'left-[150px] md:left-[170px]' : 'left-[298px] md:left-[338px]'}
+                                ${activeTab === 'packages' ? 'left-1.5' : 'left-[150px] md:left-[170px]'}
                                 `}
                             />
 
@@ -207,13 +167,6 @@ export const EnergyStore: React.FC<EnergyStoreProps> = ({ onClose }) => {
                                 className={`px-4 md:px-8 py-3 rounded-full text-sm md:text-base font-bold transition-colors relative z-10 w-[140px] md:w-[160px] ${activeTab === 'subscriptions' ? 'text-white' : 'text-white/40 hover:text-white/80'}`}
                             >
                                 Předplatné
-                            </button>
-                            <button
-                                id="support-tab-btn"
-                                onClick={() => setActiveTab('support')}
-                                className={`px-4 md:px-8 py-3 rounded-full text-sm md:text-base font-bold transition-colors relative z-10 w-[140px] md:w-[160px] ${activeTab === 'support' ? 'text-white' : 'text-white/40 hover:text-white/80'}`}
-                            >
-                                Podpořit ❤️
                             </button>
                         </div>
                     </div>
@@ -304,7 +257,7 @@ export const EnergyStore: React.FC<EnergyStoreProps> = ({ onClose }) => {
                             return (
                                 <SubscriptionCard
                                     key={tier.id}
-                                    id={tier.id} // This ID is mostly internal, the real one is data.id passed to create-checkout
+                                    id={tier.id}
                                     name={tier.name}
                                     price={data.price}
                                     energy={data.energy}
@@ -316,100 +269,10 @@ export const EnergyStore: React.FC<EnergyStoreProps> = ({ onClose }) => {
                                     icon={tier.icon}
                                     savings={(data as any).savings}
                                     loading={loading}
-                                    onBuy={() => buyPackage(data.id)} // Pass the specific variant ID (e.g. sub_monthly_start)
+                                    onBuy={() => buyPackage(tier.id)}
                                 />
                             );
                         })
-                    )}
-
-                    {activeTab === 'support' && (
-                        /* DONATION / SUPPORT */
-                        DONATION_OPTIONS.map((opt) => (
-                            <div key={opt.id} className={`relative group p-6 rounded-3xl border transition-all hover:scale-[1.02] bg-zinc-900/50 flex flex-col items-center text-center ${opt.popular ? 'border-pink-500/50 shadow-xl shadow-pink-500/10' : 'border-white/10 hover:border-pink-500/30'}`}>
-                                {opt.popular && (
-                                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full shadow-lg whitespace-nowrap">
-                                        Patron Magie
-                                    </div>
-                                )}
-
-                                <div className={`w-20 h-20 rounded-full mb-6 bg-gradient-to-br ${opt.color} flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform animate-float`}>
-                                    <opt.icon size={32} className="text-white drop-shadow-md" />
-                                </div>
-
-                                <h3 className="text-2xl font-bold text-white mb-2">{opt.name}</h3>
-                                <p className="text-white/60 text-sm mb-6 leading-relaxed min-h-[40px]">{opt.description}</p>
-
-                                <div className="mt-auto w-full">
-                                    <div className="flex items-center justify-center gap-2 mb-4 text-xs font-bold text-amber-400 uppercase tracking-widest">
-                                        <Zap size={12} fill="currentColor" />
-                                        <span>Odhalí tajemství +{opt.energyBonus}</span>
-                                    </div>
-
-                                    <button
-                                        onClick={() => buyPackage(opt.id)}
-                                        disabled={loading}
-                                        className={`w-full py-4 rounded-xl font-bold text-base transition-all hover:brightness-110 active:scale-95 flex items-center justify-center gap-2
-                                            bg-gradient-to-r ${opt.color} text-white shadow-lg
-                                        `}
-                                    >
-                                        {loading ? <div className="animate-spin w-4 h-4 border-2 border-white/50 border-t-white rounded-full" /> : `Přispět ${opt.price}`}
-                                    </button>
-                                </div>
-                            </div>
-                        ))
-                    )}
-
-                    {activeTab === 'support' && (
-                        /* CUSTOM DONATION CARD */
-                        <div className="relative group p-6 rounded-3xl border border-white/10 hover:border-emerald-500/30 transition-all hover:scale-[1.02] bg-zinc-900/50 flex flex-col items-center text-center">
-                            <div className="w-20 h-20 rounded-full mb-6 bg-gradient-to-br from-emerald-400 to-teal-600 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
-                                <Gift size={32} className="text-white drop-shadow-md" />
-                            </div>
-
-                            <h3 className="text-2xl font-bold text-white mb-2">Vlastní částka</h3>
-                            <p className="text-white/60 text-sm mb-6 leading-relaxed">
-                                Vyber si, kolik chceš přispět. Každá koruna se počítá!
-                            </p>
-
-                            <div className="mt-auto w-full">
-                                <div className="relative mb-4">
-                                    <input
-                                        type="number"
-                                        min="20"
-                                        placeholder="např. 100"
-                                        id="custom-donation-input"
-                                        className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-center font-bold text-white focus:outline-none focus:border-emerald-500 transition-colors"
-                                        onChange={(e) => {
-                                            const val = parseInt(e.target.value) || 0;
-                                            const energyDisplay = document.getElementById('custom-energy-display');
-                                            if (energyDisplay) energyDisplay.innerText = `Odhalí tajemství +${val * 5}`;
-                                        }}
-                                    />
-                                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-white/40 font-bold text-sm">Kč</span>
-                                </div>
-
-                                <div className="flex items-center justify-center gap-2 mb-4 text-xs font-bold text-amber-400 uppercase tracking-widest">
-                                    <Zap size={12} fill="currentColor" />
-                                    <span id="custom-energy-display">Odhalí tajemství +0</span>
-                                </div>
-
-                                <button
-                                    onClick={() => {
-                                        const input = document.getElementById('custom-donation-input') as HTMLInputElement;
-                                        const val = parseInt(input.value);
-                                        if (val >= 20) {
-                                            buyPackage('donate_custom', val);
-                                        } else {
-                                            alert("Minimální příspěvek je 20 Kč");
-                                        }
-                                    }}
-                                    disabled={loading}
-                                    className="w-full py-4 rounded-xl font-bold text-base transition-all hover:brightness-110 active:scale-95 flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-lg"
-                                >
-                                    {loading ? <div className="animate-spin w-4 h-4 border-2 border-white/50 border-t-white rounded-full" /> : `Přispět`}
-                                </button>
-                            </div>
-                        </div>
                     )}
                 </div>
             </motion.div>
