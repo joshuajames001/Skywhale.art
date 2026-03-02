@@ -7,6 +7,7 @@ import { generateImage, STYLE_PROMPTS } from '../../../lib/ai';
 import { extractVisualIdentity } from '../../../lib/storyteller';
 import { StoryBook, StoryPage } from '../../../types';
 import { supabase } from '../../../lib/supabase';
+import { validateImageFile } from '../../../lib/content-policy';
 import { VOICE_OPTIONS, DEFAULT_VOICE_ID } from '../../../lib/audio-constants';
 import { useTranslation } from 'react-i18next';
 import { BookPage, CustomBookEditorProps } from '../types';
@@ -315,6 +316,8 @@ export const useCustomBookEditor = ({ onBack, onOpenStore }: CustomBookEditorPro
     const handleMagicMirrorUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
+        const fileCheck = validateImageFile(file);
+        if (fileCheck.blocked) { alert(fileCheck.reason); return; }
 
         console.log('📸 Magic Mirror Upload Started:', {
             fileName: file.name,
@@ -389,6 +392,8 @@ export const useCustomBookEditor = ({ onBack, onOpenStore }: CustomBookEditorPro
     const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
+        const fileCheck = validateImageFile(file);
+        if (fileCheck.blocked) { alert(fileCheck.reason); return; }
 
         // Reset input immediately so same file can be selected again if needed
         e.target.value = '';

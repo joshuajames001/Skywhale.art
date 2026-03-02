@@ -1,6 +1,8 @@
 import { supabase } from '../lib/supabase';
 import { LibraryAdapter, LibraryTab } from '../features/library/LibraryContext';
 import { StoryBook } from '../types';
+import { checkTopicBlacklist } from '../lib/content-policy';
+import { moderateContent } from '../lib/moderation';
 
 interface UseLibraryAdapterProps {
     onOpenBook: (book: StoryBook) => void;
@@ -137,15 +139,35 @@ export const useLibraryAdapter = ({
         }));
     };
 
-    const togglePublicStatus = async (bookId: string, currentStatus: boolean, userId: string): Promise<boolean> => {
+    const togglePublicStatus = async (bookId: string, currentStatus: boolean, userId: string): Promise<{ success: boolean; blockedReason?: string }> => {
         const newStatus = !currentStatus;
+
+        // Moderovat pouze při zveřejnění
+        if (newStatus) {
+            const { data: bookData } = await supabase
+                .from('books').select('title').eq('id', bookId).single();
+            const { data: pageData } = await supabase
+                .from('pages').select('content')
+                .eq('book_id', bookId).order('page_number', { ascending: true }).limit(1).maybeSingle();
+
+            const textToCheck = [bookData?.title, pageData?.content].filter(Boolean).join('. ');
+
+            const policy = checkTopicBlacklist(textToCheck);
+            if (policy.blocked) return { success: false, blockedReason: policy.reason };
+
+            const modResult = await moderateContent(textToCheck);
+            if (modResult.flagged) {
+                return { success: false, blockedReason: modResult.reason ?? 'Obsah nebyl schválen k publikaci.' };
+            }
+        }
+
         const { error } = await supabase
             .from('books')
             .update({ is_public: newStatus })
             .eq('id', bookId)
             .eq('owner_id', userId);
 
-        return !error;
+        return { success: !error };
     };
 
     const deleteBook = async (bookId: string, userId: string): Promise<boolean> => {

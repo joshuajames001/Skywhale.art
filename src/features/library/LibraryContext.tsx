@@ -8,7 +8,7 @@ export interface LibraryAdapter {
     fetchBooks(tab: LibraryTab, userId?: string): Promise<StoryBook[]>;
 
     // Actions
-    togglePublicStatus(bookId: string, currentStatus: boolean, userId: string): Promise<boolean>;
+    togglePublicStatus(bookId: string, currentStatus: boolean, userId: string): Promise<{ success: boolean; blockedReason?: string }>;
     deleteBook(bookId: string, userId: string): Promise<boolean>;
     toggleFavorite(bookId: string, isFavorite: boolean, userId: string): Promise<void>;
     getFavoriteIds(userId: string): Promise<string[]>;

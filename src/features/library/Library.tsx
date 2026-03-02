@@ -12,6 +12,7 @@ import { useEnergy } from '../../hooks/useEnergy';
 import { useGuide } from '../../hooks/useGuide';
 import { useTranslation } from 'react-i18next';
 import { useLibrary, LibraryTab } from './LibraryContext';
+import { ReportDialog } from './components/ReportDialog';
 
 
 export interface LibraryProps {
@@ -35,6 +36,9 @@ export const Library = ({ user, onOpenBook, onOpenMagic, onCreateCustom, onCreat
     const [books, setBooks] = useState<StoryBook[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [publicationError, setPublicationError] = useState<string | null>(null);
+    const [publishingBookId, setPublishingBookId] = useState<string | null>(null);
+    const [reportTarget, setReportTarget] = useState<{ type: 'book' | 'user'; id: string } | null>(null);
 
     // Theme Hover Logic
     const [hoveredStyle, setHoveredStyle] = useState<string | null>(null);
@@ -100,13 +104,18 @@ export const Library = ({ user, onOpenBook, onOpenMagic, onCreateCustom, onCreat
     // Handler for toggling public/private status
     const handleTogglePublic = useCallback(async (bookId: string, currentStatus: boolean) => {
         if (!user) return;
-        const success = await togglePublicStatus(bookId, currentStatus, user.id);
+        setPublishingBookId(bookId);
+        const result = await togglePublicStatus(bookId, currentStatus, user.id);
+        setPublishingBookId(null);
 
-        if (success) {
+        if (result.success) {
+            setPublicationError(null);
             setBooks(prev => prev.map(b =>
                 b.book_id === bookId ? { ...b, is_public: !currentStatus } : b
             ));
-            console.log(`📚 Book ${bookId} toggled`);
+        } else if (result.blockedReason) {
+            setPublicationError(result.blockedReason);
+            setTimeout(() => setPublicationError(null), 5000);
         }
     }, [user, togglePublicStatus]);
 
@@ -289,6 +298,7 @@ export const Library = ({ user, onOpenBook, onOpenMagic, onCreateCustom, onCreat
                                     isFavorited={favoriteIds.has(book.book_id!)}
                                     onToggleFavorite={user ? handleToggleFavorite : undefined}
                                     onGenerateAudio={(id) => setAudioDialog({ ...audioDialog, isOpen: true, book: book })}
+                                    onReport={user && user.id !== book.author_id ? (bookId) => setReportTarget({ type: 'book', id: bookId }) : undefined}
                                 />
                             ))}
                         </AnimatePresence>
@@ -324,6 +334,31 @@ export const Library = ({ user, onOpenBook, onOpenMagic, onCreateCustom, onCreat
                     loading={false}
                 />
             )}
+
+            {/* REPORT DIALOG */}
+            <AnimatePresence>
+                {reportTarget && (
+                    <ReportDialog
+                        type={reportTarget.type}
+                        targetId={reportTarget.id}
+                        onClose={() => setReportTarget(null)}
+                    />
+                )}
+            </AnimatePresence>
+
+            {/* PUBLICATION ERROR TOAST */}
+            <AnimatePresence>
+                {publicationError && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 20 }}
+                        className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-red-900/90 border border-red-500/50 text-red-200 px-6 py-3 rounded-2xl shadow-xl text-sm font-medium backdrop-blur"
+                    >
+                        🛡️ {publicationError}
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 };

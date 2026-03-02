@@ -12,7 +12,7 @@ import { generateCompleteStory } from '../../../../lib/ai/orchestrator';
 import { StoryBook } from '../../../../types';
 import { MagicLoading } from '../effects/MagicLoading';
 import { MagicFlash } from '../effects/MagicFlash';
-import { checkTopicBlacklist } from '../../../../lib/content-policy';
+import { checkTopicBlacklist, validateImageFile } from '../../../../lib/content-policy';
 
 interface HeroModeProps {
     userBalance: number | null;
@@ -58,6 +58,8 @@ export const HeroMode: React.FC<HeroModeProps> = ({
     const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
+        const fileCheck = validateImageFile(file);
+        if (fileCheck.blocked) { alert(fileCheck.reason); return; }
         setIsUploading(true);
         try {
             const fileExt = file.name.split('.').pop();

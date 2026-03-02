@@ -32,6 +32,19 @@ export function checkTopicBlacklist(text: string): PolicyCheckResult {
     return { blocked: false };
 }
 
+const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+const MAX_IMAGE_BYTES = 5 * 1024 * 1024; // 5 MB
+
+export function validateImageFile(file: File): PolicyCheckResult {
+    if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+        return { blocked: true, reason: 'Povolené formáty: JPG, PNG, WEBP, GIF.' };
+    }
+    if (file.size > MAX_IMAGE_BYTES) {
+        return { blocked: true, reason: 'Obrázek je příliš velký. Maximum je 5 MB.' };
+    }
+    return { blocked: false };
+}
+
 export function validateNickname(nick: string): PolicyCheckResult {
     const trimmed = nick.trim();
     if (trimmed.length < 3) return { blocked: true, reason: 'Přezdívka musí mít alespoň 3 znaky.' };

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Calendar, Book, Trophy, Lock } from 'lucide-react';
+import { X, Calendar, Book, Trophy, Lock, Flag } from 'lucide-react';
+import { ReportDialog } from '../../library/components/ReportDialog';
 import { supabase } from '../../../lib/supabase';
 import { StoryBook } from '../../../types';
 
@@ -24,6 +25,7 @@ export const PublicProfile = ({ userId, onClose, onOpenBook }: PublicProfileProp
     const [achievements, setAchievements] = useState<Achievement[]>([]);
     const [loading, setLoading] = useState(true);
     const [level, setLevel] = useState(1);
+    const [showReport, setShowReport] = useState(false);
 
     useEffect(() => {
         const fetchProfile = async () => {
@@ -153,7 +155,7 @@ export const PublicProfile = ({ userId, onClose, onOpenBook }: PublicProfileProp
                         </h2>
 
                         {/* Stats */}
-                        <div className="flex justify-center gap-6 mt-6">
+                        <div className="flex justify-center gap-6 mt-6 flex-wrap">
                             <div className="bg-white rounded-2xl px-6 py-3 shadow-lg border-2 border-green-200">
                                 <div className="flex items-center gap-2 text-green-700">
                                     <Book size={20} />
@@ -169,6 +171,16 @@ export const PublicProfile = ({ userId, onClose, onOpenBook }: PublicProfileProp
                                 </div>
                             </div>
                         </div>
+                    </div>
+
+                    {/* Report User */}
+                    <div className="flex justify-center mt-4">
+                        <button
+                            onClick={() => setShowReport(true)}
+                            className="text-xs text-slate-400 hover:text-red-500 transition-colors flex items-center gap-1"
+                        >
+                            <Flag size={12} /> Nahlásit uživatele
+                        </button>
                     </div>
 
                     {/* Books Section */}
@@ -248,6 +260,15 @@ export const PublicProfile = ({ userId, onClose, onOpenBook }: PublicProfileProp
                     </div>
                 </motion.div>
             </motion.div>
+
+            {/* REPORT DIALOG */}
+            {showReport && (
+                <ReportDialog
+                    type="user"
+                    targetId={userId}
+                    onClose={() => setShowReport(false)}
+                />
+            )}
         </AnimatePresence>
     );
 };

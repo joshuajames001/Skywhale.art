@@ -2,7 +2,7 @@ import { useState, useEffect, memo, forwardRef } from 'react';
 import { motion, useMotionValue, useSpring, useTransform, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { StoryBook } from '../../types';
-import { BookOpen, AlertCircle, Loader2, Calendar, MoreVertical, Globe, Lock, Trash2, Heart, Headphones } from 'lucide-react';
+import { BookOpen, AlertCircle, Loader2, Calendar, MoreVertical, Globe, Lock, Trash2, Heart, Headphones, Flag } from 'lucide-react';
 import { ReactionBar } from '../social/components/ReactionBar';
 import { supabase } from '../../lib/supabase';
 import { AudioConfirmDialog } from '../audio/components/AudioConfirmDialog';
@@ -21,6 +21,7 @@ interface BookCardProps {
     isFavorited?: boolean;
     onToggleFavorite?: (bookId: string) => void;
     onGenerateAudio?: (bookId: string) => void;
+    onReport?: (bookId: string) => void;
 }
 
 const BookCardBase = forwardRef<HTMLDivElement, BookCardProps>(({
@@ -35,7 +36,8 @@ const BookCardBase = forwardRef<HTMLDivElement, BookCardProps>(({
     showReactions = false,
     isFavorited = false,
     onToggleFavorite,
-    onGenerateAudio
+    onGenerateAudio,
+    onReport
 }: BookCardProps, ref) => {
     const { t } = useTranslation();
     const [showDropdown, setShowDropdown] = useState(false);
@@ -153,6 +155,21 @@ const BookCardBase = forwardRef<HTMLDivElement, BookCardProps>(({
                         <Heart size={18} fill={isFavorited ? "currentColor" : "none"} />
                     </motion.button>
                 </div>
+
+                {/* REPORT BUTTON (TOP RIGHT — only for other users' books) */}
+                {!showMenu && onReport && (
+                    <div className="absolute top-3 right-3 z-30">
+                        <motion.button
+                            whileHover={{ scale: 1.2 }}
+                            whileTap={{ scale: 0.9 }}
+                            onClick={(e) => { e.stopPropagation(); onReport(book.book_id!); }}
+                            className="p-2 rounded-full backdrop-blur-md border bg-black/40 border-white/10 text-white/30 hover:text-red-400 hover:border-red-500/30 transition-all"
+                            title="Nahlásit knihu"
+                        >
+                            <Flag size={16} />
+                        </motion.button>
+                    </div>
+                )}
 
                 {/* THREE-DOT MENU (TOP RIGHT) */}
                 {showMenu && (
