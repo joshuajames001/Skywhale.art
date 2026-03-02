@@ -1,11 +1,17 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Sparkles, BookOpen } from 'lucide-react';
+import { DiscoveryView } from '../hooks/useDiscoveryNav';
 
 interface DiscoveryHeaderProps {
     title?: string;
     subtitle?: string;
     onBack?: () => void;
+    view?: DiscoveryView;
+    showTrailerButton?: boolean;
+    onPlayTrailer?: () => void;
+    audioUrl?: string;
+    isCustomTheme?: boolean;
 }
 
 export const DiscoveryHeader = ({
