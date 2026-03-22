@@ -12,7 +12,7 @@ export const useGemini = () => {
         try {
             console.log("🤖 Gemini Hook: Calling Edge Function (generate-suggestion)...");
             
-            const { data, error } = await invokeEdgeFunction('generate-story-content', {
+            const { data, error } = await invokeEdgeFunction('book-editor-assist', {
                 action: 'generate-suggestion',
                 payload: { storySoFar, currentText, pageIndex, totalPages }
             });
@@ -55,7 +55,7 @@ export const useGemini = () => {
         try {
             console.log("🎨 Gemini Hook: Calling Edge Function (generate-image-prompt)...");
 
-            const { data, error } = await invokeEdgeFunction('generate-story-content', {
+            const { data, error } = await invokeEdgeFunction('book-editor-assist', {
                 action: 'generate-image-prompt',
                 payload: { storyText }
             });
@@ -89,7 +89,7 @@ export const useGemini = () => {
         try {
             console.log("💡 Gemini Hook: Calling Edge Function (generate-initial-ideas)...");
 
-            const { data, error } = await invokeEdgeFunction('generate-story-content', {
+            const { data, error } = await invokeEdgeFunction('book-editor-assist', {
                 action: 'generate-initial-ideas',
                 payload: {}
             });
@@ -126,7 +126,7 @@ export const useGemini = () => {
         try {
             console.log("📖 Gemini Hook: Calling Edge Function (dictionary-lookup)...");
 
-            const { data, error } = await invokeEdgeFunction('generate-story-content', {
+            const { data, error } = await invokeEdgeFunction('book-editor-assist', {
                 action: 'dictionary-lookup',
                 payload: { term }
             });

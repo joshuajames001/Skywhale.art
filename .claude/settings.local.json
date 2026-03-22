@@ -1,7 +1,10 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(while read:*)",
+      "Bash(do wc:*)",
+      "Bash(done)"
     ]
   }
 }

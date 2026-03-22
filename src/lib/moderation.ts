@@ -36,7 +36,7 @@ export async function moderateContent(text: string): Promise<ModerationResult> {
     try {
         console.log("🛡️ Moderation: Calling Edge Function...");
 
-        const { data, error } = await invokeEdgeFunction('generate-story-content', {
+        const { data, error } = await invokeEdgeFunction('content-tools', {
             action: 'moderate-text',
             payload: { text }
         });

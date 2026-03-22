@@ -245,7 +245,7 @@ export const extractVisualIdentity = async (sheetUrl: string, characterName: str
     // console.log("👁️ Visual DNA: Calling Edge Function (extract-visual-dna)...");
 
     try {
-        const { data, error } = await invokeEdgeFunction('generate-story-content', {
+        const { data, error } = await invokeEdgeFunction('content-tools', {
             action: 'extract-visual-dna',
             payload: { imageUrl: sheetUrl }
         });

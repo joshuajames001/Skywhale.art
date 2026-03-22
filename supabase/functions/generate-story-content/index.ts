@@ -1,39 +1,8 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { corsHeaders } from "../_shared/cors.ts"
+import { callGemini, callAnthropic } from "../_shared/ai-clients.ts"
+import { getLanguageName, getTextFieldName, getTitleFieldName } from "../_shared/lang-utils.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  'Content-Type': 'application/json'
-}
-
-// --- LANGUAGE UTILS ---
-const getLanguageName = (code: string) => {
-    const shortCode = code.substring(0, 2).toLowerCase();
-    switch (shortCode) {
-        case 'en': return 'English';
-        case 'cs': return 'Czech (čeština)';
-        default: return 'Czech (čeština)';
-    }
-}
-
-const getTextFieldName = (code: string) => {
-    const shortCode = code.substring(0, 2).toLowerCase();
-    switch (shortCode) {
-        case 'en': return 'text_en';
-        case 'cs': return 'text_cz';
-        default: return 'text_cz';
-    }
-}
-
-const getTitleFieldName = (code: string) => {
-    const shortCode = code.substring(0, 2).toLowerCase();
-    switch (shortCode) {
-        case 'en': return 'title_en';
-        case 'cs': return 'title_cz';
-        default: return 'title_cz';
-    }
-}
 
 // --- PROMPTS ---
 
@@ -60,7 +29,7 @@ const getStorySystemPrompt = (targetLength: number = 10, langCode: string = 'cs'
 
     <task>
         Generate the complete book schema in JSON format.
-        
+
         CRITICAL RULE: The story MUST have EXACTLY ${targetLength} PAGES (plus Cover). Do not generate less or more.
 
         RULES:
@@ -96,14 +65,14 @@ const getStorySystemPrompt = (targetLength: number = 10, langCode: string = 'cs'
            - Write a vivid ENGLISH scene description focusing on: Action, Environment, Camera Angle, Lighting, Mood.
            - DO NOT describe the character's physical features (hair, clothes, face) – the AI image system handles identity separately.
            - Focus ONLY on: What the character is DOING, WHERE they are, the ATMOSPHERE, and the CAMERA ANGLE.
-           
+
             FORMAT: "[Art Style]. [Camera angle], the [species/class] is [active verb] in [detailed setting]. [Lighting/mood description]."
-           
+
            EXAMPLES (STRICTLY IN ENGLISH):
            - "Pixar 3D style. Low-angle shot, the small robot is rolling cautiously into a dark crystal cave, bioluminescent mushrooms casting blue light on wet stone walls."
            - "Watercolor style. Wide establishing shot, the young fox is standing at the edge of a golden wheat field at sunset, warm amber light painting long shadows."
            - "Anime style. A small green frog with a red vest sitting on a mossy log next to a shimmering, rainbow-colored river in a sunlit forest. Wide angle landscape."
-           
+
         DYNAMIC CAMERA (MANDATORY – vary every page):
            - Page 1: Wide Shot (Establish setting)
            - Page 2: Close-Up (Emotion/Face)
@@ -121,7 +90,7 @@ const getStorySystemPrompt = (targetLength: number = 10, langCode: string = 'cs'
         ANONYMOUS PROTOCOL:
            - DO NOT use the character's proper name in art_prompt_en. Names confuse image AI.
            - Replace names with "The [Adjective] [Species/Class]" (e.g., "The small blue dragon" instead of "Azur").
-        
+
         NO TEXT RULE (ABSOLUTE):
            - The image must be completely text-free.
            - Do NOT describe signposts, books with titles, speech bubbles, or labels.
@@ -224,13 +193,13 @@ const getIdeaSystemPrompt = (langCode: string = 'cs') => {
             "short_blurb_en": "...",
             "short_blurb_cz": "...",
             "character_desc_en": "...",
-            "character_desc_cz": "..." 
+            "character_desc_cz": "..."
           },
           "technical_dna": {
             "species_en": "...",
-            "gender_en": "...", 
+            "gender_en": "...",
             "size_age_en": "...",
-            "visual_anchors_en": ["Specific Feature 1", "Specific Feature 2", "Specific Feature 3"], 
+            "visual_anchors_en": ["Specific Feature 1", "Specific Feature 2", "Specific Feature 3"],
             "color_palette": "color1, color2, color3",
             "recommended_style": "...",
             "lighting_vibe": "..."
@@ -240,82 +209,39 @@ const getIdeaSystemPrompt = (langCode: string = 'cs') => {
     </output_format>
     `};
 
-const getChatSystemPrompt = (langCode: string = 'cs') => {
-    const langName = getLanguageName(langCode);
-    return `
-<role>
-    You are 'Múza' (Muse), a magical AI co-author helping a user (child or parent) define a new story.
-    Your goal is to have a friendly conversation in ${langName} to extract 5 key Story Parameters:
-    1. Title
-    2. Main Character
-    3. Setting
-    4. Target Audience
-    5. Visual Style
-</role>
-
-<rules>
-    1. LANGUAGE: Speak only in ${langName}. Be friendly, encouraging, and magical.
-    2. FLOW: Ask one question at a time.
-    3. SUGGESTIONS: If the user doesn't know, offer 3 creative options (A, B, C).
-    4. COMPLETION: When ready, present a "Story Summary" to the user and ask if you can start writing.
-</rules>
-
-<output_format>
-    Return a STRICT JSON object:
-    {
-        "reply": "Your message to the user in ${langName}...",
-        "extracted_params": { ... },
-        "missing_params": [...],
-        "is_ready": boolean
-    }
-</output_format>
-`};
-
 // --- HANDLER ---
 
 serve(async (req) => {
-  if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
+    if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
-  try {
-    const authHeader = req.headers.get('Authorization')!;
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-      { global: { headers: { Authorization: authHeader } } }
-    );
+    try {
+        const authHeader = req.headers.get('Authorization')!;
+        const supabaseClient = createClient(
+            Deno.env.get('SUPABASE_URL') ?? '',
+            Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+            { global: { headers: { Authorization: authHeader } } }
+        );
 
-    const { data: { user } } = await supabaseClient.auth.getUser();
-    const { action, payload } = await req.json();
-    const apiKey = Deno.env.get('GEMINI_API_KEY');
-    const lang = (payload?.language || 'cs').substring(0, 2).toLowerCase();
+        const { data: { user } } = await supabaseClient.auth.getUser();
+        const { action, payload } = await req.json();
+        const lang = (payload?.language || 'cs').substring(0, 2).toLowerCase();
 
-    // DEFENSIVE: Check for missing API key
-    if (!apiKey) {
-        console.error("FATAL: GEMINI_API_KEY is not set in Supabase secrets!");
-        return new Response(JSON.stringify({ error: "Server configuration error: AI key is missing." }), { 
-            status: 500, 
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        });
-    }
-    // - generate-structure (Expensive): MUST be logged in.
-    // - generate-idea / chat-turn (Discovery): Allowed for guests to prevent conversion friction.
-    if (!user && action === 'generate-structure') {
-        return new Response(JSON.stringify({ error: "Unauthorized: Please log in to generate full stories." }), { 
-            status: 401, 
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        });
-    }
+        if (action === 'generate-structure') {
+            if (!user) {
+                return new Response(JSON.stringify({ error: "Unauthorized: Please log in to generate full stories." }), {
+                    status: 401, headers: corsHeaders
+                });
+            }
 
-    if (action === 'generate-structure') {
-        const anthropicKey = Deno.env.get('ANTHROPIC_API_KEY');
-        if (!anthropicKey) {
-            return new Response(JSON.stringify({ error: "Server configuration error: Anthropic key is missing." }), {
-                status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-            });
-        }
+            const anthropicKey = Deno.env.get('ANTHROPIC_API_KEY');
+            if (!anthropicKey) {
+                return new Response(JSON.stringify({ error: "Server configuration error: Anthropic key is missing." }), {
+                    status: 500, headers: corsHeaders
+                });
+            }
 
-        const randomTwist = CREATIVE_TWISTS[Math.floor(Math.random() * CREATIVE_TWISTS.length)];
-        const userPrompt = `Title: ${payload.title}
+            const randomTwist = CREATIVE_TWISTS[Math.floor(Math.random() * CREATIVE_TWISTS.length)];
+            const userPrompt = `Title: ${payload.title}
 Author: ${payload.author}
 Main Character: ${payload.main_character}
 Setting: ${payload.setting}
@@ -325,330 +251,47 @@ Visual Style: ${payload.visual_style}
 
 NARRATIVE DIRECTIVE (apply this creative constraint throughout the story): ${randomTwist}`;
 
-        const data = await callAnthropic(
-            userPrompt,
-            getStorySystemPrompt(payload.length || 10, lang),
-            anthropicKey,
-            "claude-sonnet-4-6",
-            0.95
-        );
+            const data = await callAnthropic(
+                userPrompt,
+                getStorySystemPrompt(payload.length || 10, lang),
+                anthropicKey,
+                "claude-sonnet-4-6",
+                0.95
+            );
 
-        return new Response(JSON.stringify({ choices: [{ message: { content: JSON.stringify(data) } }] }), { headers: corsHeaders });
-    }
-
-    if (action === 'generate-idea') {
-        const themes = [
-            "Space Exploration", "Deep Ocean Mystery", "Ancient History", "Futuristic City", 
-            "Microscopic World", "Dinosaur Era", "Magical School", "Detective Mystery", 
-            "Sports Competition", "Culinary Adventure", "Music & Rhythm", "Construction & Building",
-            "Farm Life", "Jungle Expedition", "Polar Adventure", "Robot Factory"
-        ];
-        const randomTheme = themes[Math.floor(Math.random() * themes.length)];
-
-        const data = await callGemini(
-            [{ role: "user", content: `Generate a new story idea concept in English and Czech. REQUIRED THEME: ${randomTheme}. Current priority language: ${lang}` }],
-            getIdeaSystemPrompt(lang),
-            true,
-            apiKey!,
-            "gemini-2.0-flash"
-        );
-        return new Response(JSON.stringify({ choices: [{ message: { content: JSON.stringify(data) } }] }), { headers: corsHeaders });
-    }
-
-    if (action === 'chat-turn') {
-        const geminiMessages = payload.messages.map((m: any) => ({
-            role: m.role === 'assistant' ? 'model' : 'user',
-            content: m.content
-        }));
-
-        const result = await callGemini(
-            geminiMessages,
-            getChatSystemPrompt(lang) + `\n\nCURRENT KNOWN PARAMS: ${JSON.stringify(payload.currentParams)}`,
-            true,
-            apiKey!,
-            "gemini-2.0-flash"
-        );
-
-        return new Response(JSON.stringify({ choices: [{ message: { content: JSON.stringify(result) } }] }), { headers: corsHeaders });
-    }
-
-    // --- CUSTOM BOOK EDITOR ACTIONS ---
-
-    if (action === 'generate-suggestion') {
-        const { storySoFar, currentText, pageIndex, totalPages } = payload;
-        const systemPrompt = `You are a helpful children's story writing assistant. You help continue stories in a creative, age-appropriate way. Write in ${lang === 'cs' ? 'Czech' : 'English'}. Return ONLY the suggested continuation text (1-3 sentences), no JSON, no formatting.`;
-        const userPrompt = `Story so far:\n${storySoFar}\n\nCurrent page text:\n${currentText}\n\nThis is page ${pageIndex} of ${totalPages}. Suggest a natural continuation.`;
-
-        const result = await callGemini(
-            [{ role: "user", content: userPrompt }],
-            systemPrompt,
-            false,
-            apiKey!,
-            "gemini-2.0-flash"
-        );
-
-        return new Response(JSON.stringify({ choices: [{ message: { content: result } }] }), { headers: corsHeaders });
-    }
-
-    if (action === 'generate-image-prompt') {
-        const { storyText } = payload;
-
-        // FROG PROTOCOL: Strict English Enforcement + Style Guidelines
-        const systemPrompt = `
-        <role>You are an expert Art Director for high-end children's books. Your goal is to translate story text into specific VISUAL INSTRUCTIONS for an illustrator.</role>
-        
-        <rules>
-        1. OUTPUT MUST BE ENGLISH ONLY.
-        2. NO TEXT IN IMAGE. Do not describe speech bubbles or words.
-        3. FOCUS: Composition, Lighting, Mood, Action, Setting.
-        4. ANATOMY: If the character is an animal, it must be BIOLOGICALLY ACCURATE (no human hands, no standing on two legs).
-        5. ACCESSORIES: Animals CAN wear clothes (hats, vests, etc.) but they must fit the natural quadruped/animal body.
-        6. STYLE: Pixar 3D or Watercolor (inferred from context).
-        </rules>
-
-        <examples>
-        Input: "Malý drak Plamínek dnes ulovil svou největší trofej..."
-        Output: "A tiny red dragon wearing a pilot's goggles sitting proudly on a mountain of colorful knitted socks, steampunk bedroom background, dramatic lighting. Low angle shot."
-
-        Input: "Byla jednou jedna malá žabička Kvák..."
-        Output: "A small green frog with a red vest sitting on a mossy log next to a shimmering, rainbow-colored river. Wide angle landscape."
-        </examples>
-
-        Return ONLY the English prompt text. No JSON.
-        `;
-
-        const result = await callGemini(
-            [{ role: "user", content: `Create an illustration prompt for this story text:\n${storyText}` }],
-            systemPrompt,
-            false,
-            apiKey!,
-            "gemini-2.0-flash"
-        );
-
-        return new Response(JSON.stringify({ choices: [{ message: { content: result } }] }), { headers: corsHeaders });
-    }
-
-    if (action === 'generate-initial-ideas') {
-        const systemPrompt = `You are a creative children's story idea generator. Generate exactly 5 short, fun story ideas for children aged 4-10. Write in ${lang === 'cs' ? 'Czech' : 'English'}. Return the ideas separated by semicolons (;). No numbering, no formatting, just the ideas.`;
-
-        const result = await callGemini(
-            [{ role: "user", content: "Generate 5 creative children's story ideas." }],
-            systemPrompt,
-            false,
-            apiKey!,
-            "gemini-2.0-flash"
-        );
-
-        return new Response(JSON.stringify({ choices: [{ message: { content: result } }] }), { headers: corsHeaders });
-    }
-
-    if (action === 'dictionary-lookup') {
-        const { term } = payload;
-        const systemPrompt = `You are a creative bilingual dictionary for children's story writers. Given a Czech word, return a JSON object with: "emoji" (relevant emoji), "primary_en" (English translation), "synonyms" (array of 3-5 creative English synonyms useful for art prompts), "related_adjectives" (array of 3-5 English adjectives that pair well with this word for visual descriptions). Return ONLY valid JSON.`;
-
-        const result = await callGemini(
-            [{ role: "user", content: `Translate and expand this Czech word: "${term}"` }],
-            systemPrompt,
-            true,
-            apiKey!,
-            "gemini-2.0-flash"
-        );
-
-        return new Response(JSON.stringify({ choices: [{ message: { content: JSON.stringify(result) } }] }), { headers: corsHeaders });
-    }
-
-    if (action === 'moderate-text') {
-        const { text } = payload;
-        
-        const systemPrompt = `You are a Content Safety Moderator. Analyze the following text for violation of safety policies (Sexual, Hate, Harassment, Self-Harm, Violence). 
-        Return a JSON object matching this EXACT structure:
-        {
-            "results": [
-                {
-                    "flagged": boolean,
-                    "categories": {
-                        "sexual": boolean,
-                        "hate": boolean,
-                        "harassment": boolean,
-                        "self-harm": boolean,
-                        "sexual/minors": boolean,
-                        "hate/threatening": boolean,
-                        "violence/graphic": boolean,
-                        "violence": boolean
-                    }
-                }
-            ]
+            return new Response(JSON.stringify({ choices: [{ message: { content: JSON.stringify(data) } }] }), { headers: corsHeaders });
         }
-        
-        Strictness: HIGH for sexual/hate/self-harm. MEDIUM for violence (fantasy violence is allowed if not graphic).`;
 
-        const result = await callGemini(
-            [{ role: "user", content: `Analyze this text for safety: "${text}"` }],
-            systemPrompt,
-            true,
-            apiKey!,
-            "gemini-2.0-flash"
-        );
+        if (action === 'generate-idea') {
+            const apiKey = Deno.env.get('GEMINI_API_KEY');
+            if (!apiKey) {
+                return new Response(JSON.stringify({ error: "Server configuration error: AI key is missing." }), {
+                    status: 500, headers: corsHeaders
+                });
+            }
 
-        return new Response(JSON.stringify(result), { headers: corsHeaders });
+            const themes = [
+                "Space Exploration", "Deep Ocean Mystery", "Ancient History", "Futuristic City",
+                "Microscopic World", "Dinosaur Era", "Magical School", "Detective Mystery",
+                "Sports Competition", "Culinary Adventure", "Music & Rhythm", "Construction & Building",
+                "Farm Life", "Jungle Expedition", "Polar Adventure", "Robot Factory"
+            ];
+            const randomTheme = themes[Math.floor(Math.random() * themes.length)];
+
+            const data = await callGemini(
+                [{ role: "user", content: `Generate a new story idea concept in English and Czech. REQUIRED THEME: ${randomTheme}. Current priority language: ${lang}` }],
+                getIdeaSystemPrompt(lang),
+                true,
+                apiKey,
+                "gemini-2.5-flash"
+            );
+
+            return new Response(JSON.stringify({ choices: [{ message: { content: JSON.stringify(data) } }] }), { headers: corsHeaders });
+        }
+
+        throw new Error(`Unknown action: ${action}`);
+
+    } catch (error) {
+        return new Response(JSON.stringify({ error: error.message }), { headers: corsHeaders, status: 500 });
     }
-
-    if (action === 'extract-visual-dna') {
-        const { imageUrl } = payload;
-        
-        // VISUAL DNA EXTRACTION PROMPT
-        const systemPrompt = `You are an expert Visual Character Analyst for AI Art generation. 
-        Analyze the provided image and extract a precise 'Visual DNA' description.
-        Focus on:
-        1. Species/Type (e.g. Human Boy, Robot, Fox)
-        2. Age Group / Scale
-        3. Detailed Appearance (Hair, Eyes, Skin/Material)
-        4. Clothing/Equipment (distinctive colors/items)
-        5. Vibe/Style
-
-        Return a JSON object:
-        {
-          "species": "...",
-          "age_group": "...",
-          "hair_fur": "...",
-          "outfit_top": "...",
-          "outfit_bottom": "...",
-          "distinctive_marks": "...",
-          "visual_summary": "A full sentence description..."
-        }`;
-
-        console.log(`👁️ Fetching image for analysis: ${imageUrl}`);
-        const imgResp = await fetch(imageUrl);
-        const imgBlob = await imgResp.blob();
-        const arrayBuffer = await imgBlob.arrayBuffer();
-        const base64Image = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
-        
-        const mimeType = imgBlob.type || 'image/jpeg';
-
-        const result = await callGemini(
-            [{ 
-                role: "user", 
-                content: [
-                    { text: "Analyze this image and extract Visual DNA JSON." },
-                    { inline_data: { mime_type: mimeType, data: base64Image } }
-                ] 
-            }],
-            systemPrompt,
-            true,
-            apiKey!,
-            "gemini-2.0-flash" // Verified & Multimodal
-        );
-
-        return new Response(JSON.stringify({ choices: [{ message: { content: JSON.stringify(result) } }] }), { headers: corsHeaders });
-    }
-
-    throw new Error(`Unknown action: ${action}`);
-
-  } catch (error) {
-    return new Response(JSON.stringify({ error: error.message }), { headers: corsHeaders, status: 500 });
-  }
 })
-
-// --- GEMINI HELPER ---
-
-async function callGemini(
-    messages: { role: string; content?: any; parts?: any[] }[],
-    systemInstruction: string,
-    jsonMode: boolean,
-    apiKey: string,
-    model: string = 'gemini-1.5-pro'
-) {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
-    
-    // Normalize messages to Gemini 'parts' format for robustness
-    const normalizedContents = messages.map(m => {
-        // If already has parts (multimodal), use them
-        if (m.parts) return { role: m.role, parts: m.parts };
-        // If content is string (legacy), wrap in parts
-        if (typeof m.content === 'string') return { role: m.role, parts: [{ text: m.content }] };
-        // If content is array (legacy but structured?), try to use it if parts missing
-        if (Array.isArray(m.content)) return { role: m.role, parts: m.content };
-        // Fallback
-        return { role: m.role, parts: [{ text: JSON.stringify(m.content || "") }] };
-    });
-
-    const payload = {
-        contents: normalizedContents,
-        systemInstruction: { parts: [{ text: systemInstruction }] },
-        generationConfig: {
-            temperature: 0.7,
-            responseMimeType: jsonMode ? 'application/json' : 'text/plain'
-        }
-    };
-
-    console.log(`🤖 Gemini Call [${model}]:`, JSON.stringify(payload, null, 2));
-
-    const response = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-    });
-
-    if (!response.ok) {
-        const errText = await response.text();
-        console.error('❌ Gemini Error:', errText);
-        throw new Error(`Gemini API Error: ${response.statusText} (${errText})`);
-    }
-
-    const data = await response.json();
-    console.log('✅ Gemini Response OK');
-    
-    // Extract text content safely
-    let content = data.candidates?.[0]?.content?.parts?.[0]?.text;
-    if (!content) throw new Error('Gemini returned no content');
-    
-    // CLEANUP: Strip Markdown Code Blocks if present (Gemini 2.0 Flash loves to add them)
-    if (jsonMode) {
-        content = content.replace(/^```json\s*/, '').replace(/^```\s*/, '').replace(/\s*```$/, '');
-    }
-
-    return jsonMode ? JSON.parse(content) : content;
-}
-
-// --- ANTHROPIC HELPER ---
-
-async function callAnthropic(
-    userPrompt: string,
-    systemPrompt: string,
-    apiKey: string,
-    model: string = 'claude-sonnet-4-6',
-    temperature: number = 1.0
-) {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: {
-            'x-api-key': apiKey,
-            'anthropic-version': '2023-06-01',
-            'content-type': 'application/json',
-        },
-        body: JSON.stringify({
-            model,
-            max_tokens: 16384,
-            temperature,
-            system: systemPrompt,
-            messages: [{ role: 'user', content: userPrompt }],
-        }),
-    });
-
-    if (!response.ok) {
-        const errText = await response.text();
-        console.error('❌ Anthropic Error:', errText);
-        throw new Error(`Anthropic API Error: ${response.statusText} (${errText})`);
-    }
-
-    const data = await response.json();
-    console.log('✅ Anthropic Response OK');
-
-    let content = data.content?.[0]?.text;
-    if (!content) throw new Error('Anthropic returned no content');
-
-    // Strip markdown code fences if present
-    content = content.replace(/^```json\s*/m, '').replace(/^```\s*/m, '').replace(/\s*```$/m, '');
-
-    return JSON.parse(content);
-}
