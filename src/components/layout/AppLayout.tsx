@@ -5,6 +5,7 @@ import { UserProfile, Achievement } from '../../types';
 import { AlertTriangle } from 'lucide-react';
 import { supabase, isSupabaseConfigured } from '../../lib/supabase';
 import { useTranslation } from 'react-i18next';
+import { getRouteFlags, getNavigationView } from './routeHelpers';
 
 // Components
 import { CookieConsent } from '../../features/legal/components/CookieConsent';
@@ -86,23 +87,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
     notification
 }) => {
     const { t } = useTranslation();
-
-    // Immersive Check: Paths that should be full-screen / immersive
-    const isImmersive = location.pathname.includes('/editor') ||
-        location.pathname.includes('/story') ||
-        location.pathname.includes('/card-studio') ||
-        location.pathname.includes('/book/') ||
-        location.pathname.includes('/studio') ||
-        location.pathname.includes('/create') ||
-        location.pathname.includes('/custom') ||
-        location.pathname.includes('/card-viewer') ||
-        location.pathname.includes('/magic');
-
-    const isLanding = location.pathname === '/' || location.pathname === '/magic';
-
-    // Hide UI on certain pages
-    // Hide UI on certain pages
-    const hideGlobalUI = location.pathname === '/magic' || location.pathname === '/terms' || location.pathname === '/privacy' || location.pathname === '/profile';
+    const { isImmersive, isLanding, hideGlobalUI } = getRouteFlags(location.pathname);
 
     return (
         <div className={`min-h-[100svh] w-full max-w-[100vw] relative pb-24 md:pb-0 ${!hideGlobalUI && !isImmersive
@@ -155,25 +140,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
                     {/* UI LAYER - GLOBAL */}
                     <NavigationHub
                         onNavigate={onNavigate}
-                        currentView={(() => {
-                            // Sync Router location to NavigationHub state
-                            const p = location.pathname;
-                            if (p === '/terms') return 'terms';
-                            if (p === '/privacy') return 'privacy';
-                            if (p === '/pricing') return 'pricing';
-                            if (p === '/feedback') return 'feedback_board';
-                            if (p === '/library') return 'library';
-                            if (p === '/arcade') return 'arcade';
-                            if (p === '/encyclopedia') return 'discovery';
-                            if (p === '/create') return 'setup';
-                            if (p === '/custom') return 'create_custom';
-                            if (p === '/store') return 'energy_store';
-                            if (p === '/profile') return 'profile';
-                            if (p === '/' || p === '/magic') return 'landing';
-                            if (p.includes('/book')) return 'library';
-                            if (p.includes('/studio')) return 'card_studio';
-                            return 'library';
-                        })()}
+                        currentView={getNavigationView(location.pathname)}
                         user={user}
                         onLogin={() => setShowAuth(true)}
                         onLogout={onLogout}

@@ -6,7 +6,18 @@ export default defineConfig({
   plugins: [react()],
   build: {
     target: 'es2015',
-    sourcemap: true
+    sourcemap: true,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+          'vendor-supabase': ['@supabase/supabase-js'],
+          'vendor-framer': ['framer-motion'],
+          'vendor-konva': ['konva', 'react-konva'],
+          'vendor-i18n': ['i18next', 'react-i18next'],
+        }
+      }
+    }
   },
   server: {
     proxy: {
