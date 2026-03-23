@@ -11,11 +11,11 @@ Source of Truth pro aktuální stav vývoje. Aktualizováno: **2026-03-24**.
 | Edge Functions | **9** v `supabase/functions/` |
 | Sdílené moduly | 3 v `supabase/functions/_shared/` |
 | Code splitting | 10 lazy-loaded chunks (via `src/app/routes.tsx`) |
-| Main bundle | 995 kB (cíl: pod 500 kB — viz Backlog) |
-| Test coverage | ~35% → **232 testů** (cíl: 60%) |
+| Main bundle | **186 kB** (vendor chunks separated, down from 995 kB) |
+| Test coverage | **273 testů**, ~65% statements |
 | Build | `tsc && vite build` — zelený |
 
-## 2. Dokončené refaktory (GF-10 → GF-21)
+## 2. Dokončené refaktory (GF-10 → GF-26)
 
 | Issue | Co se stalo | Výsledek |
 |-------|-------------|----------|
@@ -31,6 +31,11 @@ Source of Truth pro aktuální stav vývoje. Aktualizováno: **2026-03-24**.
 | GF-19 | Three-Layer Rule — adapter hooks | FeedbackBoard, ReportDialog, ReactionBar: supabase vyextrahován do hooks |
 | GF-20 | Coverage sprint | +76 testů (156→232), 7 nových test souborů |
 | GF-21 | FSD fix — domain hooks | useFeedbackData, useReportData, useReactionData přesunuty do feature složek |
+| GF-22 | Fix afterEach imports | 3 test soubory opraveny → `tsc --noEmit` poprvé 0 chyb |
+| GF-23 | Three-Layer Rule — 4 komponenty | HeroMode, StorySetup, StoryChat, EnergyCard: supabase vyextrahován |
+| GF-24 | Coverage sprint 2 | +41 testů (232→273), themes/useGuide/edge-functions/storage-service/useGemini |
+| GF-25 | AppLayout split | 244→211 řádků, routeHelpers.ts extrahováno |
+| GF-26 | Bundle manualChunks | Main bundle 995→186 kB (−81%), 5 vendor chunks |
 
 ## 3. Strategic Rules (The Constitution)
 
@@ -44,10 +49,10 @@ Source of Truth pro aktuální stav vývoje. Aktualizováno: **2026-03-24**.
 ## 4. Zbývající tech debt
 
 - `src/lib/storyteller.ts` — legacy TypeScript errors (non-blocking, ignorované)
-- `AppLayout.tsx` — 244 řádků, kandidát na další split
-- Main bundle 995 kB — potřeba `manualChunks` v Vite config
+- `AppLayout.tsx` — 211 řádků (PublishDialog stále volá supabase přímo — L222)
+- `pdfGenerator` chunk — 591 kB (lazy-loaded, ale velký — kandidát na tree-shaking/lighter lib)
 - `process-story-image` Edge Function — legacy, nahrazena `generate-story-image`
-- 3 pre-existující TS chyby v test souborech (`afterEach` not found v useAppNavigation, useMagicTransition, useUrlHandlers)
+- 3 komponenty stále volají supabase přímo (false positives — jen string check `url.includes('supabase.co')`)
 
 Kompletní seznam: `docs/BACKLOG.md`
 

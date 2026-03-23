@@ -291,11 +291,20 @@ export const useStory = () => {
         }
     };
 
+    const updateBookPublicStatus = async (bookId: string, isPublic: boolean, userId: string) => {
+        await supabase
+            .from('books')
+            .update({ is_public: isPublic })
+            .eq('id', bookId)
+            .eq('owner_id', userId);
+    };
+
     return {
         saveStory,
-        saveCardProject, // Export
+        saveCardProject,
         uploadImage,
         updateIdentity,
+        updateBookPublicStatus,
         saving,
         lastSaved,
         notification

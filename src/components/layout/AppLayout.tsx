@@ -3,7 +3,7 @@ import { AnimatePresence } from 'framer-motion';
 import { User } from '@supabase/supabase-js';
 import { UserProfile, Achievement } from '../../types';
 import { AlertTriangle } from 'lucide-react';
-import { supabase, isSupabaseConfigured } from '../../lib/supabase';
+import { isSupabaseConfigured } from '../../lib/supabase';
 import { useTranslation } from 'react-i18next';
 import { getRouteFlags, getNavigationView } from './routeHelpers';
 
@@ -58,6 +58,7 @@ interface AppLayoutProps {
     setPublishBookId: (id: string | null) => void;
 
     notification: string | null;
+    onPublishBook: (bookId: string, isPublic: boolean) => Promise<void>;
 }
 
 export const AppLayout: React.FC<AppLayoutProps> = ({
@@ -84,7 +85,8 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
     setShowPublishDialog,
     publishBookId,
     setPublishBookId,
-    notification
+    notification,
+    onPublishBook
 }) => {
     const { t } = useTranslation();
     const { isImmersive, isLanding, hideGlobalUI } = getRouteFlags(location.pathname);
@@ -186,14 +188,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
                     <PublishDialog
                         bookId={publishBookId}
                         onPublish={async (isPublic) => {
-                            // Update book's is_public status
-                            await supabase
-                                .from('books')
-                                .update({ is_public: isPublic })
-                                .eq('id', publishBookId)
-                                .eq('owner_id', user?.id);
-
-                            console.log(`📚 Book ${publishBookId} ${isPublic ? 'published' : 'kept private'}`);
+                            await onPublishBook(publishBookId, isPublic);
                         }}
                         onClose={() => {
                             setShowPublishDialog(false);

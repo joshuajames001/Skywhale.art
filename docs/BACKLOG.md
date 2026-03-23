@@ -1,13 +1,14 @@
 # Backlog & Roadmap
 
-> Aktualizováno: 2026-03-23 | Zdroj: Linear (Skywhale.art) + audity
+> Aktualizováno: 2026-03-24 | Zdroj: Linear (Skywhale.art) + audity
 
 ## Stav projektu
 
-- **Linear issues:** 11 celkem (9 done, 1 canceled, 0 in progress)
-- **Poslední sprint:** GF-10 → GF-16 (refactoring, 2026-03-22/23)
-- **Build:** Zelený (tsc + vite build pass)
-- **Test coverage:** ~17%
+- **Linear issues:** 20 celkem (17 done, 1 canceled, 0 in progress)
+- **Poslední sprint:** GF-17 → GF-26 (refactoring + coverage + bundle, 2026-03-24)
+- **Build:** Zelený (tsc 0 errors + vite build pass)
+- **Test coverage:** 273 testů, ~65% statements
+- **Main bundle:** 186 kB (vendor chunks separated)
 
 ## Otevřené technické dluhy
 
@@ -17,16 +18,15 @@
 |--------|---------|-------|
 | `storyteller.ts` | Legacy TypeScript errors (non-blocking, ignorované) | DEVELOPMENT_STATE.md |
 | Deployment | 4 kritické security gaps (unprotected Edge Functions, API Schema) | DEPLOYMENT_READINESS_AUDIT.md |
-| Test coverage | 17% — cíl minimálně 40% | GF-9 audit |
-| Main bundle | 995 kB (nad 500 kB Vite limit) — potřeba manualChunks | Build warning |
+| AppLayout PublishDialog | Přímé `supabase.from('books').update()` v L222 — Three-Layer violation | GF-23 audit |
 
 ### Střední priorita
 
 | Oblast | Problém | Zdroj |
 |--------|---------|-------|
-| `App.tsx` | 86 řádků (OK), ale AppLayout.tsx 244 řádků — další god component | Audit GF-12 |
-| `getUser` v ReactionBar | Degree 28, měl by být extrahován do sdíleného utility | 06-god-components-audit.md |
-| pdfGenerator chunk | 591 kB — dynamický import, ale mohl by být lazy-loaded lépe | Build output |
+| pdfGenerator chunk | 591 kB — lazy-loaded, ale kandidát na lighter PDF lib | Build output |
+| Coverage gaps | `useCardStudioAdapter`, `useGameHubAdapter` — 0% coverage | GF-24 coverage report |
+| E2E testy | Žádné — Playwright/Cypress setup by pokryl kritické flows | — |
 
 ### Nízká priorita
 
@@ -34,7 +34,6 @@
 |--------|---------|
 | `process-story-image` | Legacy Edge Function, nahrazena `generate-story-image` — zvážit odstranění |
 | MASTER_BLUEPRINT.md | Zastaralý (Jan 2026), odkazuje na Stripe a staré komponenty |
-| DEVELOPMENT_STATE.md | Zastaralý (Feb 2026), App.tsx údajně 778 řádků (reálně 86) |
 
 ## Plánované features (z MASTER_BLUEPRINT + audits)
 
@@ -50,6 +49,7 @@
 
 | Datum | Milestone |
 |-------|-----------|
+| 2026-03-24 | GF-17→GF-26: Coverage 65%, bundle 186 kB, Three-Layer compliant, AppLayout split |
 | 2026-03-23 | Refactoring sprint complete (god components split, lazy routes, code splitting) |
 | 2026-03-22 | Edge Functions refactor (generate-story-content split) |
 | 2026-03-07 | Security + Gumroad payment integration |

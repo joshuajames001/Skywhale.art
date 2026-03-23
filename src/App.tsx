@@ -34,7 +34,7 @@ function App() {
     const { user, profile, showAuth, setShowAuth } = useAppAuth();
     const { isTransitioning, showFairy, showFlash, triggerMagicTransition, handleFairyTrigger } = useMagicTransition();
     const { showDailyReward, setShowDailyReward, rewardStreak, handleClaimReward } = useDailyReward();
-    const { notification } = useStory();
+    const { notification, updateBookPublicStatus } = useStory();
 
     const {
         handleStoryCreated, handleNewStoryClick, handleOpenBook,
@@ -73,6 +73,9 @@ function App() {
             showPublishDialog={showPublishDialog} setShowPublishDialog={setShowPublishDialog}
             publishBookId={publishBookId} setPublishBookId={setPublishBookId}
             notification={notification}
+            onPublishBook={async (bookId, isPublic) => {
+                if (user) await updateBookPublicStatus(bookId, isPublic, user.id);
+            }}
         >
             <Suspense fallback={<div className="min-h-screen bg-black" />}>
                 <Routes>
