@@ -1,34 +1,76 @@
 # 04. Feature-Sliced Design & Architectural Constraints
 
-> **STRICT RULE:** This codebase follows a strict Feature-Sliced Design philosophy. "Everything in its place."
+> Aktualizováno: 2026-03-23
 
-## 1. folder Structure Rules
-We do **NOT** dump complex business logic into generic folders.
+## 1. Folder Structure Rules
 
-*   `src/components/` -> **Generic UI Only.** Buttons, Inputs, Modals. No business logic.
-*   `src/features/` -> **Business Logic.**
-    *   `story-builder/` -> All logic for creating stories (`CustomMode`, `MagicWand`).
-    *   `reader/` -> The Book Reader experience.
-    *   `card-studio/` -> The Greeting Card Editor.
-    *   `library/` -> User's saved content.
+| Adresář | Účel | Příklad |
+|---------|------|---------|
+| `src/features/` | Business logic — 1 složka = 1 doména | `features/story-builder/` |
+| `src/components/` | Generic UI only (buttons, layout) | `components/layout/AppLayout.tsx` |
+| `src/hooks/` | Sdílené cross-cutting hooks | `hooks/useStory.ts` |
+| `src/lib/` | Konfigurace, helpery, integrace | `lib/ai.ts`, `lib/supabase.ts` |
+| `src/types/` | Globální TypeScript typy | `types/index.ts` |
+| `src/app/` | Route config a bootstrap | `app/routes.tsx` |
+| `src/providers/` | Adapter hooks (feature ↔ Supabase/AI) | `providers/useCardStudioAdapter.ts` |
 
-**Anti-Pattern:** Creating a file like `src/components/StoryGenerator.tsx`.
-**Correct:** `src/features/story-builder/components/StoryGenerator.tsx`.
+**Anti-Pattern:** `src/components/StoryGenerator.tsx`
+**Correct:** `src/features/story-builder/components/StoryGenerator.tsx`
 
-## 2. Separation of Concerns: The Brain vs. The Mouth
+## 2. Feature Inventory (19 features)
 
-### The Brain: `orchestrator.ts`
-*   **Responsibility:** Sequence, State, "What to do next".
-*   **Input:** User preferences.
-*   **Output:** A structured `StoryBook` object.
-*   **Rule:** It does NOT write the creative text. It calls the Storyteller.
+### Content Creation
+| Feature | Účel |
+|---------|------|
+| `story-builder` | AI story wizard (StorySetup, modes) |
+| `custom-book` | Manuální editor knih (Magic Mirror, WriterPanel, IllustratorPanel) |
+| `card-studio` | Greeting card editor (Konva canvas, ToolsDock) |
 
-### The Mouth: `storyteller.ts`
-*   **Responsibility:** Prompts, Creativity, "How to ask the AI".
-*   **Input:** `StoryParams`.
-*   **Output:** Creative Prompts (`coverPrompt`, `visualDna`, `pages`).
-*   **Rule:** It performs sanitation (e.g., stripping technical jargon from DNA).
+### Content Consumption
+| Feature | Účel |
+|---------|------|
+| `discovery` | Veřejný browsing hub s kategoriemi a trailery |
+| `reader` | Paginated storybook reader (BookReader, StorySpread) |
+| `library` | Osobní knihovna uživatele |
 
-## 3. Strict Prohibitions
-*   **NEVER** circular import between Features. If features need to share logic, move that logic to `src/lib` or `src/hooks` (if generic).
-*   **NEVER** modify the "Core Types" (`src/types.ts`) without a full impact analysis of all Features.
+### Gamification & Engagement
+| Feature | Účel |
+|---------|------|
+| `game-hub` | Mini-hry (puzzle, memory, coloring) |
+| `gamification` | Daily reward modal, streak systém |
+| `profile` | Profil, achievementy, referraly, avatar |
+| `social` | Reakce (ReactionBar) |
+| `feedback` | Feedback board |
+| `onboarding` | Tutorial overlaye, coach marks |
+| `audio` | Audio playback, TTS controls, voice preview |
+
+### Core & Infrastructure
+| Feature | Účel |
+|---------|------|
+| `auth` | Supabase autentizace |
+| `store` | Energy purchase (Gumroad tiers) |
+| `landing` | Marketing landing pages |
+| `navigation` | Global navigation hub |
+| `legal` | Cookie consent, privacy, terms |
+| `core` | Background animation orchestration |
+
+## 3. Separation of Concerns
+
+### The Brain: `orchestrator.ts` (`src/lib/ai/`)
+- Sekvence, stav, "co dělat dál"
+- Input: user preferences → Output: structured StoryBook
+
+### The Mouth: `storyteller.ts` (`src/lib/`)
+- Prompty, kreativita, "jak se zeptat AI"
+- Input: StoryParams → Output: creative prompts (coverPrompt, visualDna, pages)
+
+### The Hands: Edge Functions (`supabase/functions/`)
+- Serverová logika, AI volání, platby
+- 9 funkcí + 3 sdílené moduly
+
+## 4. Strict Prohibitions
+
+- **NEVER** circular import mezi features
+- **NEVER** modifikovat core types (`src/types/index.ts`) bez impact analysis
+- **NEVER** přímé Supabase/AI volání v UI komponentách — vždy přes adapter nebo hook
+- **NEVER** business logic v `src/components/`

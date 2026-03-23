@@ -71,3 +71,13 @@ All sensitive transactions are executed via atomic, `SECURITY DEFINER` PostgreSQ
 - **Hooks**: Logic is extracted into custom hooks (e.g., `useProfileStats`, `useDailyReward`) to keep UI components clean.
 - **Ghost Code Prevention**: We actively audit components (especially layout/navigation) to ensure they do not fetch data they do not render. Unused database calls are treated as technical debt and removed.
 - **Local State**: Complex features (like `story-builder`) manage their transient state locally or via Context before persisting to Supabase.
+
+## 6. Code Splitting & Lazy Loading
+
+> Přidáno: 2026-03-23 (GF-16)
+
+Route definitions live in `src/app/routes.tsx`. App.tsx renders them inside a single `<Suspense>` boundary. 10 feature components are lazy-loaded via `React.lazy()`, producing separate Vite chunks (16–43 kB each). Main bundle reduced from 1329 kB to 995 kB.
+
+Non-lazy components (PricingPage, FeedbackBoard, EnergyStore, CardViewer, LegalAgreements) stay in the main bundle due to small size.
+
+Providers wrap their lazy children directly in the route config, not in App.tsx.

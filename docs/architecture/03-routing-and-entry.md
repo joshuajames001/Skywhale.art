@@ -1,31 +1,72 @@
 # 03. Routing & Entry Architecture
 
-> **STRICT RULE:** The Application Root (`/`) MUST always render the `CinematicLanding` component.
+> Aktualizováno: 2026-03-23 (po GF-16 lazy routes refactoru)
 
-## 1. The Entry Point Strategy
-The application is divided into two conceptual zones:
+## 1. Route Configuration
 
-1.  **The Public Face (SaaS Intro)**
-    *   **Path:** `/`
-    *   **Component:** `CinematicLanding.tsx`
-    *   **Immersive Rule:** NO Global Navigation Bar. NO Sidebar. The user enters a "movie theater" experience.
-
-2.  **The App Hub (Internal Tool)**
-    *   **Path:** `/home` (and children like `/library`, `/studio`, `/profile`)
-    *   **Component:** `AppLayout` + Feature Routes
-    *   **UI:** Full "Sky Whale" OS Interface (Dock, Navigation).
-
-## 2. Implementation Detail
-In `AppLayout.tsx`, we enforce the visual separation:
+Všechny routes jsou definovány v **`src/app/routes.tsx`** jako typed config array.
+`App.tsx` je jen orchestrátor — renderuje `<Routes>` uvnitř `<Suspense>`.
 
 ```typescript
-const isLanding = location.pathname === '/';
+// src/app/routes.tsx
+export const createRoutes = (ctx: RouteContext): RouteConfig[] => [
+    { path: '/terms', element: ... },
+    { path: '/library', element: ... },
+    ...
+];
 
-// Logic:
-// If isLanding === true -> HIDE NavigationHub
-// If isLanding === false -> SHOW NavigationHub
+// src/App.tsx
+const routes = createRoutes({ navigate, user, ... });
+<Suspense fallback={<div className="min-h-screen bg-black" />}>
+    <Routes>
+        {routes.map(r => <Route key={r.path} path={r.path} element={r.element} />)}
+    </Routes>
+</Suspense>
 ```
 
-## 3. Strict Prohibitions
-*   **NEVER** route the logged-in user directly to `/home` if they explicitly requested `/`. The Landing Page is part of the experience.
-*   **NEVER** add the Global Navbar to the `CinematicLanding` component. It destroys the immersion.
+## 2. Lazy-Loaded Components (Code Splitting)
+
+10 komponent je lazy-loaded. Vite je automaticky splituje do separátních chunků.
+
+| Component | Export type | Chunk size |
+|-----------|-----------|------------|
+| CinematicLanding | named | ~26 kB |
+| LandingPage | named | ~16 kB |
+| Library | named | ~28 kB |
+| GameHub | named | ~36 kB |
+| DiscoveryHub | named | ~26 kB |
+| CreateStoryWrapper | named | ~43 kB |
+| CustomBookEditor | **default** | ~40 kB |
+| CardStudioWrapper | named | ~40 kB |
+| UserProfile | named | ~22 kB |
+| BookRouteWrapper | named | ~27 kB |
+
+Named exporty používají: `.then(m => ({ default: m.ComponentName }))`
+Default export používá přímý: `lazy(() => import('./path'))`
+
+## 3. The Entry Point Strategy
+
+| Zóna | Path | Component | UI |
+|------|------|-----------|----|
+| Public Face | `/` | CinematicLanding | Bez navigace, immersive |
+| App Hub | `/home`, `/library`, `/studio`, ... | AppLayout + Feature | Plné UI (dock, nav) |
+
+**STRICT RULE:** `/` MUST renderovat `CinematicLanding`. Bez Global Navbar.
+
+## 4. Non-Lazy Routes (vždy v hlavním bundlu)
+
+PricingPage, FeedbackBoard, EnergyStore, CardViewer, LegalAgreements — malé komponenty,
+zůstávají v hlavním bundlu (static import v routes.tsx).
+
+## 5. Provider Wrapping
+
+Providers (LibraryProvider, GameHubProvider, CardStudioProvider) obalují lazy komponenty
+přímo v route config, ne v App.tsx:
+
+```typescript
+{ path: '/library', element: (
+    <LibraryProvider adapter={ctx.libraryAdapter}>
+        <LazyLibrary ... />
+    </LibraryProvider>
+)}
+```

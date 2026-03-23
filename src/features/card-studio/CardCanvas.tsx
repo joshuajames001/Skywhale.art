@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Stage, Layer, Image as KonvaImage, Transformer, Rect, Text } from 'react-konva';
 import useImage from 'use-image';
 import { CardItem } from './types';
@@ -20,7 +20,7 @@ const RemoveWhite = (imageData: any) => {
 
 // --- HELPER COMPONENT: URLImage ---
 // Handles loading images from URL
-const URLImage = React.forwardRef<any, any>(({ src, removeBackground, ...props }, ref) => {
+const URLImage = React.forwardRef<any, any>(({ src, removeBackground, onLoad, ...props }, ref) => {
     const [image, status] = useImage(src, 'anonymous');
     const imageNodeRef = useRef<Konva.Image>(null);
 
@@ -36,6 +36,10 @@ const URLImage = React.forwardRef<any, any>(({ src, removeBackground, ...props }
             }
         }
     }, [image, status, removeBackground]);
+
+    useEffect(() => {
+        if (status === 'loaded') onLoad?.();
+    }, [status, onLoad]);
 
     return (
         <KonvaImage
@@ -66,14 +70,21 @@ const CanvasItem = ({
     onDragEnd?: () => void
 }) => {
     const shapeRef = useRef<any>(null);
+    const [imageLoaded, setImageLoaded] = useState(false);
     const trRef = useRef<Konva.Transformer>(null);
 
     useEffect(() => {
-        if (isSelected && trRef.current && shapeRef.current) {
+        if (isSelected && trRef.current && shapeRef.current
+            && !shapeRef.current.isDestroyed()) {
             trRef.current.nodes([shapeRef.current]);
             trRef.current.getLayer()?.batchDraw();
         }
-    }, [isSelected]);
+        return () => {
+            if (trRef.current && !(trRef.current as any).isDestroyed?.()) {
+                trRef.current.nodes([]);
+            }
+        };
+    }, [isSelected, imageLoaded]);
 
     const commonProps = {
         onClick: onSelect,
@@ -117,6 +128,7 @@ const CanvasItem = ({
                 <URLImage
                     src={item.content}
                     removeBackground={false}
+                    onLoad={() => setImageLoaded(true)}
                     {...commonProps}
                 />
             ) : (

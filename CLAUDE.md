@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**Magické Příběhy** (Magic Stories) — an AI-powered children's storybook platform by ANELA Digital ("SkyWhale"). Users create personalized illustrated storybooks and greeting cards using AI image generation, TTS audio, and AI-written stories.
+**Magické Příběhy** (Magic Stories) — an AI-powered children's storybook platform named SkyWhale by Jiří Joneš founder of Ghost Factory. Users create personalized illustrated storybooks and greeting cards using AI image generation, TTS audio, and AI-written stories.
 
 ## Commands
 
@@ -14,10 +14,11 @@ npm run build      # tsc + vite build (production)
 npm run lint       # ESLint (0 max-warnings, strict)
 npm run preview    # Preview production build on port 5174
 
-# Testing (vitest, no npm script defined)
-npx vitest run                                 # Run all tests
+# Testing (vitest)
+npm run test:run                               # Run all tests once
+npm run test                                   # Watch mode
+npm run coverage                               # Coverage report
 npx vitest run src/tests/specific.test.ts      # Run a single test file
-npx vitest                                     # Watch mode
 ```
 
 ## Required Environment Variables
@@ -48,12 +49,21 @@ All product features live in `src/features/<feature-name>/`. Key features:
 | `reader` | Paginated storybook reader (`BookReader`) |
 | `card-studio` | Greeting card editor with Konva canvas |
 | `custom-book` | Custom book editor with Magic Mirror (face reference) |
-| `discovery` | Public book discovery/browsing hub |
-| `library` | User's personal book library |
-| `game-hub` | Mini-games and gamification |
+| `discovery` | Public book discovery/browsing hub with categories and trailers |
+| `library` | User's personal book library with reporting |
+| `game-hub` | Mini-games (puzzle, memory, coloring) and gamification |
 | `auth` | Supabase authentication |
-| `store` | Energy purchase (Stripe) |
-| `profile` | User profile management |
+| `store` | Energy purchase (Gumroad subscription tiers) |
+| `profile` | User profile, achievements, referrals, avatar customization |
+| `audio` | Audio playback, TTS controls, voice preview (ElevenLabs) |
+| `landing` | Marketing landing page with parallax and showcase |
+| `onboarding` | User tutorial overlays and coach marks |
+| `gamification` | Daily reward modal and streak system |
+| `feedback` | User feedback board |
+| `legal` | Cookie consent, privacy policy, terms of service |
+| `navigation` | Global navigation hub |
+| `social` | Social reactions (reaction bar) |
+| `core` | Background animation orchestration |
 
 ### The Three-Layer Rule (from `DEVELOPMENT_STATE.md`)
 
@@ -63,16 +73,22 @@ All product features live in `src/features/<feature-name>/`. Key features:
 
 ### Core Libraries (`src/lib/`)
 
-- **`supabase.ts`** — Supabase client; exports `supabase` and `getStorageUrl()`
+- **`supabase.ts`** — Supabase client; exports `supabase`, `isSupabaseConfigured`, `getStorageUrl()`
 - **`edge-functions.ts`** — `invokeEdgeFunction()`: all calls to Supabase Edge Functions go through this; it handles session refresh and direct `fetch()` (bypasses stale supabase-js tokens)
-- **`ai.ts`** — `generateImage()` for Replicate (Flux 2 Pro / Flux Dev); exports `STYLE_PROMPTS` map
-- **`storyteller.ts`** — `generateStoryStructure()` calling the `generate-story-content` Edge Function; has known legacy TypeScript errors (non-blocking)
-- **`moderation.ts`** — OpenAI Moderation API wrapper; called pre-generation in Card Studio and Smart Quotes
+- **`ai.ts`** — `generateImage()`, `generateCardAsset()` for Replicate (Flux 2 Pro / Flux Dev); exports `STYLE_PROMPTS` map (19 styles)
+- **`storyteller.ts`** — `generateStoryStructure()`, `generateStoryIdea()`, `extractVisualIdentity()` calling Edge Functions; has known legacy TypeScript errors (non-blocking)
+- **`moderation.ts`** — Content moderation via `content-tools` Edge Function; called pre-generation in Card Studio and Smart Quotes
 - **`ai/orchestrator.ts`** — `generateCompleteStory()`: the 3-phase story generation pipeline
+- **`card-engine.ts`** — `generateSmartQuote()`, `CARD_THEMES` (3 themes: space_party, fairytale_birthday, dino_adventure)
+- **`content-policy.ts`** — `checkTopicBlacklist()`, `validateImageFile()`, `validateNickname()` — sync validation (no network calls)
+- **`achievements.ts`** — `checkAndUnlockAchievement()`, `checkBookCountAchievements()` — achievement system
+- **`storage-service.ts`** — `storageService` singleton for image upload to Supabase Storage
+- **`themes.ts`** — `THEMES` registry (8 palettes: Fantasy, Adventure, Bedtime, Sci-Fi, Watercolor, Pixar 3D, Futuristic, Sketch)
+- **`audio-constants.ts`** — `VOICE_OPTIONS` (4 ElevenLabs voices), `DEFAULT_VOICE_ID`
 
 ### Story Generation Pipeline (`src/lib/ai/orchestrator.ts`)
 
-**Phase 1 — Structure:** Calls `generate-story-content` Edge Function → returns pages array, cover prompt, identity prompt, visual DNA (JSON schema).
+**Phase 1 — Structure:** Calls `generate-story-content` Edge Function (`generate-structure` action, Anthropic Claude Sonnet 4.6) → returns 10-page structure with `text_cz`/`text_en`, `art_prompt_en`, cover prompt, identity prompt, visual DNA. Applies random creative twists (8 narrative styles).
 
 **Phase 2 — Visual DNA:** Generates a hero portrait via Flux Dev as the identity reference image.
 
@@ -82,16 +98,19 @@ All product features live in `src/features/<feature-name>/`. Key features:
 
 | Function | Purpose |
 |---|---|
-| `generate-story-content` | Story text + structure generation (AI model via OpenAI-compatible API) |
-| `generate-story-image` | Flux 2 Pro image generation with multi-reference slots |
-| `skywhale-flux` | Flux Dev for card studio, stickers, backgrounds |
+| `generate-story-content` | Story structure (Anthropic) + idea generation (Gemini) — 2 akce |
+| `book-editor-assist` | Custom Book Editor AI: suggestions, image prompts, ideas, dictionary (Gemini) |
+| `content-tools` | Content moderation (Gemini) + visual DNA extraction from images |
+| `generate-story-image` | Flux 2 Pro image generation with 10-slot multi-reference protocol |
+| `skywhale-flux` | Flux Dev/Schnell for card studio, stickers, backgrounds |
 | `generate-audio` | ElevenLabs TTS (1 Energy per 20 characters) |
-| `process-story-image` | Post-processing pipeline for generated images |
-| `create-checkout` | Stripe checkout session creation |
-| `stripe-webhook` | Stripe payment webhook handler |
-| `cleanup-storage` | Storage maintenance |
+| `process-story-image` | Legacy Flux Dev image generation (superseded by generate-story-image) |
+| `gumroad-webhook` | Gumroad subscription webhook — grants energy per tier |
+| `cleanup-storage` | Storage maintenance (expired Magic Mirror assets) |
 
-Edge Functions are Deno/TypeScript. `generate-story-image` has JWT verification disabled in Supabase Dashboard; auth is handled internally via `supabase.auth.getUser()`.
+Shared modules in `supabase/functions/_shared/`: `cors.ts`, `ai-clients.ts` (`callGemini()` + `callAnthropic()`), `lang-utils.ts`.
+
+Edge Functions are Deno/TypeScript. All deploy with `--no-verify-jwt`; auth is handled internally via `supabase.auth.getUser()`.
 
 ### Adapters (`src/providers/`)
 
@@ -104,8 +123,12 @@ Each adapter abstracts a feature's data dependencies:
 ### Shared Hooks (`src/hooks/`)
 
 - **`useStory`** — story CRUD and generation state
-- **`useGemini`** — Google Gemini AI (guides, hints, creative text)
-- **`useEnergy`** — user energy balance management
+- **`useGemini`** — Google Gemini AI via `book-editor-assist` Edge Function (suggestions, image prompts)
+- **`useEnergy`** — energy balance + Gumroad package links + monthly grant
+- **`useDailyReward`** — daily login reward with 7-day streak cycle
+- **`useGuide`** — Zustand-based tutorial system with localStorage persistence
+- **`usePdfExport`** — PDF export with progress tracking
+- **`useLocalStorage`** — generic localStorage hook
 - **Core hooks** (`src/hooks/core/`): `useAppAuth`, `useAppNavigation`, `useMagicTransition`, `useUrlHandlers`
 
 ### Data Model (`src/types/index.ts`)
@@ -125,6 +148,7 @@ All AI text generation enforces Czech output for `text_cz` fields. Art prompts a
 - **Flux 2 Pro (story images):** 50 Energy / image
 - **Flux Dev (card studio/stickers):** 30 Energy / image
 - **Audio (ElevenLabs):** 1 Energy per 20 characters (min 1)
+- **Gumroad tiers:** Zvědavec (1k), Spisovatel (3k), Mistr Slova (7.5k), Start (1.6k), Pokročilý (4k), Expert (9k), Mistr (21k)
 
 ### Path Alias
 
@@ -133,7 +157,7 @@ All AI text generation enforces Czech output for `text_cz` fields. Art prompts a
 <!-- gitnexus:start -->
 # GitNexus — Code Intelligence
 
-This project is indexed by GitNexus as **ann** (877 symbols, 1576 relationships, 31 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
+This project is indexed by GitNexus as **ann** (884 symbols, 1583 relationships, 31 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
 
 > If any GitNexus tool warns the index is stale, run `npx gitnexus analyze` in terminal first.
 
@@ -183,6 +207,21 @@ This project is indexed by GitNexus as **ann** (877 symbols, 1576 relationships,
 | d=1 | WILL BREAK — direct callers/importers | MUST update these |
 | d=2 | LIKELY AFFECTED — indirect deps | Should test |
 | d=3 | MAY NEED TESTING — transitive | Test if critical path |
+
+## Graph Degree vs. Direct Imports
+
+GitNexus `degree` (reported in audits and `gitnexus_context`) counts ALL graph
+edges — including transitive relationships. It is NOT the same as direct importers.
+
+| Metric | What it means | How to check |
+|--------|---------------|--------------|
+| `degree` in GitNexus | All direct + transitive relationships in the call graph | Fast overview only |
+| Direct importers | Files that literally `import` the symbol | `grep -r "from.*filename" src/ -l` |
+
+**Rule:** Before creating a refactor task based on a high degree count, always
+verify with grep how many files DIRECTLY import the symbol. High degree with
+zero direct cross-feature imports = false alarm (like GF-15: card-studio/types.ts
+showed degree 36 but had zero importers outside its feature folder).
 
 ## Resources
 

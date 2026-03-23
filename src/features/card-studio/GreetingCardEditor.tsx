@@ -1,671 +1,216 @@
 import { useState, useRef, useEffect } from 'react';
 import { CardCanvas } from './CardCanvas';
 import { ToolsDock } from './ToolsDock';
-import { useLocalStorage } from '../../hooks/useLocalStorage';
 import { StarryBackground } from '../../components/StarryBackground';
 import { SKYWHALE_STICKERS } from './data/stickers';
 import Konva from 'konva';
-import { Undo2, Redo2, ChevronLeft, ChevronRight, Home, Loader2, X, Share2, Save, Download, Plus } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { CardPage, CardItem } from './types';
 import { useTranslation } from 'react-i18next';
 import { useCardStudio } from './CardStudioContext';
+import { useCardEditorState } from './hooks/useCardEditorState';
+import { useCardEditorAI } from './hooks/useCardEditorAI';
+import { CardToolbar } from './components/CardToolbar';
 
-// Simple ID generator
-const generateId = () => Math.random().toString(36).substr(2, 9);
+const PAGE_COVER = 0, PAGE_SPREAD = 1, PAGE_BACK = 3;
 
-// --- HELPER COMPONENT ---
+const PageLabel = ({ label, hasItems }: { label: string; hasItems: boolean }) => (
+    <div className={`absolute bottom-8 left-1/2 transform -translate-x-1/2 bg-black/50 backdrop-blur-md text-white/90 text-[10px] font-bold uppercase tracking-widest px-4 py-2 rounded-full pointer-events-none transition-opacity duration-500 ${hasItems ? 'opacity-0' : 'opacity-100'}`}>
+        {label}
+    </div>
+);
+
 const GreetingCardPage = ({ page, selectedId, onSelect, onUpdate, onItemDragStart, onItemDragEnd, stageRef }: any) => {
     if (!page) return <div className="w-full h-full bg-slate-100 animate-pulse" />;
-
-    return (
-        <CardCanvas
-            items={page.items || []}
-            background={page.background || "#fffcf5"}
-            selectedId={selectedId}
-            onSelect={onSelect}
-            onUpdate={onUpdate}
-            onItemDragStart={onItemDragStart}
-            onItemDragEnd={onItemDragEnd}
-            domRef={stageRef}
-        />
-    )
-}
+    return <CardCanvas items={page.items || []} background={page.background || "#fffcf5"} selectedId={selectedId}
+        onSelect={onSelect} onUpdate={onUpdate} onItemDragStart={onItemDragStart} onItemDragEnd={onItemDragEnd} domRef={stageRef} />;
+};
 
 interface GreetingCardEditorProps {
-    initialProject?: {
-        id: string;
-        title: string;
-        pages: CardPage[];
-    } | null;
+    initialProject?: { id: string; title: string; pages: CardPage[] } | null;
 }
 
 export const GreetingCardEditor = ({ initialProject }: GreetingCardEditorProps) => {
     const { t } = useTranslation();
+    const { onSaveProject } = useCardStudio();
 
-    // --- ADAPTER HOOK ---
-    const { onSaveProject, onGenerateImage, onModerateContent } = useCardStudio();
+    const defaultPages: CardPage[] = [
+        { id: 'p0', name: t('atelier.pages.front_cover'), items: [], background: '#fffcf5' },
+        { id: 'p1', name: t('atelier.pages.left_side'), items: [], background: '#fffcf5' },
+        { id: 'p2', name: t('atelier.pages.right_side'), items: [], background: '#fffcf5' },
+        { id: 'p3', name: t('atelier.pages.back_side'), items: [], background: '#fffcf5' },
+    ];
+
+    const state = useCardEditorState(initialProject?.pages || defaultPages);
+    const ai = useCardEditorAI(initialProject?.id || 'new');
 
     const [activeTool, setActiveTool] = useState<'background' | 'stickers' | 'text' | 'ai' | 'templates' | null>(null);
-    const [isDraggingSticker, setIsDraggingSticker] = useState(false); // Track item drag to disable page swipe
-
-    // --- RESPONSIVE STATE ---
+    const [isDraggingSticker, setIsDraggingSticker] = useState(false);
     const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
-
-    useEffect(() => {
-        const handleResize = () => setIsMobile(window.innerWidth < 768);
-        window.addEventListener('resize', handleResize);
-        return () => window.removeEventListener('resize', handleResize);
-    }, []);
-
-    // --- CONSTANTS ---
-    const PAGE_COVER = 0;
-    const PAGE_SPREAD = 1; // Shows Index 1 (Left) & 2 (Right)
-    const PAGE_BACK = 3;
-
-    // --- STATE: PAGES (Strict 4-Page Booklet) ---
-    // PERSISTENCE: Use local storage for drafts
-    const [pages, setPages] = useLocalStorage<CardPage[]>('skywhale_draft_card_pages', (() => {
-        if (initialProject && initialProject.pages) {
-            return initialProject.pages;
-        }
-        return [
-            { id: 'p0', name: t('atelier.pages.front_cover'), items: [], background: "#fffcf5" }, // Cover
-            { id: 'p1', name: t('atelier.pages.left_side'), items: [], background: "#fffcf5" },    // Inside Left
-            { id: 'p2', name: t('atelier.pages.right_side'), items: [], background: "#fffcf5" },   // Inside Right (LINED)
-            { id: 'p3', name: t('atelier.pages.back_side'), items: [], background: "#fffcf5" }    // Back
-        ];
-    })());
-
-    // View State (0 = Cover, 1 = Spread, 3 = Back)
     const [viewStartIndex, setViewStartIndex] = useState(0);
     const [direction, setDirection] = useState(0);
-
-    // Which page is currently receiving inputs (stickers, text)?
-    // Defaults to viewStartIndex, but user can click the other page in a spread
-    const [focusedPageIndex, setFocusedPageIndex] = useState(0);
-
-    // Sync focused page when view changes
-    useEffect(() => {
-        setFocusedPageIndex(viewStartIndex);
-    }, [viewStartIndex]);
-
     const [selectedId, setSelectedId] = useState<string | null>(null);
-    const [isGenerating, setIsGenerating] = useState(false);
     const [isExporting, setIsExporting] = useState(false);
-
     const [isSaving, setIsSaving] = useState(false);
-
-    // Text Style State
-    const [textColor, setTextColor] = useState<string>("#ffffff");
-    const [textFont, setTextFont] = useState<string>("Inter");
-
-    // History State (Tracks the ENTIRE Book)
-    const [history, setHistory] = useState<CardPage[][]>([pages]);
-    const [historyIndex, setHistoryIndex] = useState(0);
-
-    // Ref for the Konva Stage
+    const [textColor, setTextColor] = useState('#ffffff');
+    const [textFont, setTextFont] = useState('Inter');
     const stageRef = useRef<Konva.Stage>(null);
 
-    // History Helpers
-    const addToHistory = (newPages: CardPage[]) => {
-        const newHistory = history.slice(0, historyIndex + 1);
-        newHistory.push(newPages);
-        setHistory(newHistory);
-        setHistoryIndex(newHistory.length - 1);
-        setPages(newPages);
-    };
-
-    const undo = () => {
-        if (historyIndex > 0) {
-            const newIndex = historyIndex - 1;
-            setHistoryIndex(newIndex);
-            setPages(history[newIndex]);
-            if (viewStartIndex >= history[newIndex].length) {
-                // Approximate view restoration
-                if (viewStartIndex === 1 && history[newIndex].length < 3) setViewStartIndex(0);
-            }
-        }
-    };
-
-    const redo = () => {
-        if (historyIndex < history.length - 1) {
-            const newIndex = historyIndex + 1;
-            setHistoryIndex(newIndex);
-            setPages(history[newIndex]);
-        }
-    };
-
-    // Keyboard Shortcuts
     useEffect(() => {
-        const handleKeyDown = (e: KeyboardEvent) => {
-            if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
-                e.preventDefault();
-                undo();
-            }
-            if ((e.ctrlKey || e.metaKey) && e.key === 'y') {
-                e.preventDefault();
-                redo();
-            }
-        };
-        window.addEventListener('keydown', handleKeyDown);
-        return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [history, historyIndex]);
+        const h = () => setIsMobile(window.innerWidth < 768);
+        window.addEventListener('resize', h); return () => window.removeEventListener('resize', h);
+    }, []);
 
-    // Dependencies for AI/Export
-    const handleSetBackground = (bg: string) => {
-        const newPages = [...pages];
-        if (newPages[focusedPageIndex]) {
-            newPages[focusedPageIndex] = { ...newPages[focusedPageIndex], background: bg };
-            addToHistory(newPages);
-        }
-    };
+    useEffect(() => { state.setFocusedPageIndex(viewStartIndex); }, [viewStartIndex]);
 
-    const generateAI = async (prompt: string, mode: 'sticker' | 'background', referenceUrl?: string | null) => {
+    const isCover = viewStartIndex === PAGE_COVER;
+    const isBack = viewStartIndex === PAGE_BACK;
+    const goToPrevPage = () => { if (isCover) return; setDirection(-1); setViewStartIndex(viewStartIndex === PAGE_BACK ? PAGE_SPREAD : PAGE_COVER); };
+    const goToNextPage = () => { setDirection(1); setViewStartIndex(viewStartIndex === PAGE_COVER ? PAGE_SPREAD : PAGE_BACK); };
+
+    const handleAddImage = (url: string) => { state.addItem({ type: 'image', content: url, scaleX: 0.15, scaleY: 0.15 }); };
+    const handleAddText = (text: string) => { state.addItem({ type: 'text', content: text, color: textColor, fontFamily: textFont }); };
+
+    const handleGenerateAI = async (prompt: string, mode: 'sticker' | 'background') => {
         try {
-            setIsGenerating(true);
-
-            // 🛡️ SAFETY CHECK: Moderate via Adapter
-            await onModerateContent(prompt);
-
-            // 🎨 CALL MODEL: Via Adapter
-            const { imageUrl } = await onGenerateImage(prompt, mode, referenceUrl);
-
-            if (mode === 'sticker') {
-                handleAddImage(imageUrl);
-            } else {
-                handleSetBackground(imageUrl);
-            }
+            const url = mode === 'sticker' ? await ai.generateSticker(prompt) : await ai.generateBackground('', prompt);
+            if (mode === 'sticker') handleAddImage(url); else state.setBackground(url);
         } catch (e: any) {
-            console.error("AI Generation failed:", e);
-            const msg = e.message || JSON.stringify(e);
-
-            // User-friendly error for inappropriate content
-            if (msg.includes('Obsah není vhodný')) {
-                alert(t('atelier.status.inappropriate_content'));
-                return;
-            }
-
-            if (msg.includes('402') || msg.includes('Insufficient credit')) {
-                alert(t('atelier.status.payment_wait'));
-            } else {
-                alert(`${t('atelier.status.magic_dust_error')} ${msg}`);
-            }
-        } finally {
-            setIsGenerating(false);
-        }
-    };
-
-    const handleAddImage = (url: string) => {
-        addItem({ type: 'image', content: url, scaleX: 0.15, scaleY: 0.15 });
-    };
-
-    const handleAddText = (text: string) => {
-        addItem({
-            type: 'text', content: text, color: textColor, fontFamily: textFont
-        });
-    };
-
-    const addItem = (props: Partial<CardItem>) => {
-        const newItem: CardItem = {
-            id: generateId(),
-            type: 'icon', content: null, x: 100, y: 100, scaleX: 1, scaleY: 1,
-            rotation: (Math.random() - 0.5) * 10,
-            ...props
-        };
-
-        const newPages = [...pages];
-        const targetIndex = focusedPageIndex;
-
-        if (newPages[targetIndex]) {
-            const currentPage = newPages[targetIndex];
-            newPages[targetIndex] = { ...currentPage, items: [...currentPage.items, newItem] };
-            addToHistory(newPages);
-            setSelectedId(newItem.id);
-        }
-    }
-
-    const handleUpdateItem = (id: string, updates: Partial<CardItem>) => {
-        const newPages = [...pages];
-        let pageIndex = focusedPageIndex;
-        let itemExists = newPages[pageIndex]?.items.some(i => i.id === id);
-
-        if (!itemExists) {
-            pageIndex = newPages.findIndex(p => p.items.some(i => i.id === id));
-        }
-
-        if (pageIndex !== -1) {
-            const currentPage = newPages[pageIndex];
-            const updatedItems = currentPage.items.map(item => item.id === id ? { ...item, ...updates } : item);
-            newPages[pageIndex] = { ...currentPage, items: updatedItems };
-            addToHistory(newPages);
+            const msg = e.message || '';
+            if (msg.includes('Obsah není vhodný')) alert(t('atelier.status.inappropriate_content'));
+            else if (msg.includes('402') || msg.includes('Insufficient credit')) alert(t('atelier.status.payment_wait'));
+            else alert(`${t('atelier.status.magic_dust_error')} ${msg}`);
         }
     };
 
     const handleDownload = async () => {
         if (!stageRef.current) return;
-        setIsExporting(true);
-        setSelectedId(null);
+        setIsExporting(true); setSelectedId(null);
         setTimeout(async () => {
             try {
-                const dataURL = stageRef.current?.toDataURL({ pixelRatio: 2 });
-                if (dataURL) {
-                    const link = document.createElement('a');
-                    link.download = `${t('atelier.card_default_title')}-${focusedPageIndex + 1}.png`;
-                    link.href = dataURL;
-                    link.click();
-                }
-            } catch (e) {
-                console.error("Download failed", e);
-            } finally {
-                setIsExporting(false);
-            }
+                const url = stageRef.current?.toDataURL({ pixelRatio: 2 });
+                if (url) { const a = document.createElement('a'); a.download = `${t('atelier.card_default_title')}-${state.focusedPageIndex + 1}.png`; a.href = url; a.click(); }
+            } finally { setIsExporting(false); }
         }, 50);
     };
 
     const handleSaveDB = async () => {
-        if (!stageRef.current) {
-            alert(t('atelier.status.capture_error'));
-            return;
-        }
-
-        // 1. Capture Thumbnail from current view
-        setSelectedId(null);
-        await new Promise(r => setTimeout(r, 50)); // wait for deselect render
-
-        const blob = await new Promise<Blob | null>(resolve =>
-            stageRef.current?.toCanvas().toBlob(resolve, 'image/png')
-        );
-
-        if (!blob) {
-            alert(t('atelier.status.thumbnail_error'));
-            return;
-        }
-
-        // 2. Prepare Data
-        const projectData = {
-            id: crypto.randomUUID(),
-            title: `${t('atelier.card_default_title')} ${new Date().toLocaleDateString()}`,
-            pages: pages,
-            thumbnailBlob: blob
-        };
-
+        if (!stageRef.current) { alert(t('atelier.status.capture_error')); return; }
+        setSelectedId(null); await new Promise(r => setTimeout(r, 50));
+        const blob = await new Promise<Blob | null>(resolve => stageRef.current?.toCanvas().toBlob(resolve, 'image/png'));
+        if (!blob) { alert(t('atelier.status.thumbnail_error')); return; }
         setIsSaving(true);
-        try {
-            await onSaveProject(projectData);
-        } catch (e) {
-            console.error("Save failed", e);
-        } finally {
-            setIsSaving(false);
-        }
+        try { await onSaveProject({ id: crypto.randomUUID(), title: `${t('atelier.card_default_title')} ${new Date().toLocaleDateString()}`, pages: state.pages, thumbnailBlob: blob }); }
+        catch (e) { console.error('Save failed', e); }
+        finally { setIsSaving(false); }
     };
 
     const handleShare = () => {
-        const referralCode = localStorage.getItem('referral_code') || '';
-        const shareUrl = `${window.location.origin}/?ref=${referralCode || 'friend'}`;
-        if (confirm(t('atelier.status.share_confirm'))) {
-            navigator.clipboard.writeText(shareUrl);
-            alert(t('atelier.status.share_ok'));
-        }
+        const ref = localStorage.getItem('referral_code') || 'friend';
+        if (confirm(t('atelier.status.share_confirm'))) { navigator.clipboard.writeText(`${window.location.origin}/?ref=${ref}`); alert(t('atelier.status.share_ok')); }
     };
 
     const handleNewProject = () => {
-        if (window.confirm(t('atelier.status.reset_confirm'))) {
-            setPages([
-                { id: 'p0', name: t('atelier.pages.front_cover'), items: [], background: "#fffcf5" },
-                { id: 'p1', name: t('atelier.pages.left_side'), items: [], background: "#fffcf5" },
-                { id: 'p2', name: t('atelier.pages.right_side'), items: [], background: "#fffcf5" },
-                { id: 'p3', name: t('atelier.pages.back_side'), items: [], background: "#fffcf5" }
-            ]);
-            addToHistory([
-                { id: 'p0', name: t('atelier.pages.front_cover'), items: [], background: "#fffcf5" },
-                { id: 'p1', name: t('atelier.pages.left_side'), items: [], background: "#fffcf5" },
-                { id: 'p2', name: t('atelier.pages.right_side'), items: [], background: "#fffcf5" },
-                { id: 'p3', name: t('atelier.pages.back_side'), items: [], background: "#fffcf5" }
-            ]);
-            setViewStartIndex(0);
-        }
+        if (!window.confirm(t('atelier.status.reset_confirm'))) return;
+        state.setPages(defaultPages); state.addToHistory(defaultPages); setViewStartIndex(0);
     };
-
-    // --- NAVIGATION LOGIC (STRICT) ---
-    const goToPrevPage = () => {
-        if (viewStartIndex === PAGE_COVER) return;
-        setDirection(-1);
-        if (viewStartIndex === PAGE_BACK) {
-            setViewStartIndex(PAGE_SPREAD);
-        } else if (viewStartIndex === PAGE_SPREAD) {
-            setViewStartIndex(PAGE_COVER);
-        }
-    };
-
-    const goToNextPage = () => {
-        setDirection(1);
-        if (viewStartIndex === PAGE_COVER) {
-            setViewStartIndex(PAGE_SPREAD);
-        } else if (viewStartIndex === PAGE_SPREAD) {
-            setViewStartIndex(PAGE_BACK);
-        }
-    };
-
-    const isCover = viewStartIndex === PAGE_COVER;
-    const isBack = viewStartIndex === PAGE_BACK;
 
     const handleSelectTemplate = (template: any) => {
-        const newPages = [...pages];
-        if (newPages[focusedPageIndex]) {
-            const themeBackground = template.pages[0]?.background;
-            if (themeBackground) {
-                newPages[focusedPageIndex] = { ...newPages[focusedPageIndex], background: themeBackground };
-                addToHistory(newPages);
-            }
-        }
+        const bg = template.pages[0]?.background;
+        if (bg) state.setBackground(bg);
     };
+
+    // --- Canvas page renderer ---
+    const renderPage = (idx: number, ref?: boolean) => (
+        <GreetingCardPage page={state.pages[idx]} selectedId={selectedId} onSelect={setSelectedId} onUpdate={state.updateItem}
+            onItemDragStart={() => setIsDraggingSticker(true)} onItemDragEnd={() => setIsDraggingSticker(false)}
+            stageRef={ref && state.focusedPageIndex === idx ? stageRef : undefined} />
+    );
+
+    const dragProps = (onDrag: (offset: number) => void) => ({
+        drag: (isDraggingSticker ? false : 'x') as any,
+        dragConstraints: { left: 0, right: 0 },
+        onDragEnd: (_: any, { offset }: any) => onDrag(offset.x),
+    });
+
+    // --- Single-page view helper (returns JSX, not a component — avoids forwardRef issue with AnimatePresence popLayout) ---
+    const singlePage = (idx: number, label: string, onSwipe: (dx: number) => void) => (
+        <motion.div key={`page-${idx}`} initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }}
+            className={`${isMobile ? 'w-full h-full flex items-center justify-center p-6 pt-36 pb-32' : 'relative flex flex-col items-center justify-center h-full aspect-[2/3]'}`}
+            {...(isMobile ? dragProps(onSwipe) : {})}>
+            <div className="w-full h-full bg-white rounded-xl shadow-2xl overflow-hidden border border-slate-200 relative">
+                <div onClick={() => state.setFocusedPageIndex(idx)} className={`w-full h-full ${isMobile ? '' : 'cursor-pointer'}`}>
+                    {renderPage(idx, true)}
+                </div>
+                <PageLabel label={label} hasItems={state.pages[idx].items.length > 0} />
+            </div>
+            {!isMobile && idx === 0 && <button onClick={goToNextPage} className="absolute -right-16 top-1/2 -translate-y-1/2 p-4 bg-white/10 hover:bg-white/20 rounded-full text-white transition-all hover:scale-110"><ChevronRight size={32} /></button>}
+            {!isMobile && idx === 3 && <button onClick={goToPrevPage} className="absolute -left-16 top-1/2 -translate-y-1/2 p-4 bg-white/10 hover:bg-white/20 rounded-full text-white transition-all hover:scale-110"><ChevronLeft size={32} /></button>}
+        </motion.div>
+    );
 
     return (
         <div className="flex flex-col h-[100svh] bg-slate-100 overflow-hidden relative selection:bg-indigo-500/30">
             <StarryBackground />
+            <CardToolbar canUndo={state.canUndo} canRedo={state.canRedo} onUndo={state.undo} onRedo={state.redo}
+                onDownload={handleDownload} onSave={handleSaveDB} onShare={handleShare} onNewProject={handleNewProject}
+                onClosePanel={() => setActiveTool(null)} isSaving={isSaving} isExporting={isExporting}
+                showClosePanel={activeTool === 'templates' || activeTool === 'stickers'} />
 
-            {/* TOP BAR / HEADER */}
-            <div className="h-16 bg-white/10 backdrop-blur-md border-b border-white/20 flex items-center justify-between px-4 fixed top-0 left-0 right-0 z-[60]">
-                <div className="flex items-center gap-4">
-                    {/* HOME BUTTON */}
-                    <a href="/?view=landing" className="w-10 h-10 bg-indigo-500/20 hover:bg-indigo-500/40 rounded-xl flex items-center justify-center text-indigo-300 transition-colors">
-                        <Home size={20} />
-                    </a>
-                    <span className="text-white font-bold text-lg block md:hidden">{t('atelier.title')}</span>
-                    <span className="text-white font-bold text-lg hidden md:block">{t('atelier.title_v2')}</span>
-
-                    <button
-                        onClick={handleNewProject}
-                        className="w-8 h-8 rounded-full bg-red-500/20 hover:bg-red-500 border border-red-500/50 flex items-center justify-center text-red-200 hover:text-white transition-all shrink-0 ml-4 hover:scale-110 hover:shadow-[0_0_15px_rgba(239,68,68,0.5)]"
-                        title={t('atelier.new_project')}
-                    >
-                        <Plus size={16} className="rotate-45" strokeWidth={3} />
-                    </button>
-                </div>
-
-                {/* ACTIONS */}
-                <div className="flex items-center gap-2">
-                    <button onClick={undo} disabled={historyIndex <= 0} className="p-2 hover:bg-white/10 rounded-full text-white disabled:opacity-30">
-                        <Undo2 size={20} />
-                    </button>
-                    <button onClick={redo} disabled={historyIndex >= history.length - 1} className="p-2 hover:bg-white/10 rounded-full text-white disabled:opacity-30">
-                        <Redo2 size={20} />
-                    </button>
-                    <div className="w-px h-6 bg-white/20 mx-1" />
-                    <button
-                        onClick={handleDownload}
-                        disabled={isExporting}
-                        title={t('atelier.download_tooltip')}
-                        className="p-2.5 bg-white/10 backdrop-blur-md rounded-full text-white/80 border border-white/20 shadow-lg hover:bg-white/20 transition-all hover:scale-110 active:scale-95 disabled:opacity-50"
-                    >
-                        <Download size={18} />
-                    </button>
-                    <button
-                        onClick={handleSaveDB}
-                        disabled={isSaving}
-                        title={t('atelier.save_tooltip')}
-                        className="p-2.5 bg-white/10 backdrop-blur-md rounded-full text-white/80 border border-white/20 shadow-lg hover:bg-white/20 transition-all hover:scale-110 active:scale-95 disabled:opacity-50"
-                    >
-                        {isSaving ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
-                    </button>
-                    <button
-                        onClick={handleShare}
-                        title={t('atelier.share_tooltip')}
-                        className="p-2.5 bg-white/10 backdrop-blur-md rounded-full text-white/80 border border-white/20 shadow-lg hover:bg-white/20 transition-all hover:scale-110 active:scale-95 disabled:opacity-50"
-                    >
-                        <Share2 size={18} />
-                    </button>
-                    {(activeTool === 'templates' || activeTool === 'stickers') && (
-                        <button onClick={() => setActiveTool(null)} className="md:hidden p-2 text-white/50">
-                            <X size={20} />
-                        </button>
-                    )}
-                </div>
-            </div>
-
-
-            {/* MAIN WORKSPACE - CENTERING CANVAS */}
             <div className="flex-1 overflow-hidden relative flex items-center justify-center bg-transparent mt-16 mb-20">
                 <div className="relative w-full h-full max-w-6xl max-h-[85vh] flex items-center justify-center p-4 md:p-8">
-
                     <AnimatePresence initial={false} custom={direction} mode="popLayout">
-                        {(() => {
-                            // HELPER: Label Badge
-                            const PageLabel = ({ label, hasItems }: { label: string, hasItems: boolean }) => (
-                                <div className={`absolute bottom-8 left-1/2 transform -translate-x-1/2 bg-black/50 backdrop-blur-md text-white/90 text-[10px] font-bold uppercase tracking-widest px-4 py-2 rounded-full pointer-events-none transition-opacity duration-500 ${hasItems ? 'opacity-0' : 'opacity-100'}`}>
-                                    {label}
+                        {isCover && singlePage(0, t('atelier.pages.front_cover'), dx => { if (dx < -50) goToNextPage(); })}
+                        {isBack && singlePage(3, t('atelier.pages.back_side'), dx => { if (dx > 50) goToPrevPage(); })}
+                        {!isCover && !isBack && (isMobile ? (
+                            <motion.div key="mobile-spread" custom={direction}
+                                initial={{ x: direction * 100 + '%', opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: direction * -100 + '%', opacity: 0 }}
+                                transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                                {...dragProps(dx => { if (dx < -50) goToNextPage(); if (dx > 50) goToPrevPage(); })}
+                                className="absolute inset-0 flex flex-col items-center justify-center p-2 pt-20 pb-32">
+                                <div className="flex flex-row w-full aspect-[4/3] shadow-2xl rounded-lg overflow-hidden border border-slate-600 bg-slate-800 gap-[2px] relative z-0">
+                                    {[1, 2].map(i => (
+                                        <div key={i} className={`flex-1 bg-white relative overflow-hidden flex items-center justify-center transition-all duration-300 ${state.focusedPageIndex === i ? 'ring-4 ring-indigo-500 z-10 brightness-110' : 'brightness-90 hover:brightness-100'}`}>
+                                            <div onPointerDown={e => { e.stopPropagation(); state.setFocusedPageIndex(i); }}
+                                                onTouchStart={e => { e.stopPropagation(); state.setFocusedPageIndex(i); }}
+                                                className="origin-center" style={{ transform: 'scale(0.42)' }}>
+                                                {renderPage(i, true)}
+                                            </div>
+                                        </div>
+                                    ))}
+                                    <PageLabel label={t('atelier.pages.inside_spread')} hasItems={state.pages[1].items.length > 0 || state.pages[2].items.length > 0} />
                                 </div>
-                            );
-
-                            if (isMobile) {
-                                // 1. COVER - Always Single
-                                if (isCover) {
-                                    return (
-                                        <motion.div
-                                            key="mobile-cover"
-                                            initial={{ opacity: 0, scale: 0.9 }}
-                                            animate={{ opacity: 1, scale: 1 }}
-                                            exit={{ opacity: 0, scale: 0.9 }}
-                                            className="w-full h-full flex items-center justify-center p-6 pt-36 pb-32"
-                                            drag={isDraggingSticker ? false : "x"}
-                                            dragConstraints={{ left: 0, right: 0 }}
-                                            onDragEnd={(e, { offset }) => { if (offset.x < -50) goToNextPage(); }}
-                                        >
-                                            <div className="w-full aspect-[2/3] bg-white rounded-xl shadow-2xl overflow-hidden border border-slate-200 relative">
-                                                <div onClick={() => setFocusedPageIndex(0)} className="w-full h-full">
-                                                    <GreetingCardPage
-                                                        page={pages[0]}
-                                                        selectedId={selectedId}
-                                                        onSelect={setSelectedId}
-                                                        onUpdate={handleUpdateItem}
-                                                        onItemDragStart={() => setIsDraggingSticker(true)}
-                                                        onItemDragEnd={() => setIsDraggingSticker(false)}
-                                                        stageRef={focusedPageIndex === 0 ? stageRef : undefined}
-                                                    />
-                                                </div>
-                                                <PageLabel label={t('atelier.pages.front_cover')} hasItems={pages[0].items.length > 0} />
-                                            </div>
-                                        </motion.div>
-                                    );
-                                }
-
-                                // 2. BACK - Always Single
-                                if (isBack) {
-                                    return (
-                                        <motion.div
-                                            key="mobile-back"
-                                            initial={{ opacity: 0, scale: 0.9 }}
-                                            animate={{ opacity: 1, scale: 1 }}
-                                            exit={{ opacity: 0, scale: 0.9 }}
-                                            className="w-full h-full flex items-center justify-center p-6 pt-36 pb-32"
-                                            drag={isDraggingSticker ? false : "x"}
-                                            dragConstraints={{ left: 0, right: 0 }}
-                                            onDragEnd={(e, { offset }) => { if (offset.x > 50) goToPrevPage(); }}
-                                        >
-                                            <div className="w-full aspect-[2/3] bg-white rounded-xl shadow-2xl overflow-hidden border border-slate-200 relative">
-                                                <div onClick={() => setFocusedPageIndex(3)} className="w-full h-full">
-                                                    <GreetingCardPage
-                                                        page={pages[3]}
-                                                        selectedId={selectedId}
-                                                        onSelect={setSelectedId}
-                                                        onUpdate={handleUpdateItem}
-                                                        onItemDragStart={() => setIsDraggingSticker(true)}
-                                                        onItemDragEnd={() => setIsDraggingSticker(false)}
-                                                        stageRef={focusedPageIndex === 3 ? stageRef : undefined}
-                                                    />
-                                                </div>
-                                                <PageLabel label={t('atelier.pages.back_side')} hasItems={pages[3].items.length > 0} />
-                                            </div>
-                                        </motion.div>
-                                    );
-                                }
-
-                                // 3. SPREAD (Inner Pages)
-                                return (
-                                    <motion.div
-                                        key={`mobile-spread`}
-                                        custom={direction}
-                                        initial={{ x: direction * 100 + '%', opacity: 0 }}
-                                        animate={{ x: 0, opacity: 1 }}
-                                        exit={{ x: direction * -100 + '%', opacity: 0 }}
-                                        transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                                        drag={isDraggingSticker ? false : "x"}
-                                        dragConstraints={{ left: 0, right: 0 }}
-                                        onDragEnd={(e, { offset }) => {
-                                            if (offset.x < -50) goToNextPage();
-                                            if (offset.x > 50) goToPrevPage();
-                                        }}
-                                        className="absolute inset-0 flex flex-col items-center justify-center p-2 pt-20 pb-32"
-                                    >
-                                        <div className="flex flex-row w-full aspect-[4/3] shadow-2xl rounded-lg overflow-hidden border border-slate-600 bg-slate-800 gap-[2px] relative z-0">
-                                            <div
-                                                className={`flex-1 bg-white relative rounded-l-[1px] overflow-hidden flex items-center justify-center transition-all duration-300 ${focusedPageIndex === 1 ? 'ring-4 ring-indigo-500 z-10 brightness-110' : 'brightness-90 hover:brightness-100'}`}
-                                            >
-                                                <div
-                                                    onPointerDown={(e) => { e.stopPropagation(); setFocusedPageIndex(1); }}
-                                                    onTouchStart={(e) => { e.stopPropagation(); setFocusedPageIndex(1); }}
-                                                    className="origin-center" style={{ transform: 'scale(0.42)' }}
-                                                >
-                                                    <GreetingCardPage
-                                                        page={pages[1]}
-                                                        selectedId={selectedId}
-                                                        onSelect={setSelectedId}
-                                                        onUpdate={handleUpdateItem}
-                                                        onItemDragStart={() => setIsDraggingSticker(true)}
-                                                        onItemDragEnd={() => setIsDraggingSticker(false)}
-                                                        stageRef={focusedPageIndex === 1 ? stageRef : undefined}
-                                                    />
-                                                    <div className="absolute top-0 right-0 bottom-0 w-6 bg-gradient-to-l from-black/20 to-transparent pointer-events-none" />
-                                                </div>
-                                            </div>
-
-                                            <div
-                                                className={`flex-1 bg-white relative rounded-r-[1px] overflow-hidden flex items-center justify-center transition-all duration-300 ${focusedPageIndex === 2 ? 'ring-4 ring-indigo-500 z-10 brightness-110' : 'brightness-90 hover:brightness-100'}`}
-                                            >
-                                                <div
-                                                    onPointerDown={(e) => { e.stopPropagation(); setFocusedPageIndex(2); }}
-                                                    onTouchStart={(e) => { e.stopPropagation(); setFocusedPageIndex(2); }}
-                                                    className="relative origin-center" style={{ transform: 'scale(0.42)' }}
-                                                >
-                                                    <GreetingCardPage
-                                                        page={pages[2]}
-                                                        selectedId={selectedId}
-                                                        onSelect={setSelectedId}
-                                                        onUpdate={handleUpdateItem}
-                                                        onItemDragStart={() => setIsDraggingSticker(true)}
-                                                        onItemDragEnd={() => setIsDraggingSticker(false)}
-                                                        stageRef={focusedPageIndex === 2 ? stageRef : undefined}
-                                                    />
-                                                    <div className="absolute inset-0 pointer-events-none z-20 mix-blend-multiply opacity-50"
-                                                        style={{
-                                                            backgroundImage: 'repeating-linear-gradient(transparent, transparent 19px, #94a3b8 20px)'
-                                                        }} />
-                                                    <div className="absolute top-0 left-0 bottom-0 w-6 bg-gradient-to-r from-black/20 to-transparent pointer-events-none" />
-                                                </div>
-                                            </div>
-
-                                            <PageLabel label={t('atelier.pages.inside_spread')} hasItems={pages[1].items.length > 0 || pages[2].items.length > 0} />
-                                        </div>
-
-                                        <div className="mt-8 text-white/50 text-xs font-medium uppercase tracking-widest flex items-center gap-2">
-                                            <ChevronLeft size={12} /> Slide <ChevronRight size={12} />
-                                        </div>
-                                    </motion.div>
-                                );
-                            }
-
-                            // --- DESKTOP VIEWS ---
-                            if (isCover) {
-                                return (
-                                    <motion.div key="cover" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} className="relative flex flex-col items-center justify-center h-full aspect-[2/3]">
-                                        <div className="w-full h-full bg-white rounded-xl shadow-2xl overflow-hidden border border-slate-200 relative">
-                                            <div onClick={() => setFocusedPageIndex(0)} className="w-full h-full cursor-pointer">
-                                                <GreetingCardPage page={pages[0]} selectedId={selectedId} onSelect={setSelectedId} onUpdate={handleUpdateItem} stageRef={focusedPageIndex === 0 ? stageRef : undefined} />
-                                            </div>
-                                            <PageLabel label={t('atelier.pages.front_cover')} hasItems={pages[0].items.length > 0} />
-                                        </div>
-                                        <button onClick={goToNextPage} className="absolute -right-16 top-1/2 -translate-y-1/2 p-4 bg-white/10 hover:bg-white/20 rounded-full text-white transition-all hover:scale-110">
-                                            <ChevronRight size={32} />
-                                        </button>
-                                    </motion.div>
-                                );
-                            }
-                            if (isBack) {
-                                return (
-                                    <motion.div key="back" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} className="relative flex flex-col items-center justify-center h-full aspect-[2/3]">
-                                        <div className="w-full h-full bg-white rounded-xl shadow-2xl overflow-hidden border border-slate-200 relative">
-                                            <div onClick={() => setFocusedPageIndex(3)} className="w-full h-full cursor-pointer">
-                                                <GreetingCardPage page={pages[3]} selectedId={selectedId} onSelect={setSelectedId} onUpdate={handleUpdateItem} stageRef={focusedPageIndex === 3 ? stageRef : undefined} />
-                                            </div>
-                                            <PageLabel label={t('atelier.pages.back_side')} hasItems={pages[3].items.length > 0} />
-                                        </div>
-                                        <button onClick={goToPrevPage} className="absolute -left-16 top-1/2 -translate-y-1/2 p-4 bg-white/10 hover:bg-white/20 rounded-full text-white transition-all hover:scale-110">
-                                            <ChevronLeft size={32} />
-                                        </button>
-                                    </motion.div>
-                                );
-                            }
-                            return (
-                                <motion.div key={`spread-${viewStartIndex}`} custom={direction} initial={{ rotateY: direction === 1 ? -90 : 90, opacity: 0, scale: 0.8 }} animate={{ rotateY: 0, opacity: 1, scale: 1 }} exit={{ rotateY: direction === 1 ? 90 : -90, opacity: 0, scale: 0.8 }} transition={{ duration: 0.5 }} className="flex flex-row gap-4 h-full aspect-[4/3] items-center justify-center perspective-1000 relative">
-                                    <div className="flex-1 h-full bg-white rounded-l-xl shadow-2xl overflow-hidden border-r border-slate-200 relative group">
-                                        <div onClick={() => setFocusedPageIndex(1)} className="w-full h-full cursor-pointer">
-                                            <GreetingCardPage page={pages[1]} selectedId={selectedId} onSelect={setSelectedId} onUpdate={handleUpdateItem} stageRef={focusedPageIndex === 1 ? stageRef : undefined} />
-                                        </div>
-                                    </div>
-                                    <div className="flex-1 h-full bg-white rounded-r-xl shadow-2xl overflow-hidden relative group">
-                                        <div onClick={() => setFocusedPageIndex(2)} className="w-full h-full cursor-pointer">
-                                            <GreetingCardPage page={pages[2]} selectedId={selectedId} onSelect={setSelectedId} onUpdate={handleUpdateItem} stageRef={focusedPageIndex === 2 ? stageRef : undefined} />
-                                        </div>
-                                    </div>
-
-                                    <div className={`absolute bottom-8 left-1/2 transform -translate-x-1/2 bg-black/50 backdrop-blur-md text-white/90 text-[10px] font-bold uppercase tracking-widest px-4 py-2 rounded-full pointer-events-none transition-opacity duration-500 ${(pages[1].items.length > 0 || pages[2].items.length > 0) ? 'opacity-0' : 'opacity-100'}`}>
-                                        {t('atelier.pages.inside_spread')}
-                                    </div>
-
-                                    <button onClick={goToPrevPage} className="absolute -left-16 top-1/2 -translate-y-1/2 p-4 bg-white/10 hover:bg-white/20 rounded-full text-white transition-all hover:scale-110">
-                                        <ChevronLeft size={32} />
-                                    </button>
-                                    <button onClick={goToNextPage} className="absolute -right-16 top-1/2 -translate-y-1/2 p-4 bg-white/10 hover:bg-white/20 rounded-full text-white transition-all hover:scale-110">
-                                        <ChevronRight size={32} />
-                                    </button>
-                                </motion.div>
-                            );
-
-                        })()}
+                                <div className="mt-8 text-white/50 text-xs font-medium uppercase tracking-widest flex items-center gap-2">
+                                    <ChevronLeft size={12} /> Slide <ChevronRight size={12} />
+                                </div>
+                            </motion.div>
+                        ) : (
+                            <motion.div key={`spread-${viewStartIndex}`} custom={direction}
+                                initial={{ rotateY: direction === 1 ? -90 : 90, opacity: 0, scale: 0.8 }} animate={{ rotateY: 0, opacity: 1, scale: 1 }}
+                                exit={{ rotateY: direction === 1 ? 90 : -90, opacity: 0, scale: 0.8 }} transition={{ duration: 0.5 }}
+                                className="flex flex-row gap-4 h-full aspect-[4/3] items-center justify-center perspective-1000 relative">
+                                <div className="flex-1 h-full bg-white rounded-l-xl shadow-2xl overflow-hidden border-r border-slate-200 relative">
+                                    <div onClick={() => state.setFocusedPageIndex(1)} className="w-full h-full cursor-pointer">{renderPage(1, true)}</div>
+                                </div>
+                                <div className="flex-1 h-full bg-white rounded-r-xl shadow-2xl overflow-hidden relative">
+                                    <div onClick={() => state.setFocusedPageIndex(2)} className="w-full h-full cursor-pointer">{renderPage(2, true)}</div>
+                                </div>
+                                <PageLabel label={t('atelier.pages.inside_spread')} hasItems={state.pages[1].items.length > 0 || state.pages[2].items.length > 0} />
+                                <button onClick={goToPrevPage} className="absolute -left-16 top-1/2 -translate-y-1/2 p-4 bg-white/10 hover:bg-white/20 rounded-full text-white transition-all hover:scale-110"><ChevronLeft size={32} /></button>
+                                <button onClick={goToNextPage} className="absolute -right-16 top-1/2 -translate-y-1/2 p-4 bg-white/10 hover:bg-white/20 rounded-full text-white transition-all hover:scale-110"><ChevronRight size={32} /></button>
+                            </motion.div>
+                        ))}
                     </AnimatePresence>
-
                 </div>
             </div>
 
-            <ToolsDock
-                key={focusedPageIndex}
-                isMobile={isMobile}
-                activeTool={activeTool}
-                onToolChange={setActiveTool}
-                onAddSticker={(sticker: any) => {
-                    const newItem: CardItem = {
-                        id: generateId(), type: 'sticker', content: sticker.content, x: 100, y: 100, rotation: 0, scaleX: 1, scaleY: 1
-                    };
-                    const newPages = [...pages];
-                    newPages[focusedPageIndex] = {
-                        ...newPages[focusedPageIndex],
-                        items: [...newPages[focusedPageIndex].items, newItem]
-                    };
-                    setPages(newPages);
-                    addToHistory(newPages);
-                }}
-                stickers={SKYWHALE_STICKERS}
-                onGenerateAI={(prompt, mode) => generateAI(prompt, mode, null)}
-                isGenerating={isGenerating}
-                onAddText={handleAddText}
-                onChangeBackground={handleSetBackground}
-                textColor={textColor}
-                onTextColorChange={setTextColor}
-                textFont={textFont}
-                onTextFontChange={setTextFont}
-                onSelectTemplate={handleSelectTemplate}
-            />
+            <ToolsDock key={state.focusedPageIndex} isMobile={isMobile} activeTool={activeTool} onToolChange={setActiveTool}
+                onAddSticker={(sticker: any) => { state.addItem({ type: 'sticker', content: sticker.content, rotation: 0 }); }}
+                stickers={SKYWHALE_STICKERS} onGenerateAI={(prompt, mode) => handleGenerateAI(prompt, mode)}
+                isGenerating={ai.isGenerating} onAddText={handleAddText} onChangeBackground={state.setBackground}
+                textColor={textColor} onTextColorChange={setTextColor} textFont={textFont} onTextFontChange={setTextFont}
+                onSelectTemplate={handleSelectTemplate} />
         </div>
     );
 };
