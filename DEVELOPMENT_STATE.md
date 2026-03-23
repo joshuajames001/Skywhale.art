@@ -1,6 +1,6 @@
 # DEVELOPMENT STATE
 
-Source of Truth pro aktuální stav vývoje. Aktualizováno: **2026-03-23**.
+Source of Truth pro aktuální stav vývoje. Aktualizováno: **2026-03-24**.
 
 ## 1. Aktuální metriky
 
@@ -12,10 +12,10 @@ Source of Truth pro aktuální stav vývoje. Aktualizováno: **2026-03-23**.
 | Sdílené moduly | 3 v `supabase/functions/_shared/` |
 | Code splitting | 10 lazy-loaded chunks (via `src/app/routes.tsx`) |
 | Main bundle | 995 kB (cíl: pod 500 kB — viz Backlog) |
-| Test coverage | ~17% (cíl: 40%) |
+| Test coverage | ~35% → **232 testů** (cíl: 60%) |
 | Build | `tsc && vite build` — zelený |
 
-## 2. Dokončené refaktory (GF-10 → GF-16)
+## 2. Dokončené refaktory (GF-10 → GF-21)
 
 | Issue | Co se stalo | Výsledek |
 |-------|-------------|----------|
@@ -26,6 +26,11 @@ Source of Truth pro aktuální stav vývoje. Aktualizováno: **2026-03-23**.
 | GF-14 | Smazán duplicitní usePdfExport | Dead code removal |
 | GF-15 | Canceled | Types jsou správně feature-lokální (false alarm) |
 | GF-16 | App.tsx lazy routes | 258→86 řádků, code splitting −25% bundle |
+| GF-17 | Quick wins refactor | Discovery BookReader→DiscoveryPageView, STORY_COSTS→constants.ts, generateId→id-utils.ts |
+| GF-18 | Audio components přesun | `features/audio/components/` → `src/components/audio/` (sdílené UI) |
+| GF-19 | Three-Layer Rule — adapter hooks | FeedbackBoard, ReportDialog, ReactionBar: supabase vyextrahován do hooks |
+| GF-20 | Coverage sprint | +76 testů (156→232), 7 nových test souborů |
+| GF-21 | FSD fix — domain hooks | useFeedbackData, useReportData, useReactionData přesunuty do feature složek |
 
 ## 3. Strategic Rules (The Constitution)
 
@@ -40,9 +45,9 @@ Source of Truth pro aktuální stav vývoje. Aktualizováno: **2026-03-23**.
 
 - `src/lib/storyteller.ts` — legacy TypeScript errors (non-blocking, ignorované)
 - `AppLayout.tsx` — 244 řádků, kandidát na další split
-- `getUser` v `ReactionBar.tsx` — degree 28, extrahovat do sdíleného utility
 - Main bundle 995 kB — potřeba `manualChunks` v Vite config
 - `process-story-image` Edge Function — legacy, nahrazena `generate-story-image`
+- 3 pre-existující TS chyby v test souborech (`afterEach` not found v useAppNavigation, useMagicTransition, useUrlHandlers)
 
 Kompletní seznam: `docs/BACKLOG.md`
 
@@ -56,7 +61,8 @@ src/
   hooks/                  ← sdílené hooks (useStory, useGemini, useEnergy, ...)
   hooks/core/             ← core hooks (useAppAuth, useAppNavigation, ...)
   providers/              ← 4 adaptery (CardStudio, GameHub, Library, BookReader)
-  lib/                    ← 12 knihoven (supabase, ai, storyteller, moderation, ...)
+  lib/                    ← knihovny (supabase, ai, storyteller, moderation, constants, id-utils, ...)
+  components/audio/       ← sdílené audio UI (VoicePreviewButton, MiniPlayer, AudioConfirmDialog)
   components/layout/      ← sdílené layout komponenty
   types/                  ← globální TypeScript typy
 
