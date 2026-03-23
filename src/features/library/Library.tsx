@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Sparkles, AlertCircle, Globe, Lock, Heart, Calendar } from 'lucide-react';
 import { getTheme } from '../../lib/themes';
 import { PublicProfile } from '../profile/components/PublicProfile';
-import { AudioConfirmDialog } from '../../features/audio/components/AudioConfirmDialog';
+import { AudioConfirmDialog } from '../../components/audio/AudioConfirmDialog';
 import { useEnergy } from '../../hooks/useEnergy';
 import { useGuide } from '../../hooks/useGuide';
 import { useTranslation } from 'react-i18next';

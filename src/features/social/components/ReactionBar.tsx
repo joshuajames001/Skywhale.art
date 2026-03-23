@@ -1,14 +1,7 @@
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { supabase } from '../../../lib/supabase';
+import { motion } from 'framer-motion';
+import { useReactionData } from '../hooks/useReactionData';
 
-interface Reaction {
-    type: 'heart' | 'star' | 'fire' | 'clap' | 'rocket';
-    count: number;
-    userReacted: boolean;
-}
-
-const REACTION_ICONS = {
+const REACTION_ICONS: Record<string, string> = {
     heart: '❤️',
     star: '⭐',
     fire: '🔥',
@@ -22,105 +15,7 @@ interface ReactionBarProps {
 }
 
 export const ReactionBar = ({ bookId, showCount = true }: ReactionBarProps) => {
-    const [currentUserId, setCurrentUserId] = useState<string | null>(null);
-    const [reactions, setReactions] = useState<Reaction[]>([
-        { type: 'heart', count: 0, userReacted: false },
-        { type: 'star', count: 0, userReacted: false },
-        { type: 'fire', count: 0, userReacted: false },
-        { type: 'clap', count: 0, userReacted: false },
-        { type: 'rocket', count: 0, userReacted: false }
-    ]);
-    const [loading, setLoading] = useState(true);
-
-    useEffect(() => {
-        // Get current user first
-        const getUser = async () => {
-            const { data: { user } } = await supabase.auth.getUser();
-            setCurrentUserId(user?.id || null);
-        };
-        getUser();
-    }, []);
-
-    useEffect(() => {
-        if (!currentUserId) return; // Wait for user info
-        fetchReactions();
-
-        // Subscribe to changes
-        const subscription = supabase
-            .channel(`public:book_reactions:book_id=eq.${bookId}`)
-            .on('postgres_changes', {
-                event: '*',
-                schema: 'public',
-                table: 'book_reactions',
-                filter: `book_id=eq.${bookId}`
-            }, () => {
-                fetchReactions();
-            })
-            .subscribe();
-
-        return () => {
-            subscription.unsubscribe();
-        };
-    }, [bookId, currentUserId]);
-
-    const fetchReactions = async () => {
-        try {
-            // Get all reactions for this book
-            const { data, error } = await supabase
-                .from('book_reactions')
-                .select('reaction_type, user_id')
-                .eq('book_id', bookId);
-
-            if (error) console.error('Error fetching reactions:', error);
-
-            if (data) {
-                const newReactions = reactions.map(r => {
-                    const typeReactions = data.filter((d: any) => d.reaction_type === r.type);
-                    return {
-                        ...r,
-                        count: typeReactions.length,
-                        userReacted: currentUserId ? typeReactions.some((d: any) => d.user_id === currentUserId) : false
-                    };
-                });
-                setReactions(newReactions);
-            }
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleReact = async (type: string) => {
-        if (!currentUserId) return; // Must be logged in
-
-        const currentReaction = reactions.find(r => r.type === type);
-        if (!currentReaction) return;
-
-        // Optimistic update
-        setReactions(prev => prev.map(r =>
-            r.type === type
-                ? { ...r, count: r.userReacted ? r.count - 1 : r.count + 1, userReacted: !r.userReacted }
-                : r
-        ));
-
-        if (currentReaction.userReacted) {
-            // Remove reaction
-            await supabase
-                .from('book_reactions')
-                .delete()
-                .eq('book_id', bookId)
-                .eq('user_id', currentUserId)
-                .eq('reaction_type', type);
-        } else {
-            // Add reaction
-            await supabase
-                .from('book_reactions')
-                .insert({
-                    book_id: bookId,
-                    user_id: currentUserId,
-                    reaction_type: type
-                });
-        }
-    };
+    const { reactions, loading, toggleReaction } = useReactionData(bookId);
 
     if (loading) return <div className="h-6" />;
 
@@ -133,7 +28,7 @@ export const ReactionBar = ({ bookId, showCount = true }: ReactionBarProps) => {
                     whileTap={{ scale: 0.9 }}
                     onClick={(e) => {
                         e.stopPropagation();
-                        handleReact(reaction.type);
+                        toggleReaction(reaction.type);
                     }}
                     className={`
                         relative group flex flex-col items-center justify-center p-1.5 rounded-xl transition-all

@@ -1,22 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Send, MessageSquare, Bug, Lightbulb, Heart } from 'lucide-react';
-import { supabase } from '../../../lib/supabase';
+import { useFeedbackData } from '../hooks/useFeedbackData';
 
 interface FeedbackBoardProps {
     onClose: () => void;
-}
-
-interface FeedbackItem {
-    id: string;
-    content: string;
-    category: 'feature' | 'bug' | 'general';
-    created_at: string;
-    is_public: boolean;
-    profiles?: {
-        username: string;
-        avatar_url: string;
-    };
 }
 
 export const FeedbackBoard: React.FC<FeedbackBoardProps> = ({ onClose }) => {
@@ -24,9 +12,8 @@ export const FeedbackBoard: React.FC<FeedbackBoardProps> = ({ onClose }) => {
     const [content, setContent] = useState('');
     const [category, setCategory] = useState<'feature' | 'bug' | 'general'>('feature');
     const [isPublic, setIsPublic] = useState(true);
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const [feedbackList, setFeedbackList] = useState<FeedbackItem[]>([]);
-    const [loading, setLoading] = useState(false);
+
+    const { feedbackList, loading, isSubmitting, fetchFeedback, submitFeedback } = useFeedbackData();
 
     // Fetch Feedback
     useEffect(() => {
@@ -35,49 +22,16 @@ export const FeedbackBoard: React.FC<FeedbackBoardProps> = ({ onClose }) => {
         }
     }, [activeTab]);
 
-    const fetchFeedback = async () => {
-        setLoading(true);
-        const { data, error } = await supabase
-            .from('feedback')
-            .select('*, profiles(username, avatar_url)')
-            .eq('is_public', true)
-            .order('created_at', { ascending: false })
-            .limit(50);
-
-        if (data) {
-            setFeedbackList(data as any);
-        }
-        setLoading(false);
-    };
-
     const handleSubmit = async () => {
-        if (!content.trim()) return;
+        const result = await submitFeedback({ content, category, isPublic });
 
-        setIsSubmitting(true);
-        const { data: { user } } = await supabase.auth.getUser();
-
-        if (!user) {
-            alert("Musíš být přihlášen!");
-            setIsSubmitting(false);
-            return;
-        }
-
-        const { error } = await supabase.from('feedback').insert({
-            user_id: user.id,
-            content,
-            category,
-            is_public: isPublic
-        });
-
-        if (!error) {
+        if (result.success) {
             setContent('');
-            setActiveTab('read'); // Switch to list to see your item
+            setActiveTab('read');
             fetchFeedback();
-        } else {
-            console.error("Error submitting feedback:", error);
-            alert("Něco se pokazilo. Zkus to později.");
+        } else if (result.error) {
+            alert(result.error);
         }
-        setIsSubmitting(false);
     };
 
     return (

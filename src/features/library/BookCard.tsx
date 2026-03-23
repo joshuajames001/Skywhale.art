@@ -5,8 +5,8 @@ import { StoryBook } from '../../types';
 import { BookOpen, AlertCircle, Loader2, Calendar, MoreVertical, Globe, Lock, Trash2, Heart, Headphones, Flag } from 'lucide-react';
 import { ReactionBar } from '../social/components/ReactionBar';
 import { supabase } from '../../lib/supabase';
-import { AudioConfirmDialog } from '../audio/components/AudioConfirmDialog';
-import { MiniPlayer } from '../audio/components/MiniPlayer';
+import { AudioConfirmDialog } from '../../components/audio/AudioConfirmDialog';
+import { MiniPlayer } from '../../components/audio/MiniPlayer';
 
 interface BookCardProps {
     book: StoryBook;

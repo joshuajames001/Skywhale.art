@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useLocalStorage } from '../../../hooks/useLocalStorage';
 import { CardItem, CardPage } from '../types';
-
-const generateId = () => Math.random().toString(36).substr(2, 9);
+import { generateId } from '../../../lib/id-utils';
 
 export const useCardEditorState = (initialPages: CardPage[]) => {
     const [pages, setPages] = useLocalStorage<CardPage[]>('skywhale_draft_card_pages', initialPages);

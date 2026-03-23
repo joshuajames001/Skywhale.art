@@ -4,7 +4,7 @@ import { supabase } from '../../../lib/supabase';
 import { Info, X, Volume2, Pause } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-export const BookReader = ({ page, isDino, isSpace, onPageComplete }: { page: DiscoveryPage; isDino?: boolean; isSpace?: boolean; onPageComplete?: () => void }) => {
+export const DiscoveryPageView = ({ page, isDino, isSpace, onPageComplete }: { page: DiscoveryPage; isDino?: boolean; isSpace?: boolean; onPageComplete?: () => void }) => {
     // GUARD CLAUSE
     if (!page) return null;
 

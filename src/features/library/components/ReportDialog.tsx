@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Flag, X, CheckCircle } from 'lucide-react';
-import { supabase } from '../../../lib/supabase';
+import { useReportData } from '../hooks/useReportData';
 
 interface ReportDialogProps {
     type: 'book' | 'user';
@@ -19,30 +19,21 @@ const REASONS = [
 export const ReportDialog = ({ type, targetId, onClose }: ReportDialogProps) => {
     const [reason, setReason] = useState<string>('inappropriate');
     const [details, setDetails] = useState('');
-    const [loading, setLoading] = useState(false);
-    const [sent, setSent] = useState(false);
+
+    const { loading, sent, submitReport } = useReportData();
 
     const handleSubmit = async () => {
-        setLoading(true);
-        try {
-            const { data: { user } } = await supabase.auth.getUser();
-            if (!user) { alert('Pro hlášení musíš být přihlášen/a.'); return; }
+        const result = await submitReport({
+            type,
+            targetId,
+            reason,
+            details: details.trim() || null,
+        });
 
-            await supabase.from('reports').insert({
-                reporter_id: user.id,
-                book_id: type === 'book' ? targetId : null,
-                reported_user_id: type === 'user' ? targetId : null,
-                reason,
-                details: details.trim() || null,
-            });
-
-            setSent(true);
+        if (result.success) {
             setTimeout(onClose, 2000);
-        } catch (err) {
-            console.error('Report failed:', err);
-            alert('Hlášení se nepodařilo odeslat. Zkuste to prosím znovu.');
-        } finally {
-            setLoading(false);
+        } else if (result.error) {
+            alert(result.error);
         }
     };
 

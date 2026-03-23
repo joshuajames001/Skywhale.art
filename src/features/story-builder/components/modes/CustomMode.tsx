@@ -5,12 +5,13 @@ import { useTranslation } from 'react-i18next';
 import { AnimatedInput } from '../shared/AnimatedInput';
 import { AgeSelector } from '../shared/AgeSelector';
 import { StyleSelector } from '../shared/StyleSelector';
-import { VoicePreviewButton } from '../../../../features/audio/components/VoicePreviewButton';
+import { VoicePreviewButton } from '../../../../components/audio/VoicePreviewButton';
 import { VOICE_OPTIONS, DEFAULT_VOICE_ID } from '../../../../lib/audio-constants';
 import { generateCompleteStory } from '../../../../lib/ai/orchestrator';
 import { StoryBook } from '../../../../types';
 import { MagicLoading } from '../effects/MagicLoading';
 import { checkTopicBlacklist } from '../../../../lib/content-policy';
+import { STORY_COSTS } from '../../../../lib/constants';
 
 interface CustomModeProps {
     initialData?: any;
@@ -48,13 +49,6 @@ export const CustomMode: React.FC<CustomModeProps> = ({
         voice_id: initialData?.voice_id || DEFAULT_VOICE_ID,
         hero_image_url: initialData?.hero_image_url || undefined
     });
-
-    const STORY_COSTS = {
-        5: 250,   // Quick Test
-        10: 550,  // Standard
-        15: 800,  // Extended
-        25: 1300  // Epic
-    };
 
     const requiredEnergy = (STORY_COSTS[formData.length as keyof typeof STORY_COSTS] || formData.length * 50) + (formData.voice_id ? formData.length * 20 : 0);
     const hasEnoughEnergy = userBalance !== null && userBalance >= requiredEnergy;

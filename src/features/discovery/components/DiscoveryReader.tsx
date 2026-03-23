@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { BookReader } from './BookReader';
+import { DiscoveryPageView } from './DiscoveryPageView';
 import { DiscoveryPage } from '../../../types/discovery';
 
 interface DiscoveryReaderProps {
@@ -67,7 +67,7 @@ export const DiscoveryReader = ({
                                 }}
                                 className={`w-full h-full flex items-center justify-center cursor-grab active:cursor-grabbing`}
                             >
-                                <BookReader
+                                <DiscoveryPageView
                                     page={pages[readerIndex]}
                                     isDino={isDinoCategory}
                                     isSpace={isSpaceCategory}

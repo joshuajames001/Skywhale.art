@@ -6,13 +6,14 @@ import { supabase } from '../../../../lib/supabase';
 import { AnimatedInput } from '../shared/AnimatedInput';
 import { AgeSelector } from '../shared/AgeSelector';
 import { StyleSelector } from '../shared/StyleSelector';
-import { VoicePreviewButton } from '../../../../features/audio/components/VoicePreviewButton';
+import { VoicePreviewButton } from '../../../../components/audio/VoicePreviewButton';
 import { VOICE_OPTIONS, DEFAULT_VOICE_ID } from '../../../../lib/audio-constants';
 import { generateCompleteStory } from '../../../../lib/ai/orchestrator';
 import { StoryBook } from '../../../../types';
 import { MagicLoading } from '../effects/MagicLoading';
 import { MagicFlash } from '../effects/MagicFlash';
 import { checkTopicBlacklist, validateImageFile } from '../../../../lib/content-policy';
+import { STORY_COSTS } from '../../../../lib/constants';
 
 interface HeroModeProps {
     userBalance: number | null;
@@ -50,8 +51,6 @@ export const HeroMode: React.FC<HeroModeProps> = ({
         hero_image_url: '' as string
     });
 
-    // Reuse Costs Logic (Should potentialy be exported const)
-    const STORY_COSTS = { 5: 250, 10: 550, 15: 800, 25: 1300 };
     const requiredEnergy = (STORY_COSTS[formData.length as keyof typeof STORY_COSTS] || 550) + (formData.voice_id ? formData.length * 20 : 0);
     const hasEnoughEnergy = userBalance !== null && userBalance >= requiredEnergy;
 

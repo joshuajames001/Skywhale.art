@@ -1,7 +1,7 @@
 import React from 'react';
 import { ChevronLeft, Mic, Palette, Zap, Download, Save, Rocket, Plus, Loader2 } from 'lucide-react';
 import { VOICE_OPTIONS } from '../../../lib/audio-constants';
-import { VoicePreviewButton } from '../../../features/audio/components/VoicePreviewButton';
+import { VoicePreviewButton } from '../../../components/audio/VoicePreviewButton';
 import { STYLE_PROMPTS } from '../../../lib/ai';
 import { useTranslation } from 'react-i18next';
 

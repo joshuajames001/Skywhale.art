@@ -1,6 +1,5 @@
 import { CardTemplate } from '../types';
-
-const generateId = () => Math.random().toString(36).substr(2, 9);
+import { generateId } from '../../../lib/id-utils';
 
 export const TEMPLATES: CardTemplate[] = [
     {
