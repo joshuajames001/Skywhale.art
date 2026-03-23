@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Book, User, MapPin, Palette, ArrowRight, Sparkles, Mic, Upload } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { supabase } from '../../../../lib/supabase';
 import { AnimatedInput } from '../shared/AnimatedInput';
 import { AgeSelector } from '../shared/AgeSelector';
 import { StyleSelector } from '../shared/StyleSelector';
@@ -14,6 +13,7 @@ import { MagicLoading } from '../effects/MagicLoading';
 import { MagicFlash } from '../effects/MagicFlash';
 import { checkTopicBlacklist, validateImageFile } from '../../../../lib/content-policy';
 import { STORY_COSTS } from '../../../../lib/constants';
+import { useHeroUpload } from '../../hooks/useHeroUpload';
 
 interface HeroModeProps {
     userBalance: number | null;
@@ -34,8 +34,8 @@ export const HeroMode: React.FC<HeroModeProps> = ({
     const [step, setStep] = useState(0); // 0 = Upload, 1 = Details, 2 = Advanced
     const [isGenerating, setIsGenerating] = useState(false);
     const [creationStatus, setCreationStatus] = useState<string | null>(null);
-    const [isUploading, setIsUploading] = useState(false);
     const [policyError, setPolicyError] = useState<string | null>(null);
+    const { isUploading, uploadHeroImage } = useHeroUpload();
 
     // CRITICAL FIX: Default length is 5
     const [formData, setFormData] = useState({
@@ -59,21 +59,13 @@ export const HeroMode: React.FC<HeroModeProps> = ({
         if (!file) return;
         const fileCheck = validateImageFile(file);
         if (fileCheck.blocked) { alert(fileCheck.reason); return; }
-        setIsUploading(true);
-        try {
-            const fileExt = file.name.split('.').pop();
-            const fileName = `hero_${crypto.randomUUID()}.${fileExt}`;
-            const filePath = `temp/${fileName}`;
-            const { error: uploadError } = await supabase.storage.from('story-assets').upload(filePath, file);
-            if (uploadError) throw uploadError;
-            const { data: { publicUrl } } = supabase.storage.from('story-assets').getPublicUrl(filePath);
-            setFormData({ ...formData, hero_image_url: publicUrl });
-            // Auto advance
+
+        const { url, error } = await uploadHeroImage(file);
+        if (url) {
+            setFormData({ ...formData, hero_image_url: url });
             setStep(1);
-        } catch (err) {
-            alert(t('setup.status.failed'));
-        } finally {
-            setIsUploading(false);
+        } else {
+            alert(error || t('setup.status.failed'));
         }
     };
 

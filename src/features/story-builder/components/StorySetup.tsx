@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { User, Wand2, PenTool } from 'lucide-react';
-import { supabase } from '../../../lib/supabase';
 import { StoryBook } from '../../../types';
 import { useTranslation } from 'react-i18next';
 import { useGuide } from '../../../hooks/useGuide';
+import { useAppAuth } from '../../../hooks/core/useAppAuth';
 
 // MODES
 import { MagicWandMode } from './modes/MagicWandMode';
@@ -20,8 +20,9 @@ interface StorySetupProps {
 export const StorySetup: React.FC<StorySetupProps> = ({ onComplete, onOpenStore }) => {
     const { t, i18n } = useTranslation();
     const [mode, setMode] = useState<'select' | 'custom' | 'auto' | 'chat' | 'hero' | 'architect'>('select');
-    const [userBalance, setUserBalance] = useState<number | null>(null);
     const [chatInitialData, setChatInitialData] = useState<any>(null);
+    const { profile } = useAppAuth();
+    const userBalance = profile?.energy_balance ?? null;
 
     // Guide Hook
     const { startGuide, hasSeenGroups } = useGuide();
@@ -30,18 +31,6 @@ export const StorySetup: React.FC<StorySetupProps> = ({ onComplete, onOpenStore 
             startGuide('story_studio_welcome');
         }
     }, [hasSeenGroups, startGuide]);
-
-    // Fetch Energy Balance (Centralized)
-    useEffect(() => {
-        const fetchBalance = async () => {
-            const { data: { user } } = await supabase.auth.getUser();
-            if (user) {
-                const { data } = await supabase.from('profiles').select('energy_balance').eq('id', user.id).single();
-                if (data) setUserBalance(data.energy_balance);
-            }
-        };
-        fetchBalance();
-    }, []);
 
     // --- MODE RENDERING ---
 

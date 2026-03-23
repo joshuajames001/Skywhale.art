@@ -1,13 +1,15 @@
 import { motion } from 'framer-motion';
 import { Calendar, Zap, Lock } from 'lucide-react';
-import { supabase } from '../../../lib/supabase';
 import { UserStats } from '../hooks/useProfileStats';
+import { useEnergy } from '../../../hooks/useEnergy';
 
 interface EnergyCardProps {
     stats: UserStats;
 }
 
 export const EnergyCard = ({ stats }: EnergyCardProps) => {
+    const { claimEnergy } = useEnergy();
+
     return (
         <motion.div
             initial={{ y: 30, opacity: 0 }}
@@ -43,19 +45,12 @@ export const EnergyCard = ({ stats }: EnergyCardProps) => {
                             {stats.subscription?.nextGrant && new Date(stats.subscription.nextGrant) <= new Date() ? (
                                 <button
                                     onClick={async () => {
-                                        try {
-                                            const { data, error } = await supabase.rpc('claim_monthly_energy');
-                                            if (error) throw error;
-                                            if (data?.success) {
-                                                alert(`🎉 Energie připsána! Získáváš ${data.energy_added} Energie.`);
-                                                // Refresh profile to update balance and date
-                                                window.location.reload();
-                                            } else {
-                                                alert("Něco se pokazilo: " + (data?.message || "Neznámá chyba"));
-                                            }
-                                        } catch (e: any) {
-                                            console.error("Claim Error:", e);
-                                            alert("Chyba při nárokování energie: " + e.message);
+                                        const result = await claimEnergy();
+                                        if (result.success) {
+                                            alert(`🎉 Energie připsána! Získáváš ${result.energyAdded} Energie.`);
+                                            window.location.reload();
+                                        } else {
+                                            alert("Něco se pokazilo: " + (result.message || "Neznámá chyba"));
                                         }
                                     }}
                                     className="px-8 py-3 bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-300 hover:to-orange-400 text-white font-black rounded-xl shadow-lg shadow-orange-500/30 transition-all hover:scale-105 active:scale-95 flex items-center gap-2"

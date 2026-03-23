@@ -147,10 +147,26 @@ export const useEnergy = () => {
         };
     }, []);
 
+    const claimEnergy = async (): Promise<{ success: boolean; energyAdded?: number; message?: string }> => {
+        try {
+            const { data, error } = await supabase.rpc('claim_monthly_energy');
+            if (error) throw error;
+            if (data?.success) {
+                await fetchBalance();
+                return { success: true, energyAdded: data.energy_added || data.amount };
+            }
+            return { success: false, message: data?.message || 'Neznámá chyba' };
+        } catch (e: any) {
+            console.error('Claim Error:', e);
+            return { success: false, message: e.message };
+        }
+    };
+
     return {
         balance,
         loading,
         buyPackage,
+        claimEnergy,
         refreshBalance: fetchBalance
     };
 };

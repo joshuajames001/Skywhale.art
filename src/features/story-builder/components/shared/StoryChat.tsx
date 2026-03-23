@@ -1,9 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Send, Sparkles, User, Bot, AlertCircle, Terminal, Code2 } from 'lucide-react';
-import { supabase } from '../../../../lib/supabase';
 import { useTranslation } from 'react-i18next';
 import { checkTopicBlacklist } from '../../../../lib/content-policy';
+import { useStoryChatApi } from '../../hooks/useStoryChat';
 
 interface StoryChatProps {
     onComplete: (data: any) => void;
@@ -21,6 +21,7 @@ interface Message {
 export const StoryChat: React.FC<StoryChatProps> = ({ onComplete, onCancel, mode = 'muse' }) => {
     const { t, i18n } = useTranslation();
     const isArchitect = mode === 'architect';
+    const { sendMuseMessage, sendArchitectMessage } = useStoryChatApi();
 
     const [messages, setMessages] = useState<Message[]>([
         {
@@ -81,60 +82,13 @@ export const StoryChat: React.FC<StoryChatProps> = ({ onComplete, onCancel, mode
             let aiReply = '';
 
             if (isArchitect) {
-                // ARCHITECT MODE
-                const { data, error } = await supabase.functions.invoke('generate-story-content', {
-                    body: {
-                        action: 'ask-architect',
-                        payload: { question: userMsg.content, language: i18n.language }
-                    }
-                });
-
-                if (error) throw new Error(error.message);
-                aiReply = data; // Direct string or wrapped? Edge function returns: {choices:[{message:{content}}]} OR just string depending on my impl.
-                // Wait, my impl of ask-architect returns { choices: [{ message: { content: answer } }] }
-                // invokeEdgeFunction usually returns the `data` part.
-                // Let's check `invokeEdgeFunction`.
-                // If it returns `data` which is the RESPONSE JSON...
-                // Then `data.choices[0].message.content` is the text.
-                // My `StoryChat` code below assumes `const { reply, ... } = data`.
-
-                // Let's standardise extraction:
-                if (data?.choices?.[0]?.message?.content) {
-                    aiReply = data.choices[0].message.content;
-                } else if (typeof data === 'string') {
-                    aiReply = data;
-                } else {
-                    aiReply = JSON.stringify(data);
-                }
-
+                aiReply = await sendArchitectMessage(userMsg.content, i18n.language);
             } else {
-                // MUSE MODE
                 const apiMessages = newMessages.map(m => ({ role: m.role, content: m.content }));
-                const { data, error } = await supabase.functions.invoke('generate-story-content', {
-                    body: {
-                        action: 'chat-turn',
-                        payload: {
-                            messages: apiMessages,
-                            currentParams: currentParams,
-                            language: i18n.language
-                        }
-                    }
-                });
-
-                if (error) throw new Error(error.message);
-
-                // Muse returns structured JSON string inside content OR structured object?
-                // `chat-turn` usually returns { choices: [{ message: { content: JSON_STRING } }] }
-                // So parsing is needed.
-                try {
-                    const jsonContent = JSON.parse(data.choices[0].message.content);
-                    aiReply = jsonContent.reply;
-                    if (jsonContent.extracted_params) setCurrentParams(prev => ({ ...prev, ...jsonContent.extracted_params }));
-                    if (jsonContent.is_ready) setIsReady(true);
-                } catch (e) {
-                    // Fallback for legacy format or direct string
-                    aiReply = data.choices?.[0]?.message?.content || t('muse.error_content');
-                }
+                const result = await sendMuseMessage(apiMessages, currentParams, i18n.language);
+                aiReply = result.reply;
+                if (result.extractedParams) setCurrentParams(prev => ({ ...prev, ...result.extractedParams }));
+                if (result.isReady) setIsReady(true);
             }
 
             const botMsg: Message = {
