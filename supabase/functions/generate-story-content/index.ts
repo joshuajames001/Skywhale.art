@@ -263,6 +263,12 @@ NARRATIVE DIRECTIVE (apply this creative constraint throughout the story): ${ran
         }
 
         if (action === 'generate-idea') {
+            if (!user) {
+                return new Response(JSON.stringify({ error: "Unauthorized: Please log in to generate ideas." }), {
+                    status: 401, headers: corsHeaders
+                });
+            }
+
             const apiKey = Deno.env.get('GEMINI_API_KEY');
             if (!apiKey) {
                 return new Response(JSON.stringify({ error: "Server configuration error: AI key is missing." }), {

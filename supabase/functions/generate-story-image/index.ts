@@ -12,7 +12,7 @@ serve(async (req) => {
 
   try {
     const body = await req.json();
-    console.log("📥 Příchozí data:", JSON.stringify(body));
+
 
     const { 
         prompt, 
@@ -37,7 +37,7 @@ serve(async (req) => {
             safeSeed = Math.floor(Math.random() * 1000000000);
         }
     } else {
-        console.log("🌱 Genesis Mode: Generating new random seed.");
+
         safeSeed = Math.floor(Math.random() * 1000000000);
     }
 
@@ -49,10 +49,9 @@ serve(async (req) => {
         activeModel = 'black-forest-labs/flux-dev'; // This is Flux.1 Dev
     }
 
-    console.log(`INPUT CHECK: Prompt length: ${prompt?.length}, Seed: ${safeSeed}, Model: ${activeModel}`);
+    // Debug logs removed for production
 
-    // 0. LAUNCH LOG
-    console.log("🚀 Edge Function: generate-story-image HIT");
+    // 0. LAUNCH
 
     // --- CREDIT SYSTEM SECURITY (BYPASS MODE) ---
     // The Gateway might block User Tokens with 401. 
@@ -63,10 +62,8 @@ serve(async (req) => {
     const isAnon = token === Deno.env.get('SUPABASE_ANON_KEY');
     
     if (!token || isAnon) {
-       console.log("🕵️ Gateway Bypass: Checking body for user token...");
        if (body.access_token_bypass) {
            token = body.access_token_bypass;
-           console.log("🔓 Found Token in Body!");
        } else if (isAnon) {
            throw new Error('Only Anon Key provided, missing User Token in body');
        }
@@ -77,8 +74,6 @@ serve(async (req) => {
         throw new Error('Missing Authorization Token');
     }
     
-    console.log(`🔐 Verifying Token (Length: ${token.length})`);
-
     // Create TWO clients:
     // 1. User-scoped client (for .auth.getUser validation)
     const supabaseUser = createClient(
@@ -105,8 +100,6 @@ serve(async (req) => {
         throw new Error(`Invalid User Token: ${authError?.message}`);
     }
     
-    console.log(`✅ User Authenticated: ${user.id}`);
-
     // 2. Determine Cost (10x Inflation)
     // Basic (Flux Dev) = 30 Energy (was 3)
     // Premium (Flux 2 Pro) = 50 Energy (was 5)
@@ -137,7 +130,6 @@ serve(async (req) => {
         p_amount: -cost
     });
 
-    console.log(`⚡ ENERGY BURN: Deducted ${cost} Energy from User ${user.id}. New Balance should be ~${currentBalance - cost}`);
     // ------------------------------
 
     // 2. Sestavení vstupu pro Replicate
@@ -147,7 +139,6 @@ serve(async (req) => {
     // JSON PARSING FOR 10-SLOT PROTOCOL
     try {
         const parsedPrompt = JSON.parse(prompt);
-        console.log("🧩 Detected JSON Protocol Payload");
 
         if (parsedPrompt.task_type === 'cinematic_book_cover_composition') {
             // COVER LOGIC
@@ -230,20 +221,12 @@ serve(async (req) => {
 
         if (finalImages.length > 0) {
             inputPayload.input_images = finalImages; 
-            console.log(`🔗 MULTI-REF PROTOCOL: Bound ${finalImages.length} images (max 8).`);
-            console.log(`   - Slot 1 (Identity): ${inputImages[0] ? 'LOCKED' : 'EMPTY'}`);
-            console.log(`   - Slot 2 (Style): ${inputImages[1] ? 'LOCKED' : 'EMPTY'}`);
-            console.log(`   - Slot 3 (Continuity): ${inputImages[2] ? 'LOCKED' : 'EMPTY'}`);
-            console.log(`   - Slot 4 (Environment): ${inputImages[3] ? 'LOCKED' : 'EMPTY'}`);
         }
     }
 
-    console.log(`🔹 Using Model: ${activeModel}`);
 
     // 3. Volání Replicate (model-based endpoint, auto-uses latest version)
     const replicateEndpoint = `https://api.replicate.com/v1/models/${activeModel}/predictions`;
-    console.log(`🔗 Replicate Endpoint: ${replicateEndpoint}`);
-    console.log(`📦 Input Payload Keys: ${Object.keys(inputPayload).join(', ')}`);
 
     const response = await fetch(replicateEndpoint, {
       method: "POST",
@@ -258,7 +241,6 @@ serve(async (req) => {
     });
 
     const prediction = await response.json();
-    console.log("🤖 Replicate status:", response.status);
 
     if (!response.ok || prediction.error) {
       console.error("❌ REPLICATE API ERROR:", JSON.stringify(prediction));
@@ -271,8 +253,7 @@ serve(async (req) => {
 
     if (!replicateUrl) throw new Error("Replicate did not return an image URL.");
 
-    // --- NEW: SERVER-SIDE PERSISTENCE ---
-    console.log("💾 Persisting image to Supabase Storage...");
+    // --- SERVER-SIDE PERSISTENCE ---
     
     // A. Download from Replicate
     const imageResponse = await fetch(replicateUrl);
@@ -306,7 +287,6 @@ serve(async (req) => {
       .getPublicUrl(fileName);
 
     const finalUrl = publicUrlData.publicUrl;
-    console.log("✅ Image persisted at:", finalUrl);
 
     return new Response(
       JSON.stringify({ imageUrl: finalUrl, usedSeed }),

@@ -31,19 +31,16 @@ export const invokeEdgeFunction = async <T = any>(
         let accessToken = session.access_token;
 
         if (expiresAt > 0 && expiresAt < now + 120000) {
-            console.log("⚠️ Token near expiry, refreshing...");
             const { data: { session: refreshed }, error: refreshError } = await supabase.auth.refreshSession();
             if (refreshError || !refreshed) {
                 console.error("❌ Token Refresh Failed:", refreshError);
                 return { data: null, error: new Error("Session expired and refresh failed.") };
             }
             accessToken = refreshed.access_token;
-            console.log("✅ Token Refreshed.");
         }
 
         // 3. Direct fetch() – bypasses supabase-js client token management entirely
         const url = `${SUPABASE_URL}/functions/v1/${functionName}`;
-        console.log(`🚀 Invoking '${functionName}' via direct fetch...`);
         
         const response = await fetch(url, {
             method: 'POST',

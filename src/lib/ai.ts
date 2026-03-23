@@ -163,7 +163,6 @@ export const generateImage = async (params: GenerateImageParams): Promise<ImageG
     }
 
     try {
-        console.log("📝 EXECUTING PROMPT:", finalPrompt);
 
         const body: Record<string, any> = {
             seed: kineticSeed || undefined,
@@ -194,11 +193,6 @@ export const generateImage = async (params: GenerateImageParams): Promise<ImageG
         // --- NEW: USE CENTRALIZED EDGE INVOCATION ---
         const { data, error } = await invokeEdgeFunction('generate-story-image', body);
 
-        console.log("📬 Edge Function Response:", {
-            hasData: !!data,
-            hasError: !!error,
-            errorDetails: error
-        });
 
         if (error) {
             let serverError = "Unknown Server Error";
@@ -233,7 +227,6 @@ export const generateCardAsset = async (params: GenerateCardAssetParams): Promis
     }
 
     try {
-        console.log(`🎨 CardStudio Gen (${type}):`, finalPrompt);
         
         // --- NEW: USE CENTRALIZED EDGE INVOCATION ---
         const { data, error } = await invokeEdgeFunction('generate-story-image', {
