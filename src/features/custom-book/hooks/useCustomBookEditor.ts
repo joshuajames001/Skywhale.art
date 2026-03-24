@@ -150,7 +150,7 @@ export const useCustomBookEditor = ({ onOpenStore }: CustomBookEditorProps) => {
             continuityImageUrl, isExpertMode, showDictionary, dictionaryQuery,
             dictionaryResult, isSearchingDict, activeReference, costPerImage,
             hasEnoughEnergy, geminiLoading: ai.isAiLoading, saving: persistence.isSaving,
-            pdfProgress: persistence.pdfProgress, currentPage,
+            pdfProgress: persistence.pdfProgress, isExportingPdf: persistence.isExportingPdf, currentPage,
         },
         actions: {
             setBookTitle, setPages, setCurrentPageIndex, setSuggestion,

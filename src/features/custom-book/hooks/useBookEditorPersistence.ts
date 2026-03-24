@@ -10,6 +10,7 @@ export const useBookEditorPersistence = (bookId: string, _userId: string) => {
     const [saveError, setSaveError] = useState<string | null>(null);
     const [isUploading, setIsUploading] = useState(false);
     const [isUploadingMirror, setIsUploadingMirror] = useState(false);
+    const [isExportingPdf, setIsExportingPdf] = useState(false);
     const [userBalance, setUserBalance] = useState<number | null>(null);
     const [pdfProgress, setPdfProgress] = useState<{ current: number; total: number } | null>(null);
 
@@ -147,7 +148,7 @@ export const useBookEditorPersistence = (bookId: string, _userId: string) => {
     };
 
     const exportPdf = async (pageIds: string[], title: string) => {
-        setIsUploading(true);
+        setIsExportingPdf(true);
         setPdfProgress({ current: 0, total: pageIds.length });
         try {
             await new Promise(r => setTimeout(r, 500));
@@ -162,7 +163,7 @@ export const useBookEditorPersistence = (bookId: string, _userId: string) => {
             console.error('PDF Error:', e);
             alert('Nepodařilo se vytvořit PDF. Zkuste to prosím znovu.');
         } finally {
-            setIsUploading(false);
+            setIsExportingPdf(false);
             setPdfProgress(null);
         }
     };
@@ -178,6 +179,7 @@ export const useBookEditorPersistence = (bookId: string, _userId: string) => {
         isSaving: saving,
         isUploading,
         isUploadingMirror,
+        isExportingPdf,
         userBalance,
         pdfProgress,
         saveError,

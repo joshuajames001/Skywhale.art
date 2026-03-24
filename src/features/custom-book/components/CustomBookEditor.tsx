@@ -12,6 +12,7 @@ import { IllustratorPanel } from './IllustratorPanel';
 import { DictionarySidebar } from './DictionarySidebar';
 import { TimelineFooter } from './TimelineFooter';
 import { CustomBookEditorProps } from '../types';
+import { HiddenCustomBookTemplate } from './HiddenCustomBookTemplate';
 
 const CustomBookEditor: React.FC<CustomBookEditorProps> = ({ onBack, onOpenStore }) => {
     const { t } = useTranslation();
@@ -62,6 +63,9 @@ const CustomBookEditor: React.FC<CustomBookEditorProps> = ({ onBack, onOpenStore
 
             {/* Bottom Timeline */}
             <TimelineFooter state={state} actions={actions} />
+
+            {/* Hidden PDF Template */}
+            <HiddenCustomBookTemplate pages={state.pages} isExporting={state.isExportingPdf} />
 
             {/* Publish Dialog */}
             {state.showPublishDialog && state.publishBookId && (
