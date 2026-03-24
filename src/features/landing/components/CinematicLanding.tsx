@@ -95,7 +95,6 @@ export const CinematicLanding = ({ onEnter, onNavigate }: CinematicLandingProps)
                     muted
                     playsInline
                     className="absolute inset-0 w-screen h-screen object-cover object-center opacity-100" // FORCE FULL VIEWPORT
-                    poster="/portal-poster.jpg"
                 >
                     <source src="/portal.mp4" type="video/mp4" />
                 </video>
