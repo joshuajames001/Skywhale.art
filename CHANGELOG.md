@@ -23,17 +23,22 @@ Všechny významné změny projektu Magické Příběhy (SkyWhale).
 
 - **GF-76:** Storage bucket: `story-covers` → `book-covers` (matching real Supabase bucket)
 - **GF-80:** Konva CardCanvas: `isDestroyed()` → `isDestroyed?.()` optional chaining
+- **GF-80b:** Custom Book PDF export — `HiddenCustomBookTemplate` + separátní `isExportingPdf` flag
 - **GF-81:** VoicePreviewButton: Audio instance reset on previewUrl change
+- **PDF export:** `allowTaint:false`, `scale:2`, wrapper `height:auto` (Story Reader)
 - **vercel.json:** UTF-16LE → UTF-8 encoding fix (broke SPA routing on Vercel)
 - **portal-poster.jpg:** Removed missing poster attribute from CinematicLanding
+- **Storage bucket:** `story-covers` → `book-covers` (DB schema audit)
 
 ### Documentation
 
 - DEVELOPMENT_STATE.md aktualizován přes GF-81
 - BACKLOG.md přepracován — vyřešené issues odstraněny, nové přidány
-- DEPLOYMENT_READINESS_AUDIT.md a PROJECT_AUDIT_JAN_2026.md označeny jako ARCHIVED/RESOLVED
+- DEPLOYMENT_READINESS_AUDIT.md, PROJECT_AUDIT_JAN_2026.md, MASTER_BLUEPRINT.md → `docs/ARCHIVE/`
 - DB migrace: `style_manifest` + `status` sloupce na books tabulce
+- DB schema audit: bucket mismatch identifikován a opraven, missing columns dokumentovány
 - CLAUDE.md: přidána Git Rules (no auto-push)
+- Kompletní docs audit: 12 souborů prověřeno, 3 archivováno
 
 ---
 

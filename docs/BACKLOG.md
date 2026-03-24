@@ -18,7 +18,7 @@
 |--------|---------|-------|
 | DB migrace | `style_manifest` + `status` sloupce — migrace vytvořena, potřeba spustit | GF-76 audit |
 | `shared_cards` tabulka | CardViewer.tsx čte z ní, ale neexistuje migrace — ověřit v DB | GF-76 audit |
-| PDF export | Prázdné stránky — pravděpodobně CORS issue s obrázky z Supabase Storage | GF-80 |
+| PDF export | Custom Book template přidán (GF-80b), Story Reader opraven (html2canvas). CORS s cross-origin obrázky stále potenciální. | GF-80 |
 
 ### Střední priorita
 

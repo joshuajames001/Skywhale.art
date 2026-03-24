@@ -41,6 +41,11 @@ Source of Truth pro aktuální stav vývoje. Aktualizováno: **2026-03-24**.
 | GF-76 | Bucket name fix | story-covers → book-covers (matching real Supabase bucket) |
 | GF-80 | Konva fix | isDestroyed() → isDestroyed?.() optional chaining |
 | GF-81 | VoicePreview fix | Audio instance reset on previewUrl change |
+| GF-80b | Custom Book PDF export | HiddenCustomBookTemplate + isExportingPdf flag |
+| — | PDF html2canvas fix | allowTaint:false, scale:2, wrapper height:auto |
+| — | DB schema audit | Storage bucket mismatch, missing columns identifikovány |
+| — | Docs archive | DEPLOYMENT_READINESS, PROJECT_AUDIT, MASTER_BLUEPRINT → docs/ARCHIVE/ |
+| — | vercel.json | UTF-16→UTF-8 encoding fix, SPA routing |
 
 ## 3. Strategic Rules (The Constitution)
 
@@ -54,7 +59,7 @@ Source of Truth pro aktuální stav vývoje. Aktualizováno: **2026-03-24**.
 ## 4. Zbývající tech debt
 
 - `src/lib/storyteller.ts` — legacy TypeScript errors (non-blocking, ignorované)
-- `pdfGenerator` chunk — 591 kB (lazy-loaded; CORS issue s obrázky může dělat prázdné PDF)
+- `pdfGenerator` chunk — 591 kB (lazy-loaded; html2canvas CORS s cross-origin obrázky stále potenciální issue)
 - `process-story-image` Edge Function — legacy, nahrazena `generate-story-image`
 - `shared_cards` tabulka — CardViewer.tsx ji čte ale neexistuje migrace (ověřit v DB)
 - `style_manifest` + `status` sloupce na books — migrace vytvořena, potřeba spustit v Supabase SQL Editor
