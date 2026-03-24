@@ -11,6 +11,16 @@ export const VoicePreviewButton: React.FC<VoicePreviewButtonProps> = ({ previewU
     const [isLoading, setIsLoading] = useState(false);
     const audioRef = useRef<HTMLAudioElement | null>(null);
 
+    // Reset audio instance when previewUrl changes
+    useEffect(() => {
+        if (audioRef.current) {
+            audioRef.current.pause();
+            audioRef.current = null;
+        }
+        setIsPlaying(false);
+        setIsLoading(false);
+    }, [previewUrl]);
+
     // Stop playing if another voice becomes active or component unmounts
     useEffect(() => {
         if (!isActive && isPlaying) {

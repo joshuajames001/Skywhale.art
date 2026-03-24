@@ -5,7 +5,7 @@
 ## Stav projektu
 
 - **Linear issues:** 20 celkem (17 done, 1 canceled, 0 in progress)
-- **Poslední sprint:** GF-17 → GF-26 (refactoring + coverage + bundle, 2026-03-24)
+- **Poslední sprint:** GF-17 → GF-81 (refactoring + coverage + bundle + bugfixes, 2026-03-24)
 - **Build:** Zelený (tsc 0 errors + vite build pass)
 - **Test coverage:** 273 testů, ~65% statements
 - **Main bundle:** 186 kB (vendor chunks separated)
@@ -16,17 +16,18 @@
 
 | Oblast | Problém | Zdroj |
 |--------|---------|-------|
-| `storyteller.ts` | Legacy TypeScript errors (non-blocking, ignorované) | DEVELOPMENT_STATE.md |
-| Deployment | 4 kritické security gaps (unprotected Edge Functions, API Schema) | DEPLOYMENT_READINESS_AUDIT.md |
-| AppLayout PublishDialog | Přímé `supabase.from('books').update()` v L222 — Three-Layer violation | GF-23 audit |
+| DB migrace | `style_manifest` + `status` sloupce — migrace vytvořena, potřeba spustit | GF-76 audit |
+| `shared_cards` tabulka | CardViewer.tsx čte z ní, ale neexistuje migrace — ověřit v DB | GF-76 audit |
+| PDF export | Prázdné stránky — pravděpodobně CORS issue s obrázky z Supabase Storage | GF-80 |
 
 ### Střední priorita
 
 | Oblast | Problém | Zdroj |
 |--------|---------|-------|
-| pdfGenerator chunk | 591 kB — lazy-loaded, ale kandidát na lighter PDF lib | Build output |
-| Coverage gaps | `useCardStudioAdapter`, `useGameHubAdapter` — 0% coverage | GF-24 coverage report |
-| E2E testy | Žádné — Playwright/Cypress setup by pokryl kritické flows | — |
+| pdfGenerator chunk | 591 kB — lazy-loaded, kandidát na lighter PDF lib | Build output |
+| Coverage gaps | `useCardStudioAdapter`, `useGameHubAdapter` — 0% coverage | GF-24 |
+| `storyteller.ts` | Legacy TypeScript errors (non-blocking) + fragile response parsing | Audit |
+| Zastaralé buckety | `dino-content`, `card-assets`, `book-images` — kód je nepoužívá | Storage audit |
 
 ### Nízká priorita
 
@@ -34,6 +35,7 @@
 |--------|---------|
 | `process-story-image` | Legacy Edge Function, nahrazena `generate-story-image` — zvážit odstranění |
 | MASTER_BLUEPRINT.md | Zastaralý (Jan 2026), odkazuje na Stripe a staré komponenty |
+| E2E testy | Žádné — Playwright/Cypress setup by pokryl kritické flows |
 
 ## Plánované features (z MASTER_BLUEPRINT + audits)
 
@@ -49,7 +51,7 @@
 
 | Datum | Milestone |
 |-------|-----------|
-| 2026-03-24 | GF-17→GF-26: Coverage 65%, bundle 186 kB, Three-Layer compliant, AppLayout split |
+| 2026-03-24 | GF-17→GF-81: Coverage 65%, bundle 186 kB, Three-Layer 100%, security audit, bucket fix, Konva/Audio fix |
 | 2026-03-23 | Refactoring sprint complete (god components split, lazy routes, code splitting) |
 | 2026-03-22 | Edge Functions refactor (generate-story-content split) |
 | 2026-03-07 | Security + Gumroad payment integration |

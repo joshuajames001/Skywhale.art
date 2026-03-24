@@ -2,6 +2,12 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Git Rules
+
+- **NIKDY nepushuj automaticky.** Push provádí pouze uživatel, nebo Claude na explicitní požádání.
+- Před pushem uživatel vždy provádí lokální kontrolu.
+- Commitovat je OK, pushovat NE (bez výslovného souhlasu).
+
 ## Project Overview
 
 **Magické Příběhy** (Magic Stories) — an AI-powered children's storybook platform named SkyWhale by Jiří Joneš founder of Ghost Factory. Users create personalized illustrated storybooks and greeting cards using AI image generation, TTS audio, and AI-written stories.

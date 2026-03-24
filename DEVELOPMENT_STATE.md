@@ -15,7 +15,7 @@ Source of Truth pro aktuální stav vývoje. Aktualizováno: **2026-03-24**.
 | Test coverage | **273 testů**, ~65% statements |
 | Build | `tsc && vite build` — zelený |
 
-## 2. Dokončené refaktory (GF-10 → GF-26)
+## 2. Dokončené refaktory (GF-10 → GF-81)
 
 | Issue | Co se stalo | Výsledek |
 |-------|-------------|----------|
@@ -36,6 +36,11 @@ Source of Truth pro aktuální stav vývoje. Aktualizováno: **2026-03-24**.
 | GF-24 | Coverage sprint 2 | +41 testů (232→273), themes/useGuide/edge-functions/storage-service/useGemini |
 | GF-25 | AppLayout split | 244→211 řádků, routeHelpers.ts extrahováno |
 | GF-26 | Bundle manualChunks | Main bundle 995→186 kB (−81%), 5 vendor chunks |
+| GF-27 | AppLayout PublishDialog | supabase.update → onPublishBook prop z useStory |
+| GF-28 | Security + cleanup | generate-idea auth guard, 44→17 console.log |
+| GF-76 | Bucket name fix | story-covers → book-covers (matching real Supabase bucket) |
+| GF-80 | Konva fix | isDestroyed() → isDestroyed?.() optional chaining |
+| GF-81 | VoicePreview fix | Audio instance reset on previewUrl change |
 
 ## 3. Strategic Rules (The Constitution)
 
@@ -49,10 +54,11 @@ Source of Truth pro aktuální stav vývoje. Aktualizováno: **2026-03-24**.
 ## 4. Zbývající tech debt
 
 - `src/lib/storyteller.ts` — legacy TypeScript errors (non-blocking, ignorované)
-- `AppLayout.tsx` — 211 řádků (PublishDialog stále volá supabase přímo — L222)
-- `pdfGenerator` chunk — 591 kB (lazy-loaded, ale velký — kandidát na tree-shaking/lighter lib)
+- `pdfGenerator` chunk — 591 kB (lazy-loaded; CORS issue s obrázky může dělat prázdné PDF)
 - `process-story-image` Edge Function — legacy, nahrazena `generate-story-image`
-- 3 komponenty stále volají supabase přímo (false positives — jen string check `url.includes('supabase.co')`)
+- `shared_cards` tabulka — CardViewer.tsx ji čte ale neexistuje migrace (ověřit v DB)
+- `style_manifest` + `status` sloupce na books — migrace vytvořena, potřeba spustit v Supabase SQL Editor
+- Zastaralé Storage buckety: `dino-content`, `card-assets`, `book-images` — kód je nepoužívá
 
 Kompletní seznam: `docs/BACKLOG.md`
 
