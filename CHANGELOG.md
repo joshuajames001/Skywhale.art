@@ -2,7 +2,42 @@
 
 Všechny významné změny projektu Magické Příběhy (SkyWhale).
 
-## [Unreleased] — 2026-03-23
+## [Unreleased] — 2026-03-24
+
+### Refactoring & Quality Sprint (GF-17 → GF-81)
+
+- **GF-17:** Quick wins — DiscoveryPageView rename, STORY_COSTS → `lib/constants.ts`, generateId → `lib/id-utils.ts`
+- **GF-18:** Audio components přesun `features/audio/` → `components/audio/` (sdílené UI)
+- **GF-19:** Three-Layer Rule — FeedbackBoard, ReportDialog, ReactionBar: supabase → adapter hooks
+- **GF-20:** Coverage sprint 1 — +76 testů (156→232), 7 nových test souborů
+- **GF-21:** FSD fix — domain hooks přesunuty do feature složek
+- **GF-22:** Fix afterEach imports — `tsc --noEmit` poprvé 0 chyb
+- **GF-23:** Three-Layer Rule — HeroMode, StorySetup, StoryChat, EnergyCard: supabase vyextrahován do hooks
+- **GF-24:** Coverage sprint 2 — +41 testů (232→273), themes/useGuide/edge-functions/storage-service/useGemini
+- **GF-25:** AppLayout split — 244→211 řádků, `routeHelpers.ts` extrahováno
+- **GF-26:** Bundle manualChunks — main bundle 995→186 kB (−81%), 5 vendor chunks
+- **GF-27:** AppLayout PublishDialog — `supabase.update` → `onPublishBook` prop z useStory
+- **GF-28:** Security — `generate-idea` auth guard, console.log cleanup (44→17)
+
+### Bug Fixes
+
+- **GF-76:** Storage bucket: `story-covers` → `book-covers` (matching real Supabase bucket)
+- **GF-80:** Konva CardCanvas: `isDestroyed()` → `isDestroyed?.()` optional chaining
+- **GF-81:** VoicePreviewButton: Audio instance reset on previewUrl change
+- **vercel.json:** UTF-16LE → UTF-8 encoding fix (broke SPA routing on Vercel)
+- **portal-poster.jpg:** Removed missing poster attribute from CinematicLanding
+
+### Documentation
+
+- DEVELOPMENT_STATE.md aktualizován přes GF-81
+- BACKLOG.md přepracován — vyřešené issues odstraněny, nové přidány
+- DEPLOYMENT_READINESS_AUDIT.md a PROJECT_AUDIT_JAN_2026.md označeny jako ARCHIVED/RESOLVED
+- DB migrace: `style_manifest` + `status` sloupce na books tabulce
+- CLAUDE.md: přidána Git Rules (no auto-push)
+
+---
+
+## [0.9.1] — 2026-03-23
 
 ### Refactoring Sprint (GF-10 → GF-16)
 
