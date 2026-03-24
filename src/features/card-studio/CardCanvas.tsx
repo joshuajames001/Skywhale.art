@@ -75,7 +75,7 @@ const CanvasItem = ({
 
     useEffect(() => {
         if (isSelected && trRef.current && shapeRef.current
-            && !shapeRef.current.isDestroyed()) {
+            && !shapeRef.current.isDestroyed?.()) {
             trRef.current.nodes([shapeRef.current]);
             trRef.current.getLayer()?.batchDraw();
         }

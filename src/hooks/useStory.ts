@@ -241,7 +241,7 @@ export const useStory = () => {
             if (project.thumbnailBlob) {
                 const fileName = `covers/${project.id}_${Date.now()}.png`;
                 const { error: uploadError } = await supabase.storage
-                    .from('story-covers') // Ensure this bucket exists or use story-assets if preferred. Using books bucket usually.
+                    .from('book-covers') // Ensure this bucket exists or use story-assets if preferred. Using books bucket usually.
                     .upload(fileName, project.thumbnailBlob);
                 
                 if (uploadError) {
@@ -249,7 +249,7 @@ export const useStory = () => {
                      // Fallback: don't fail entire save, just missing cover
                 } else {
                     const { data: { publicUrl } } = supabase.storage
-                        .from('story-covers')
+                        .from('book-covers')
                         .getPublicUrl(fileName);
                     coverUrl = publicUrl;
                 }
