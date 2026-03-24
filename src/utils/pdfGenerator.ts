@@ -23,10 +23,13 @@ export const generatePdf = async (
         const pageWidth = doc.internal.pageSize.getWidth();
         const pageHeight = doc.internal.pageSize.getHeight();
 
+        console.log(`[PDF] Starting generation for ${elementIds.length} pages:`, elementIds);
+
         for (let i = 0; i < elementIds.length; i++) {
             if (onProgress) onProgress(i + 1, elementIds.length);
 
             const element = document.getElementById(elementIds[i]);
+            console.log(`[PDF] ${elementIds[i]}:`, element ? 'FOUND' : 'NOT FOUND', element?.offsetWidth, element?.offsetHeight);
             if (!element) continue;
 
             // Small delay to allow UI update and GC
@@ -44,6 +47,7 @@ export const generatePdf = async (
 
             // Moderate quality JPEG
             const imgData = canvas.toDataURL('image/jpeg', 0.85);
+            console.log(`[PDF] Canvas ${elementIds[i]}: ${canvas.width}x${canvas.height}, data length: ${imgData.length}`);
             
             // Calculate dimensions
             const imgWidth = pageWidth;
