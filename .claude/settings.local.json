@@ -24,7 +24,8 @@
       "Bash(__NEW_LINE_f30caeca673e7198__ echo:*)",
       "Bash(grep -E \"\\\\.\\(tsx|ts\\)$\")",
       "mcp__claude_ai_Linear__save_issue",
-      "Bash(npx vitest:*)"
+      "Bash(npx vitest:*)",
+      "Bash(xxd vercel.json)"
     ]
   }
 }

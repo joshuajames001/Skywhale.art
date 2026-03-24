@@ -64,3 +64,5 @@
 | Vitest | Unit + integration testy |
 | GitNexus | Code intelligence (884 nodes, 1583 edges) |
 | Linear | Issue tracking (projekt Skywhale.art) |
+
+sd
