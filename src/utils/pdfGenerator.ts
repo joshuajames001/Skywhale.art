@@ -34,11 +34,11 @@ export const generatePdf = async (
 
             // Capture logic
             const canvas = await html2canvas(element, {
-                scale: 1.5, // Reduced from 2 for stability
-                useCORS: true, 
+                scale: 2,
+                useCORS: true,
+                allowTaint: false,
                 logging: false,
                 backgroundColor: '#ffffff',
-                allowTaint: true,
                 imageTimeout: 15000
             });
 

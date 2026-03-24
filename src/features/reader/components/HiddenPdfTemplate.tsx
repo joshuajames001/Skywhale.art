@@ -12,7 +12,7 @@ export const HiddenPdfTemplate: React.FC<HiddenPdfTemplateProps> = ({ story, isE
     if (!isExportingPdf) return null;
 
     return (
-        <div style={{ position: 'absolute', left: '-9999px', top: 0, width: '794px', height: '1123px' }}>
+        <div style={{ position: 'absolute', left: '-9999px', top: 0, width: '794px' }}>
             {/* Cover */}
             <div id="book-page-0" style={{ width: '794px', height: '1123px' }}>
                 <BookCover

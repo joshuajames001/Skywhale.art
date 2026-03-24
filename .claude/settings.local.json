@@ -25,7 +25,10 @@
       "Bash(grep -E \"\\\\.\\(tsx|ts\\)$\")",
       "mcp__claude_ai_Linear__save_issue",
       "Bash(npx vitest:*)",
-      "Bash(xxd vercel.json)"
+      "Bash(xxd vercel.json)",
+      "Bash(mv DEPLOYMENT_READINESS_AUDIT.md docs/ARCHIVE/)",
+      "Bash(mv PROJECT_AUDIT_JAN_2026.md docs/ARCHIVE/)",
+      "Bash(mv MASTER_BLUEPRINT.md docs/ARCHIVE/)"
     ]
   }
 }
