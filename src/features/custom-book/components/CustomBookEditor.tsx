@@ -1,7 +1,6 @@
 import React from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
-import { supabase } from '../../../lib/supabase';
 import { PublishDialog } from './PublishDialog';
 import { AchievementToast } from '../../profile/components/AchievementToast';
 import { useCustomBookEditor } from '../hooks/useCustomBookEditor';
@@ -72,11 +71,7 @@ const CustomBookEditor: React.FC<CustomBookEditorProps> = ({ onBack, onOpenStore
                 <PublishDialog
                     bookId={state.publishBookId}
                     onPublish={async (isPublic) => {
-                        await supabase
-                            .from('books')
-                            .update({ is_public: isPublic })
-                            .eq('id', state.publishBookId!); // Assert because conditional checks it
-
+                        await actions.publishBook(state.publishBookId!, isPublic);
                         console.log(`📚 Custom book ${state.publishBookId} ${isPublic ? 'published' : 'kept private'}`);
                         onBack(); // Go back after choosing
                     }}

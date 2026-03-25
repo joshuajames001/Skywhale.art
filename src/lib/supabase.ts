@@ -21,10 +21,18 @@ const clientKey = isSupabaseConfigured ? supabaseAnonKey! : 'placeholder';
 
 export const supabase = createClient(clientUrl, clientKey);
 
-// Helper to get image URL
+// Helper to get image URL from story-assets bucket
 export const getStorageUrl = (path: string) => {
     if (!path) return '';
     if (path.startsWith('http')) return path;
     const { data } = supabase.storage.from('story-assets').getPublicUrl(path);
+    return data.publicUrl;
+};
+
+// Helper to get URL from book-media bucket (discovery content)
+export const getBookMediaUrl = (path: string) => {
+    if (!path) return '';
+    if (path.startsWith('http')) return path;
+    const { data } = supabase.storage.from('book-media').getPublicUrl(path);
     return data.publicUrl;
 };

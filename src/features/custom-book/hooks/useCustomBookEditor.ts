@@ -161,6 +161,7 @@ export const useCustomBookEditor = ({ onOpenStore }: CustomBookEditorProps) => {
             acceptSuggestion, dismissSuggestion, handleGenerateScene, handleMagicMirrorUpload,
             handlePhotoUpload, handleExportPdf, searchDictionary: ai.lookupWord,
             generateImagePrompt: ai.generateImagePrompt, startGuide,
+            publishBook: persistence.publishBook,
         },
         refs: { fileInputRef, magicMirrorInputRef },
     };

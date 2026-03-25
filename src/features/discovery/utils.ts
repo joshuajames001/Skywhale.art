@@ -1,20 +1,26 @@
 import { DiscoveryBook } from '../../types/discovery';
 import { supabase } from '../../lib/supabase';
 
-// Helper to process books
+/** Build a public cover URL from the book-media bucket */
+const getDiscoveryCoverUrl = (folder: string): string => {
+    const { data } = supabase.storage
+        .from('book-media')
+        .getPublicUrl(`Discovery/${folder}/discovery-cover.png`);
+    return data.publicUrl;
+};
+
+/** Process raw DB rows into DiscoveryBook[]; applies cover URL fallback */
 export const processBooks = (rawBooks: any[]): DiscoveryBook[] => {
     if (!rawBooks) return [];
     return rawBooks.map(b => {
-        // HOTFIX: T-Rex image mapping
-        if (b.species_code === 'Tyrannosaurus rex' || b.title?.toUpperCase().includes('TYRANOSAURUS') || b.title?.toUpperCase().includes('T-REX')) {
-            const { data } = supabase.storage.from('book-media').getPublicUrl('Discovery/T-Rex/discovery-cover.png');
-            return { ...b, cover_url: data.publicUrl };
+        let coverUrl = b.cover_url;
+        const isInvalid = !coverUrl || coverUrl.trim() === '' || coverUrl.endsWith('.mp4');
+
+        if (isInvalid && b.storage_folder) {
+            coverUrl = getDiscoveryCoverUrl(b.storage_folder);
         }
-        return b;
-    }).filter((b: any) => {
-        const url = b.cover_url || '';
-        // Basic filtering of invalid URLs if needed, but keeping it loose for now
-        return true; 
+
+        return { ...b, cover_url: coverUrl };
     });
 };
 
@@ -32,7 +38,7 @@ export const processPages = (rawPages: any[], isTRex: boolean): any[] => {
             const { data } = supabase.storage.from('book-media').getPublicUrl(`Discovery/T-Rex/${p.page_number}.${extension}`);
             imageUrl = data.publicUrl;
         }
-        
+
         return {
             ...p,
             // CRITICAL FIX: Map DB column 'content_text' to UI property 'text_content'

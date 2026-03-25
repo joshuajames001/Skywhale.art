@@ -28,7 +28,12 @@
       "Bash(xxd vercel.json)",
       "Bash(mv DEPLOYMENT_READINESS_AUDIT.md docs/ARCHIVE/)",
       "Bash(mv PROJECT_AUDIT_JAN_2026.md docs/ARCHIVE/)",
-      "Bash(mv MASTER_BLUEPRINT.md docs/ARCHIVE/)"
+      "Bash(mv MASTER_BLUEPRINT.md docs/ARCHIVE/)",
+      "mcp__claude_ai_Linear__list_teams",
+      "mcp__claude_ai_Linear__list_issue_labels",
+      "mcp__claude_ai_Linear__get_project",
+      "mcp__claude_ai_Linear__create_issue_label",
+      "mcp__claude_ai_Linear__save_project"
     ]
   }
 }

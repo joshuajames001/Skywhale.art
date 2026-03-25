@@ -21,6 +21,7 @@ export interface DiscoveryBook {
   period_text?: string;
   diet_text?: string;
   audio_url?: string;
+  storage_folder?: string;
 }
 
 export interface DiscoveryHotspot {

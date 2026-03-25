@@ -122,7 +122,7 @@ export const useDiscoveryData = (i18n: any, t: any) => {
                 throw error;
             }
             
-            const isTRex = bookInfo ? (bookInfo.species_code === 'Tyrannosaurus rex' || bookInfo.title?.toUpperCase().includes('TYRANOSAURUS') || bookInfo.title?.toUpperCase().includes('T-REX')) : false;
+            const isTRex = bookInfo?.storage_folder === 'T-Rex';
 
             const processedPages = processPages(data || [], isTRex);
             setPages(processedPages);
