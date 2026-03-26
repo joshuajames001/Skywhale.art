@@ -1,5 +1,5 @@
 import { lazy, ReactNode } from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useParams } from 'react-router-dom';
 import { LegalAgreements } from '../features/legal/components/LegalAgreements';
 import { PricingPage } from '../features/store/components/PricingPage';
 import { FeedbackBoard } from '../features/feedback/components/FeedbackBoard';
@@ -46,6 +46,11 @@ interface RouteContext {
     gameHubAdapter: GameHubAdapter;
     libraryAdapter: LibraryAdapter;
 }
+
+const CardViewerRoute = ({ onClose }: { onClose: () => void }) => {
+    const { id } = useParams();
+    return <CardViewer cardId={id || null} onClose={onClose} />;
+};
 
 export const createRoutes = (ctx: RouteContext): RouteConfig[] => [
     { path: '/terms', element: (
@@ -99,7 +104,7 @@ export const createRoutes = (ctx: RouteContext): RouteConfig[] => [
     )},
     { path: '/store', element: <EnergyStore onClose={() => ctx.navigate('/')} /> },
     { path: '/profile', element: <LazyUserProfile user={ctx.user} onBack={() => ctx.navigate('/')} /> },
-    { path: '/card-viewer', element: <CardViewer cardId={null} onClose={() => ctx.handleHubNavigate('library')} /> },
+    { path: '/card/:id', element: <CardViewerRoute onClose={() => ctx.navigate('/')} /> },
     { path: '/studio', element: (
         <CardStudioProvider adapter={ctx.cardStudioAdapter}>
             <LazyCardStudioWrapper />

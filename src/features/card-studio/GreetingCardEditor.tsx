@@ -33,7 +33,7 @@ interface GreetingCardEditorProps {
 
 export const GreetingCardEditor = ({ initialProject }: GreetingCardEditorProps) => {
     const { t } = useTranslation();
-    const { onSaveProject } = useCardStudio();
+    const { onSaveProject, onShareCard } = useCardStudio();
 
     const defaultPages: CardPage[] = [
         { id: 'p0', name: t('atelier.pages.front_cover'), items: [], background: '#fffcf5' },
@@ -106,9 +106,12 @@ export const GreetingCardEditor = ({ initialProject }: GreetingCardEditorProps) 
         finally { setIsSaving(false); }
     };
 
-    const handleShare = () => {
-        const ref = localStorage.getItem('referral_code') || 'friend';
-        if (confirm(t('atelier.status.share_confirm'))) { navigator.clipboard.writeText(`${window.location.origin}/?ref=${ref}`); alert(t('atelier.status.share_ok')); }
+    const handleShare = async () => {
+        if (!confirm(t('atelier.status.share_confirm'))) return;
+        const result = await onShareCard(state.pages);
+        if (!result) { alert(t('atelier.status.share_error')); return; }
+        await navigator.clipboard.writeText(result.shareUrl);
+        alert(t('atelier.status.share_ok'));
     };
 
     const handleNewProject = () => {

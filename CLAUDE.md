@@ -163,7 +163,7 @@ All AI text generation enforces Czech output for `text_cz` fields. Art prompts a
 <!-- gitnexus:start -->
 # GitNexus — Code Intelligence
 
-This project is indexed by GitNexus as **ann** (884 symbols, 1583 relationships, 31 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
+This project is indexed by GitNexus as **ann** (1123 symbols, 1977 relationships, 46 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
 
 > If any GitNexus tool warns the index is stale, run `npx gitnexus analyze` in terminal first.
 
@@ -213,21 +213,6 @@ This project is indexed by GitNexus as **ann** (884 symbols, 1583 relationships,
 | d=1 | WILL BREAK — direct callers/importers | MUST update these |
 | d=2 | LIKELY AFFECTED — indirect deps | Should test |
 | d=3 | MAY NEED TESTING — transitive | Test if critical path |
-
-## Graph Degree vs. Direct Imports
-
-GitNexus `degree` (reported in audits and `gitnexus_context`) counts ALL graph
-edges — including transitive relationships. It is NOT the same as direct importers.
-
-| Metric | What it means | How to check |
-|--------|---------------|--------------|
-| `degree` in GitNexus | All direct + transitive relationships in the call graph | Fast overview only |
-| Direct importers | Files that literally `import` the symbol | `grep -r "from.*filename" src/ -l` |
-
-**Rule:** Before creating a refactor task based on a high degree count, always
-verify with grep how many files DIRECTLY import the symbol. High degree with
-zero direct cross-feature imports = false alarm (like GF-15: card-studio/types.ts
-showed degree 36 but had zero importers outside its feature folder).
 
 ## Resources
 

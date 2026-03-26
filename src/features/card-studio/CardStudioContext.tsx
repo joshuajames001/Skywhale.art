@@ -23,6 +23,9 @@ export interface CardStudioAdapter {
 
     onModerateContent: (text: string) => Promise<void>;
 
+    // Share
+    onShareCard: (pages: CardPage[]) => Promise<{ shareUrl: string } | null>;
+
     // Extras (formerly useGemini)
     onDictionaryLookup: (term: string) => Promise<any>;
     onTranslate: (text: string) => Promise<string | null>;
