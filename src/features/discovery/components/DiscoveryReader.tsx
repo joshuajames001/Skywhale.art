@@ -2,6 +2,8 @@ import { motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { DiscoveryPageView } from './DiscoveryPageView';
 import { DiscoveryPage } from '../../../types/discovery';
+import { TFunction } from 'i18next';
+import { SWIPE_THRESHOLD } from '../constants';
 
 interface DiscoveryReaderProps {
     pages: DiscoveryPage[];
@@ -10,7 +12,7 @@ interface DiscoveryReaderProps {
     isSpaceCategory: boolean;
     isDinoCategory: boolean;
     loading: boolean;
-    t: any;
+    t: TFunction;
 }
 
 export const DiscoveryReader = ({
@@ -22,8 +24,6 @@ export const DiscoveryReader = ({
     loading,
     t
 }: DiscoveryReaderProps) => {
-    console.log("Discovery Page Array:", pages);
-
     return (
         <motion.div
             key="reader"
@@ -58,10 +58,9 @@ export const DiscoveryReader = ({
                                 dragConstraints={{ left: 0, right: 0 }}
                                 dragElastic={0.2}
                                 onDragEnd={(_, info) => {
-                                    const threshold = 100;
-                                    if (info.offset.x < -threshold && readerIndex < pages.length - 1) {
+                                    if (info.offset.x < -SWIPE_THRESHOLD && readerIndex < pages.length - 1) {
                                         onPageChange(readerIndex + 1);
-                                    } else if (info.offset.x > threshold && readerIndex > 0) {
+                                    } else if (info.offset.x > SWIPE_THRESHOLD && readerIndex > 0) {
                                         onPageChange(readerIndex - 1);
                                     }
                                 }}

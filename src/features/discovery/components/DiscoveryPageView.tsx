@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
-import { DiscoveryPage, DiscoveryHotspot } from '../../../types/discovery';
-import { supabase } from '../../../lib/supabase';
-import { Info, X, Volume2, Pause } from 'lucide-react';
+import { DiscoveryPage } from '../../../types/discovery';
+import { X, Volume2, Pause } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useDiscoveryHotspots } from '../hooks/useDiscoveryHotspots';
+import { TEXTURE_URL, PAGE_LABEL } from '../constants';
 
 export const DiscoveryPageView = ({ page, isDino, isSpace, onPageComplete }: { page: DiscoveryPage; isDino?: boolean; isSpace?: boolean; onPageComplete?: () => void }) => {
     // GUARD CLAUSE
@@ -15,8 +16,8 @@ export const DiscoveryPageView = ({ page, isDino, isSpace, onPageComplete }: { p
 
     const isVideo = page.image_url?.toLowerCase().includes('.mp4');
 
-    const [hotspots, setHotspots] = useState<DiscoveryHotspot[]>([]);
-    const [activeHotspot, setActiveHotspot] = useState<DiscoveryHotspot | null>(null);
+    const { hotspots } = useDiscoveryHotspots(page.id);
+    const [activeHotspot, setActiveHotspot] = useState<typeof hotspots[number] | null>(null);
 
     // AUDIO STATE
     const [isPlaying, setIsPlaying] = useState(false);
@@ -24,18 +25,8 @@ export const DiscoveryPageView = ({ page, isDino, isSpace, onPageComplete }: { p
     const [duration, setDuration] = useState(0);
     const audioRef = useRef<HTMLAudioElement | null>(null);
 
-    // Fetch Hotspots
-    useEffect(() => {
-        const fetchHotspots = async () => {
-            const { data } = await supabase
-                .from('discovery_hotspots')
-                .select('*')
-                .eq('page_id', page.id);
-            setHotspots(data || []);
-            setActiveHotspot(null);
-        };
-        fetchHotspots();
-    }, [page.id]);
+    // Reset active hotspot when page changes
+    useEffect(() => { setActiveHotspot(null); }, [page.id]);
 
     // Handle Audio
     useEffect(() => {
@@ -76,10 +67,14 @@ export const DiscoveryPageView = ({ page, isDino, isSpace, onPageComplete }: { p
             }
         }
 
+        const handleStopAll = () => { audioRef.current?.pause(); };
+        window.addEventListener('discovery:stop-audio', handleStopAll);
+
         return () => {
             if (audioRef.current) {
                 audioRef.current.pause();
             }
+            window.removeEventListener('discovery:stop-audio', handleStopAll);
         };
     }, [page.audio_url, onPageComplete]);
 
@@ -229,7 +224,7 @@ export const DiscoveryPageView = ({ page, isDino, isSpace, onPageComplete }: { p
 
                 {/* Page number hint */}
                 <span className={`absolute bottom-4 left-6 font-serif text-sm text-white/50 z-[60] ${isCinematic ? 'hidden' : ''}`}>
-                    Strana {page.page_number}
+                    {PAGE_LABEL}{page.page_number}
                 </span>
             </div>
 
@@ -240,7 +235,7 @@ export const DiscoveryPageView = ({ page, isDino, isSpace, onPageComplete }: { p
                     <div
                         className="absolute inset-0 opacity-10 pointer-events-none"
                         style={{
-                            backgroundImage: "url('https://www.transparenttextures.com/patterns/stardust.png')",
+                            backgroundImage: `url('${TEXTURE_URL}')`,
                             backgroundRepeat: 'repeat'
                         }}
                     />
@@ -281,7 +276,7 @@ export const DiscoveryPageView = ({ page, isDino, isSpace, onPageComplete }: { p
                     </div>
 
                     {/* SCROLLABLE TEXT AREA */}
-                    <div className={`overflow-y-auto custom-scrollbar px-1 ${isCinematic ? 'flex-1' : 'flex-1'}`}>
+                    <div className="overflow-y-auto custom-scrollbar px-1 flex-1">
                         <motion.div
                             className="font-serif text-lg md:text-xl leading-[1.8] text-indigo-50/90 text-justify tracking-wide selection:bg-purple-900/50 pb-20 md:pb-0 drop-shadow-sm"
                             initial={{ opacity: 0, y: 20 }}

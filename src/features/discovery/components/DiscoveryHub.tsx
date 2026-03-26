@@ -1,185 +1,140 @@
-import { AnimatePresence } from 'framer-motion';
+import { useEffect, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ArrowLeft } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { useDiscoveryNav } from '../hooks/useDiscoveryNav';
-import { useDiscoveryData } from '../hooks/useDiscoveryData';
-import { useTrailers } from '../hooks/useTrailers';
-
-import { DiscoveryBackground } from './DiscoveryBackground';
-import { DiscoveryHeader } from './DiscoveryHeader';
-import { CategoryGrid } from './CategoryGrid';
-import { BookList } from './BookList';
+import { useDiscoveryScene } from '../hooks/useDiscoveryScene';
+import { WorldsScene } from './WorldsScene';
+import { DiscoveryBookGrid } from './DiscoveryBookGrid';
 import { DiscoveryReader } from './DiscoveryReader';
-import { TrailerOverlay } from './TrailerOverlay';
+import { WORLD_BACKGROUNDS } from './WorldSection';
+import { getBookMediaUrl } from '../../../lib/supabase';
 
 interface DiscoveryHubProps {
     onClose: () => void;
-    isRestoring?: boolean;
 }
 
-export const DiscoveryHub = ({ onClose, isRestoring = false }: DiscoveryHubProps) => {
-    const { t, i18n } = useTranslation();
+export const DiscoveryHub = ({ onClose }: DiscoveryHubProps) => {
+    const { t } = useTranslation();
 
-    // 1. Data Hook
+    useEffect(() => {
+        document.body.style.overflow = 'hidden';
+        document.documentElement.style.overflow = 'hidden';
+        return () => {
+            document.body.style.overflow = '';
+            document.documentElement.style.overflow = '';
+        };
+    }, []);
+
     const {
         categories,
         books,
-        pages,
-        loading,
-        loadBooksForCategory,
-        loadBookDetails,
-        loadPagesForBook,
-        clearPages,
-        clearBooks
-    } = useDiscoveryData(i18n, t);
-
-    // 2. Navigation Hook
-    const {
-        view,
-        setView,
         selectedCategory,
         selectedBook,
-        readerPage,
-        navigateToCategory,
-        navigateToBook,
-        navigateToPage,
-        goBack,
-        updateUrl
-    } = useDiscoveryNav({
-        categories,
-        isRestoring,
-        onLoadBook: loadBookDetails,
-        onLoadCategoryBooks: loadBooksForCategory
-    });
+        loading,
+        booksLoading,
+        pages,
+        pagesLoading,
+        selectCategory,
+        selectBook,
+        clearCategory,
+        clearBook,
+    } = useDiscoveryScene();
 
-    // 3. Trailers Hook
-    const { categoryTrailers, checkTrailerSeen, markTrailerSeen } = useTrailers(categories, i18n);
-
-    // --- Interaction Handlers ---
-
-    const handleCategorySelect = async (cat: any) => {
-        // Trailer Logic
-        const hasTrailer = categoryTrailers[cat.id];
-        const hasSeen = checkTrailerSeen(cat.id);
-
-        if (hasTrailer && !hasSeen) {
-            // Show Trailer first
-            navigateToCategory(cat); // Update URL/State
-            setView('trailer');      // Override view to trailer
-        } else {
-            // Go straight to books
-            navigateToCategory(cat);
-            clearBooks(); // Clear previous
-            await loadBooksForCategory(cat.id);
-            setView('book-list');
-        }
+    const READER_BACKGROUNDS: Record<string, string> = {
+        dinosauri: getBookMediaUrl('Discovery-backgrounds/dinosauri.png'),
+        vesmir: getBookMediaUrl('Discovery-backgrounds/vesmir.png'),
     };
 
-    const handleTrailerComplete = async () => {
-        if (selectedCategory) {
-            markTrailerSeen(selectedCategory.id);
-            setView('book-list');
+    const [readerPage, setReaderPage] = useState(0);
 
-            // Load books if not already loaded (might have been skipped if we went straight to trailer)
-            if (books.length === 0) {
-                await loadBooksForCategory(selectedCategory.id);
-            }
-        }
-    };
+    useEffect(() => { if (selectedBook) setReaderPage(0); }, [selectedBook]);
 
-    const handleBookSelect = async (book: any) => {
-        navigateToBook(book);
-        clearPages();
-        await loadPagesForBook(book.id, book);
-    };
+    const inReader = !!selectedBook;
+    const isDinoCategory = selectedCategory?.slug?.includes('dino') || false;
+    const isSpaceCategory = selectedCategory?.slug === 'vesmir' || false;
 
     const handleBack = () => {
-        const handled = goBack();
-        if (!handled) {
-            onClose();
+        if (inReader) {
+            window.dispatchEvent(new Event('discovery:stop-audio'));
+            clearBook();
         }
+        else if (selectedCategory) clearCategory();
+        else onClose();
     };
 
-    // Derived State for UI
-    const isDinoCategory = selectedCategory?.title?.toLowerCase().includes('dino') ||
-        selectedCategory?.slug?.includes('dino') || false;
-
-    const isSpaceCategory = selectedCategory?.title?.toLowerCase().includes('vesmír') ||
-        selectedCategory?.slug?.includes('space') ||
-        selectedCategory?.slug === 'vesmir' || false;
-
-    // Title Logic
-    let currentTitle = t('discovery.title');
-    if (view === 'book-list' && selectedCategory) currentTitle = selectedCategory.title;
-    if (view === 'reader' && selectedBook) currentTitle = selectedBook.title;
-
     return (
-        <div className="fixed inset-0 z-50 flex flex-col font-sans text-slate-100 bg-[#0c0a09]">
+        <div className="fixed inset-0 z-50 bg-black overflow-hidden">
 
-            {/* Background Layer */}
-            <DiscoveryBackground view={view} selectedCategory={selectedCategory} />
+            {/* Worlds snap scroll — visible unless in reader */}
+            {!inReader && (
+                <WorldsScene
+                    categories={categories}
+                    loading={loading}
+                    onSelectCategory={selectCategory}
+                />
+            )}
 
-            {/* Header */}
-            <DiscoveryHeader
-                view={view}
-                title={currentTitle}
-                onBack={handleBack}
-                showTrailerButton={view === 'book-list' && !!selectedCategory && !!categoryTrailers[selectedCategory.id]}
-                onPlayTrailer={() => setView('trailer')}
-                audioUrl={selectedBook?.audio_url}
-                isCustomTheme={(isDinoCategory || isSpaceCategory) && view !== 'categories'}
-            />
+            {/* Book grid overlay */}
+            <AnimatePresence>
+                {selectedCategory && !inReader && (
+                    <DiscoveryBookGrid
+                        category={selectedCategory}
+                        books={books}
+                        loading={booksLoading}
+                        onSelectBook={selectBook}
+                        onBack={clearCategory}
+                    />
+                )}
+            </AnimatePresence>
 
-            {/* Main Content Area */}
-            <div className="flex-1 relative overflow-hidden flex flex-col">
-                <AnimatePresence mode="wait">
-
-                    {/* VIEW: CATEGORIES */}
-                    {view === 'categories' && (
-                        <div className="absolute inset-0 overflow-y-auto custom-scrollbar">
-                            <CategoryGrid
-                                categories={categories}
-                                onSelect={handleCategorySelect}
-                                loading={categories.length === 0} // Initial data loading
-                            />
-                        </div>
-                    )}
-
-                    {/* VIEW: BOOK LIST */}
-                    {view === 'book-list' && (
-                        <div className="absolute inset-0 overflow-y-auto custom-scrollbar">
-                            <BookList
-                                books={books}
-                                loading={loading}
-                                onSelect={handleBookSelect}
-                            />
-                        </div>
-                    )}
-
-                    {/* VIEW: READER */}
-                    {view === 'reader' && (
-                        <div className="absolute inset-0 overflow-hidden">
-                            <DiscoveryReader
-                                pages={pages}
-                                readerIndex={readerPage ? parseInt(readerPage) : 0}
-                                onPageChange={(idx) => navigateToPage(idx)}
-                                isSpaceCategory={isSpaceCategory}
-                                isDinoCategory={isDinoCategory}
-                                loading={loading}
-                                t={t}
-                            />
-                        </div>
-                    )}
-
-                    {/* VIEW: TRAILER */}
-                    {view === 'trailer' && (
-                        <TrailerOverlay
-                            url={selectedCategory ? categoryTrailers[selectedCategory.id] : null}
-                            onComplete={handleTrailerComplete}
+            {/* Reader */}
+            <AnimatePresence>
+                {inReader && selectedBook && (() => {
+                    const slug = selectedCategory?.slug ?? '';
+                    const readerBg = READER_BACKGROUNDS[slug];
+                    const readerGradient = WORLD_BACKGROUNDS[slug];
+                    return (
+                    <motion.div
+                        className="fixed inset-0 z-50"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0, pointerEvents: 'none' }}
+                        style={readerBg ? {
+                            backgroundImage: `url(${readerBg})`,
+                            backgroundSize: 'cover',
+                            backgroundPosition: 'center',
+                        } : {
+                            background: readerGradient ?? '#000',
+                        }}
+                    >
+                        <DiscoveryReader
+                            pages={pages}
+                            readerIndex={readerPage}
+                            onPageChange={setReaderPage}
+                            isSpaceCategory={isSpaceCategory}
+                            isDinoCategory={isDinoCategory}
+                            loading={pagesLoading}
+                            t={t}
                         />
-                    )}
+                    </motion.div>
+                    );
+                })()}
+            </AnimatePresence>
 
-                </AnimatePresence>
-            </div>
+            {/* Back / Home button */}
+            <button
+                onClick={handleBack}
+                className="fixed top-4 left-4 z-[60] flex items-center gap-2 px-4 py-2 bg-black/50 hover:bg-black/70 backdrop-blur-md rounded-full transition-colors text-white text-sm border border-white/10"
+            >
+                <ArrowLeft size={16} />
+                {inReader
+                    ? selectedCategory?.title || t('discovery.back', 'Zpět')
+                    : selectedCategory
+                    ? t('discovery.worlds', 'Světy')
+                    : t('discovery.back_home', 'Domů')}
+            </button>
         </div>
     );
 };
+
+export default DiscoveryHub;

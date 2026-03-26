@@ -2,7 +2,28 @@
 
 Všechny významné změny projektu Magické Příběhy (SkyWhale).
 
-## [Unreleased] — 2026-03-24
+## [Unreleased] — 2026-03-26
+
+### Card Studio & Encyclopedia Sprint (GF-133 → GF-138)
+
+- **GF-133:** Three-Layer fix CustomBookEditor — Supabase volání přesunuta do hooks
+- **GF-134:** `shared_cards` tabulka — CREATE TABLE + RLS migrace (public read, auth insert)
+- **GF-77:** Card Studio share URL — `onShareCard` adapter, `/card/:id` route, CardViewerRoute
+- **GF-58:** Coverage sprint 3 — +21 testů (273→294), 65%→75.18%, useCardStudioAdapter 0→92%, useGameHubAdapter 0→100%
+- **GF-78:** Discovery cover fallback — `storage_folder` field + generic `processBooks()` fallback
+- **GF-137:** Encyklopedie v1 (Three.js) — **Cancelled** (bundle +999 kB, přesunuto na 2D approach)
+- **GF-138:** Encyklopedie v2 (CSS/Framer Motion) — **Done**
+  - WorldsScene: fullscreen snap scroll, 6 sekcí, IntersectionObserver dot navigator
+  - WorldSection: unikátní gradienty, CSS particle animace, animované SVG pozadí per slug
+  - WorldIcons: 6 custom SVG ikon (dinosaurus, raketa, ryba, opice, tučňák, lev) — nahrazují emoji
+  - DiscoveryBookGrid: slide-up panel, bílé karty, stagger animace
+  - DiscoveryReader: swipe navigace, drag gesture, responsive prev/next, page indicator
+  - DiscoveryPageView: dual layout (book/cinematic), audio autoplay, hotspots, progress bar
+  - useDiscoveryScene: tří-úrovňový data hook (categories → books → pages) s plným DB propojením
+  - Reader backgrounds: Supabase obrázky (dinosauri, vesmir) + CSS gradienty (ocean, prales, arktida, savana)
+  - Audio cleanup: `discovery:stop-audio` event při navigaci zpět
+  - Smazáno 9 legacy souborů: BookList, CategoryGrid, DiscoveryBackground, DiscoveryCard, DiscoveryHeader, TrailerOverlay, useDiscoveryData, useDiscoveryNav, useTrailers
+  - WorldSVGBackground: opraveny obrácené ryby v ocean scéně
 
 ### Refactoring & Quality Sprint (GF-17 → GF-81)
 
