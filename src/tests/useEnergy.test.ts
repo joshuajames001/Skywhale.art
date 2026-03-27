@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { renderHook, waitFor } from '@testing-library/react';
+import { renderHook, waitFor, act } from '@testing-library/react';
 import { useEnergy } from '../hooks/useEnergy';
+import { invokeEdgeFunction } from '../lib/edge-functions';
 
 const mockGetUser = vi.fn();
 const mockSingle = vi.fn();
@@ -124,5 +125,83 @@ describe('useEnergy', () => {
         await new Promise(resolve => setTimeout(resolve, 150));
 
         expect(mockRpc).not.toHaveBeenCalled();
+    });
+
+    describe('purchaseEnergy', () => {
+        const mockInvoke = vi.mocked(invokeEdgeFunction);
+        const mockAlert = vi.fn();
+
+        beforeEach(() => {
+            mockGetUser.mockResolvedValue({ data: { user: { id: 'user-1' } } });
+            mockSingle.mockResolvedValue({ data: { energy_balance: 500, subscription_status: 'inactive', next_energy_grant: null } });
+            vi.stubGlobal('alert', mockAlert);
+        });
+
+        it('calls create-checkout-session with correct priceId and mode', async () => {
+            mockInvoke.mockResolvedValueOnce({ data: { url: 'https://checkout.stripe.com/test' }, error: null });
+
+            const { result } = renderHook(() => useEnergy());
+            await waitFor(() => expect(result.current.balance).toBe(500));
+
+            await act(async () => {
+                await result.current.purchaseEnergy('price_123', 'payment');
+            });
+
+            expect(mockInvoke).toHaveBeenCalledWith('create-checkout-session', { priceId: 'price_123', mode: 'payment' });
+        });
+
+        it('redirects to Stripe checkout URL on success', async () => {
+            const stripeUrl = 'https://checkout.stripe.com/cs_test_abc';
+            mockInvoke.mockResolvedValueOnce({ data: { url: stripeUrl }, error: null });
+
+            // Mock window.location.href setter
+            const hrefSpy = vi.fn();
+            Object.defineProperty(window, 'location', {
+                value: { href: '' },
+                writable: true,
+                configurable: true,
+            });
+            Object.defineProperty(window.location, 'href', {
+                set: hrefSpy,
+                get: () => '',
+                configurable: true,
+            });
+
+            const { result } = renderHook(() => useEnergy());
+            await waitFor(() => expect(result.current.balance).toBe(500));
+
+            await act(async () => {
+                await result.current.purchaseEnergy('price_456', 'subscription');
+            });
+
+            expect(hrefSpy).toHaveBeenCalledWith(stripeUrl);
+        });
+
+        it('shows alert on error and does not redirect', async () => {
+            mockInvoke.mockResolvedValueOnce({ data: null, error: 'Server error' });
+
+            const { result } = renderHook(() => useEnergy());
+            await waitFor(() => expect(result.current.balance).toBe(500));
+
+            await act(async () => {
+                await result.current.purchaseEnergy('price_bad', 'payment');
+            });
+
+            expect(mockAlert).toHaveBeenCalledWith(expect.stringContaining('Nákup selhal'));
+            expect(result.current.loading).toBe(false);
+        });
+
+        it('sets loading to false after error', async () => {
+            mockInvoke.mockResolvedValueOnce({ data: null, error: 'fail' });
+
+            const { result } = renderHook(() => useEnergy());
+            await waitFor(() => expect(result.current.balance).toBe(500));
+
+            await act(async () => {
+                await result.current.purchaseEnergy('price_x', 'payment');
+            });
+
+            expect(result.current.loading).toBe(false);
+        });
     });
 });

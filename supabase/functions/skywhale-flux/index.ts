@@ -56,6 +56,7 @@ serve(async (req) => {
       p_user_id: user.id,
       p_amount: -energyCost
     });
+    let energyDeducted = true;
 
     const body = await req.json();
     const { prompt, mode, user_id, image_prompt } = body;
@@ -181,11 +182,21 @@ serve(async (req) => {
     );
 
   } catch (error: any) {
-    console.error("error:", error);
-    // RETURN 200 to bypass client throwing, so we see the message
+    console.error("skywhale-flux error:", error);
+
+    // Refund energy if it was deducted before the failure
+    if (energyDeducted) {
+      try {
+        await supabaseAdmin.rpc('add_energy', { p_user_id: user.id, p_amount: energyCost });
+        console.log(`♻️ Refunded ${energyCost} energy to ${user.id} after error: ${error.message}`);
+      } catch (refundErr) {
+        console.error(`🚨 CRITICAL: Energy refund FAILED for user ${user.id}, amount ${energyCost}:`, refundErr);
+      }
+    }
+
     return new Response(
-      JSON.stringify({ error: `DEBUG: ${error.message || error.toString()}` }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
+      JSON.stringify({ error: error.message || error.toString() }),
+      { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 500 }
     )
   }
 })

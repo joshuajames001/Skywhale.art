@@ -103,6 +103,7 @@ serve(async (req) => {
     
     // 2. Determine Cost
     const cost = (model === 'dev' || model === 'basic') ? IMAGE_COSTS.FLUX_DEV : IMAGE_COSTS.FLUX_PRO;
+    let energyDeducted = false;
 
     // 3. Check Balance
     const { data: profile } = await supabaseAdmin
@@ -127,6 +128,7 @@ serve(async (req) => {
         p_user_id: user.id,
         p_amount: -cost
     });
+    energyDeducted = true;
 
     // ------------------------------
 
@@ -293,9 +295,20 @@ serve(async (req) => {
 
   } catch (error) {
     console.error("❌ CRITICAL FUNCTION ERROR:", error.message);
-    return new Response(JSON.stringify({ error: error.message }), { 
+
+    // Refund energy if it was deducted before the failure
+    if (energyDeducted) {
+      try {
+        await supabaseAdmin.rpc('add_energy', { p_user_id: user.id, p_amount: cost });
+        console.log(`♻️ Refunded ${cost} energy to ${user.id} after error: ${error.message}`);
+      } catch (refundErr) {
+        console.error(`🚨 CRITICAL: Energy refund FAILED for user ${user.id}, amount ${cost}:`, refundErr);
+      }
+    }
+
+    return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
-      status: 500 // Vracíme 500, ale s CORS, takže frontend to přečte
+      status: 500
     });
   }
 })

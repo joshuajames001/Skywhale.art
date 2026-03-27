@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { Sparkles, Loader2, BookOpen, Wand2, Star, ChevronRight, Play, Clapperboard, Music, Lock, Globe, GraduationCap, Heart, Rocket } from 'lucide-react';
 import { useTranslation, Trans } from 'react-i18next';
-import { supabase } from '../../../lib/supabase';
+import { supabase, getBookMediaUrl } from '../../../lib/supabase';
 
 interface CinematicLandingProps {
     onEnter: (bookId?: string) => void;
@@ -96,7 +96,7 @@ export const CinematicLanding = ({ onEnter, onNavigate }: CinematicLandingProps)
                     playsInline
                     className="absolute inset-0 w-screen h-screen object-cover object-center opacity-100" // FORCE FULL VIEWPORT
                 >
-                    <source src="/portal.mp4" type="video/mp4" />
+                    <source src={getBookMediaUrl('video/portal.webm')} type="video/webm" />
                 </video>
 
                 {/* Cinematic Overlays - Optimized & Lightened */}
