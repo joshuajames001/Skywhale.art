@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react';
-import { supabase } from '../../lib/supabase';
+import { useState } from 'react';
 import { CardPage } from './types';
 import { CardCanvas } from './CardCanvas';
 import { ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
 import { StarryBackground } from '../../components/StarryBackground';
 import { useTranslation } from 'react-i18next';
+import { useSharedCard } from './hooks/useSharedCard';
 
 // Helper for single page in spread
 const ViewerPage = ({ page }: { page: CardPage }) => {
@@ -22,31 +22,8 @@ const ViewerPage = ({ page }: { page: CardPage }) => {
 
 export const CardViewer = ({ cardId, onClose }: { cardId: string | null, onClose: () => void }) => {
     const { t } = useTranslation();
-    const [pages, setPages] = useState<CardPage[] | null>(null);
-    const [loading, setLoading] = useState(true);
+    const { pages, loading } = useSharedCard(cardId);
     const [viewStartIndex, setViewStartIndex] = useState(0);
-
-    useEffect(() => {
-        if (!cardId) return;
-
-        const fetchCard = async () => {
-            setLoading(true);
-            const { data, error } = await supabase
-                .from('shared_cards')
-                .select('pages')
-                .eq('id', cardId)
-                .single();
-
-            if (data && data.pages) {
-                setPages(data.pages);
-            } else {
-                console.error("Failed to load card", error);
-            }
-            setLoading(false);
-        };
-
-        fetchCard();
-    }, [cardId]);
 
     const goToPrevPage = () => {
         if (viewStartIndex === 0) return;

@@ -11,7 +11,7 @@ import { usePdfExport } from './hooks/usePdfExport';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useEnergy } from '../../hooks/useEnergy';
-import { invokeEdgeFunction } from '../../lib/edge-functions';
+import { useAudioGeneration } from './hooks/useAudioGeneration';
 
 interface BookReaderProps {
     story: StoryBook;
@@ -43,29 +43,18 @@ export const BookReader: React.FC<BookReaderProps> = ({
     // Custom Hooks
     const { isExportingPdf, pdfProgress, handleExportPdf } = usePdfExport(story, t);
 
-    // Audio Generation State
+    // Audio Generation
     const [isAudioDialogOpen, setIsAudioDialogOpen] = useState(false);
-    const [isAudioLoading, setIsAudioLoading] = useState(false);
-    const [localAudioUrl, setLocalAudioUrl] = useState<string | null>(story.audio_url ?? null);
+    const { generateAudio, generating: isAudioLoading, audioUrl: generatedAudioUrl, setAudioUrl } = useAudioGeneration(story.book_id);
+    const localAudioUrl = generatedAudioUrl ?? story.audio_url ?? null;
 
     const fullText = story.pages.map(p => p.text).join(' ');
     const charCount = fullText.length;
     const audioCost = Math.max(1, Math.ceil(charCount / 20));
 
     const handleGenerateAudio = async (voiceId?: string) => {
-        setIsAudioLoading(true);
-        const { data, error } = await invokeEdgeFunction<{ audioUrl: string; energyCost: number }>('generate-audio', {
-            bookId: story.book_id,
-            text: fullText,
-            voiceId,
-        });
-        setIsAudioLoading(false);
-        if (error || !data?.audioUrl) {
-            console.error('Audio generation failed:', error);
-            return;
-        }
-        setLocalAudioUrl(data.audioUrl);
-        setIsAudioDialogOpen(false);
+        const result = await generateAudio(fullText, voiceId);
+        if (result) setIsAudioDialogOpen(false);
     };
 
     const isCover = currentIndex === 0;

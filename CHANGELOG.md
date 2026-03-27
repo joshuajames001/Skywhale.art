@@ -4,8 +4,14 @@ Všechny významné změny projektu Magické Příběhy (SkyWhale).
 
 ## [Unreleased] — 2026-03-26
 
-### Payment, Feedback & Energy Sprint (GF-141, GF-143, GF-145)
+### Payment, Feedback, Energy & Quality Sprint (GF-141–GF-152)
 
+- **GF-146:** Energy refund pattern — generate-story-image + skywhale-flux refundují energy při Replicate selhání
+- **GF-148:** IMAGE_COSTS single source of truth — `_shared/costs.ts` + `src/lib/constants.ts`, STORY_COSTS odvozené výpočtem
+- **GF-150:** purchaseEnergy test coverage — +4 testy (294→298), Stripe checkout flow pokryt
+- **GF-151:** Daily reward fix — odstraněn `window.location.reload()` race condition + `claim_daily_reward` RPC migrace
+- **GF-152:** Odstraněn ElevenLabsProfile console.log spam
+- **CinematicLanding:** Hero-only refactor (434→147 řádků), video z Supabase Storage, smazány carousel/features/about/footer
 - **GF-145:** Energy cost rebalance
   - Flux 2 Pro (story/Magic Mirror): 50 → **40** Energy/obrázek
   - Flux Dev (custom book bez reference): 30 → **25** Energy/obrázek

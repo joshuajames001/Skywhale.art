@@ -4,7 +4,6 @@ import { useTranslation } from 'react-i18next';
 import { StoryBook } from '../../types';
 import { BookOpen, AlertCircle, Loader2, Calendar, MoreVertical, Globe, Lock, Trash2, Heart, Headphones, Flag } from 'lucide-react';
 import { ReactionBar } from '../social/components/ReactionBar';
-import { supabase } from '../../lib/supabase';
 import { AudioConfirmDialog } from '../../components/audio/AudioConfirmDialog';
 import { MiniPlayer } from '../../components/audio/MiniPlayer';
 
@@ -133,7 +132,7 @@ const BookCardBase = forwardRef<HTMLDivElement, BookCardProps>(({
                 onMouseLeave={handleMouseLeave}
                 onClick={() => onClick(book)}
                 whileHover={{ scale: 1.02 }}
-                className="group relative w-full bg-white/5 backdrop-blur-md rounded-[24px] border border-white/10 hover:border-white/30 transition-all duration-300 cursor-pointer shadow-xl hover:shadow-2xl"
+                className="group relative w-full bg-white rounded-[24px] border border-slate-200/60 hover:border-violet-300 transition-all duration-300 cursor-pointer shadow-lg hover:shadow-xl"
             >
                 {/* DYNAMIC GLOW (Hover Only) */}
                 <div
@@ -150,7 +149,7 @@ const BookCardBase = forwardRef<HTMLDivElement, BookCardProps>(({
                             e.stopPropagation();
                             onToggleFavorite?.(book.book_id!);
                         }}
-                        className={`p-2 rounded-full backdrop-blur-md border transition-all duration-300 ${isFavorited ? 'bg-rose-500 text-white border-rose-500 shadow-lg shadow-rose-500/40' : 'bg-black/40 border-white/10 text-white/40 hover:text-white hover:bg-black/60'}`}
+                        className={`p-2 rounded-full backdrop-blur-md border transition-all duration-300 ${isFavorited ? 'bg-rose-500 text-white border-rose-500 shadow-lg shadow-rose-500/40' : 'bg-white/80 border-slate-200 text-slate-400 hover:text-slate-600'}`}
                     >
                         <Heart size={18} fill={isFavorited ? "currentColor" : "none"} />
                     </motion.button>
@@ -163,7 +162,7 @@ const BookCardBase = forwardRef<HTMLDivElement, BookCardProps>(({
                             whileHover={{ scale: 1.2 }}
                             whileTap={{ scale: 0.9 }}
                             onClick={(e) => { e.stopPropagation(); onReport(book.book_id!); }}
-                            className="p-2 rounded-full backdrop-blur-md border bg-black/40 border-white/10 text-white/30 hover:text-red-400 hover:border-red-500/30 transition-all"
+                            className="p-2 rounded-full backdrop-blur-md border bg-white/80 border-slate-200 text-slate-400 hover:text-red-400 hover:border-red-500/30 transition-all"
                             title="Nahlásit knihu"
                         >
                             <Flag size={16} />
@@ -181,7 +180,7 @@ const BookCardBase = forwardRef<HTMLDivElement, BookCardProps>(({
                                 e.stopPropagation();
                                 setShowDropdown(!showDropdown);
                             }}
-                            className="p-2 rounded-full backdrop-blur-md border bg-black/40 border-white/10 text-white/70 hover:text-white transition-all"
+                            className="p-2 rounded-full backdrop-blur-md border bg-white/80 border-slate-200 text-slate-500 hover:text-slate-700 transition-all"
                         >
                             <MoreVertical size={20} />
                         </motion.button>
@@ -265,7 +264,7 @@ const BookCardBase = forwardRef<HTMLDivElement, BookCardProps>(({
                     >
                         {!imageLoaded && !imageError && book.cover_image && (
                             <div className="flex items-center justify-center w-full h-full">
-                                <Loader2 className="animate-spin text-white/50" />
+                                <Loader2 className="animate-spin text-slate-400" />
                             </div>
                         )}
                     </div>
@@ -282,7 +281,7 @@ const BookCardBase = forwardRef<HTMLDivElement, BookCardProps>(({
                             }}
                         />
                     ) : (
-                        <div className="w-full h-full flex flex-col items-center justify-center text-white/40 gap-2 bg-zinc-900/50">
+                        <div className="w-full h-full flex flex-col items-center justify-center text-slate-300 gap-2 bg-slate-100">
                             {imageError ? <AlertCircle /> : <BookOpen />}
                             <span className="text-xs">{imageError ? 'Error' : 'No Cover'}</span>
                         </div>
@@ -291,16 +290,16 @@ const BookCardBase = forwardRef<HTMLDivElement, BookCardProps>(({
                     {/* STATUS BADGES */}
                     {book.status && book.status !== 'ready' && book.status !== 'draft' && (
                         <div className="absolute top-3 right-3 z-20">
-                            <div className="bg-black/60 backdrop-blur-md px-3 py-1 rounded-full flex items-center gap-1.5 border border-white/10">
+                            <div className="bg-white/90 backdrop-blur-md px-3 py-1 rounded-full flex items-center gap-1.5 border border-slate-200 shadow-sm">
                                 {book.status === 'error' ? (
                                     <>
                                         <AlertCircle size={10} className="text-red-400" />
-                                        <span className="text-[10px] font-bold text-red-100 uppercase">{t('book_card.status_error')}</span>
+                                        <span className="text-[10px] font-bold text-red-600 uppercase">{t('book_card.status_error')}</span>
                                     </>
                                 ) : (
                                     <>
                                         <Loader2 size={10} className="text-purple-400 animate-spin" />
-                                        <span className="text-[10px] font-bold text-purple-100 uppercase">{t('book_card.status_creating')}</span>
+                                        <span className="text-[10px] font-bold text-purple-600 uppercase">{t('book_card.status_creating')}</span>
                                     </>
                                 )}
                             </div>
@@ -320,7 +319,7 @@ const BookCardBase = forwardRef<HTMLDivElement, BookCardProps>(({
                     className="p-5"
                     style={{ transform: "translateZ(10px)" }}
                 >
-                    <h3 className="line-clamp-2 text-lg font-bold text-slate-100 mb-2 leading-tight group-hover:text-fuchsia-400 transition-colors font-title">
+                    <h3 className="line-clamp-2 text-lg font-bold text-slate-800 mb-2 leading-tight group-hover:text-violet-600 transition-colors font-title">
                         {book.title || t('book_card.untitled')}
                     </h3>
 
@@ -331,14 +330,14 @@ const BookCardBase = forwardRef<HTMLDivElement, BookCardProps>(({
                                 e.stopPropagation();
                                 onAuthorClick();
                             }}
-                            className="text-xs text-slate-400 hover:text-purple-400 transition-colors mb-2 flex items-center gap-1.5"
+                            className="text-xs text-slate-500 hover:text-violet-500 transition-colors mb-2 flex items-center gap-1.5"
                         >
                             <span>{book.author_profile.avatar_emoji || '👤'}</span>
                             <span className="font-semibold">{t('book_card.by_author', { nickname: book.author_profile.nickname })}</span>
                         </button>
                     )}
 
-                    <div className="flex items-center justify-between text-slate-400 text-xs font-sans">
+                    <div className="flex items-center justify-between text-slate-500 text-xs font-sans">
                         <span className="flex items-center gap-1">
                             <Calendar size={12} />
                             {formatDate(book.created_at)}
@@ -352,7 +351,7 @@ const BookCardBase = forwardRef<HTMLDivElement, BookCardProps>(({
 
                 {/* Reflection/Sheen Effect */}
                 <div
-                    className="absolute inset-0 rounded-[24px] bg-gradient-to-tr from-white/10 to-transparent opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-300"
+                    className="absolute inset-0 rounded-[24px] bg-gradient-to-tr from-violet-100/30 to-transparent opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-300"
                     style={{ transform: "translateZ(30px)" }}
                 />
             </motion.div>

@@ -329,6 +329,12 @@
         }
     },
     "library": {
+        "title": "Library",
+        "subtitle": "Discover stories and create new ones.",
+        "new_story": "Magic Story",
+        "custom_book": "Custom Book",
+        "cards": "Greetings",
+        "empty_state": "Nothing here yet. Create your first story!",
         "title_public": "Public Library",
         "title_private": "My Shelf",
         "title_favorites": "Favorite Stories",
@@ -338,6 +344,8 @@
         "subtitle_favorites": "Stories that touched your heart",
         "subtitle_cards": "Your created greetings and postcards",
         "tabs": {
+            "community": "Community",
+            "my_books": "My Books",
             "public": "Public",
             "favorites": "Favorites",
             "private": "My",

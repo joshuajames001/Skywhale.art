@@ -1,9 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Calendar, Book, Trophy, Lock, Flag } from 'lucide-react';
+import { X, Calendar, Book, Trophy, Flag } from 'lucide-react';
 import { ReportDialog } from '../../library/components/ReportDialog';
-import { supabase } from '../../../lib/supabase';
 import { StoryBook } from '../../../types';
+import { usePublicProfile } from '../hooks/usePublicProfile';
 
 interface PublicProfileProps {
     userId: string;
@@ -11,96 +11,9 @@ interface PublicProfileProps {
     onOpenBook: (book: StoryBook) => void;
 }
 
-interface Achievement {
-    id: string;
-    title: string;
-    description: string;
-    icon: string;
-    unlocked_at?: string;
-}
-
 export const PublicProfile = ({ userId, onClose, onOpenBook }: PublicProfileProps) => {
-    const [profile, setProfile] = useState<any>(null);
-    const [books, setBooks] = useState<StoryBook[]>([]);
-    const [achievements, setAchievements] = useState<Achievement[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [level, setLevel] = useState(1);
+    const { profile, books, achievements, level, loading } = usePublicProfile(userId);
     const [showReport, setShowReport] = useState(false);
-
-    useEffect(() => {
-        const fetchProfile = async () => {
-            try {
-                // Fetch profile
-                const { data: profileData } = await supabase
-                    .from('profiles')
-                    .select('id, nickname, avatar_emoji, created_at')
-                    .eq('id', userId)
-                    .single();
-
-                setProfile(profileData);
-
-                // Fetch public books
-                const { data: booksData } = await supabase
-                    .from('books')
-                    .select('*, pages(*)')
-                    .eq('owner_id', userId)
-                    .eq('is_public', true)
-                    .order('created_at', { ascending: false });
-
-                setBooks((booksData || []).map((book: any) => ({
-                    ...book,
-                    book_id: book.id,
-                    cover_image: book.cover_image_url,
-                    author_id: book.owner_id,
-                    author_profile: profileData, // We already fetched profile data
-                    pages: (book.pages || [])
-                        .sort((a: any, b: any) => (a.page_number ?? a.page_index) - (b.page_number ?? b.page_index))
-                        .map((p: any) => ({
-                            ...p,
-                            page_number: p.page_number || p.page_index,
-                            text: p.content,
-                            is_generated: !!p.image_url,
-                            layout_type: p.layout_type || 'standard'
-                        }))
-                })));
-
-                // Fetch achievements
-                const { data: achievementsData } = await supabase
-                    .from('user_achievements')
-                    .select(`
-                        achievement_id,
-                        unlocked_at,
-                        achievements(id, title, description, icon)
-                    `)
-                    .eq('user_id', userId);
-
-                const unlockedAchievements = (achievementsData || []).map((ua: any) => ({
-                    ...ua.achievements,
-                    unlocked_at: ua.unlocked_at
-                }));
-
-                setAchievements(unlockedAchievements);
-
-                // Calculate level
-                const unlockedCount = unlockedAchievements.length;
-                if (unlockedCount >= 50) setLevel(8);
-                else if (unlockedCount >= 40) setLevel(7);
-                else if (unlockedCount >= 30) setLevel(6);
-                else if (unlockedCount >= 20) setLevel(5);
-                else if (unlockedCount >= 15) setLevel(4);
-                else if (unlockedCount >= 10) setLevel(3);
-                else if (unlockedCount >= 5) setLevel(2);
-                else setLevel(1);
-
-            } catch (err) {
-                console.error('Error fetching public profile:', err);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchProfile();
-    }, [userId]);
 
     if (loading) {
         return (

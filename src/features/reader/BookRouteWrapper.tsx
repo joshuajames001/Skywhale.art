@@ -4,7 +4,6 @@ import { BookReader } from './BookReader';
 import { useBookReaderAdapter } from '../../providers/useBookReaderAdapter';
 import { StoryBook } from '../../types';
 import { Loader2 } from 'lucide-react';
-import { supabase } from '../../lib/supabase';
 
 // Note: We might need to pass `onUpdatePage` and `onUpdateCover` handlers.
 // Since we are extracting these from App.tsx/useStory, we should ideally have a `useStoryAdapter` here too

@@ -321,6 +321,12 @@
         }
     },
     "library": {
+        "title": "Knihovna",
+        "subtitle": "Objevujte příběhy a tvořte nové.",
+        "new_story": "Magický Příběh",
+        "custom_book": "Vlastní Kniha",
+        "cards": "Přáníčka",
+        "empty_state": "Zatím tu nic není. Vytvořte svůj první příběh!",
         "title_public": "Veřejná Knihovna",
         "title_private": "Moje Polička",
         "title_favorites": "Oblíbené Příběhy",
@@ -330,6 +336,8 @@
         "subtitle_favorites": "Příběhy, které vás chytily za srdce",
         "subtitle_cards": "Vaše vytvořená přáníčka a pohlednice",
         "tabs": {
+            "community": "Komunita",
+            "my_books": "Moje Knihy",
             "public": "Veřejná",
             "favorites": "Oblíbené",
             "private": "Moje",

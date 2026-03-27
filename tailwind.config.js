@@ -24,6 +24,15 @@ export default {
                     900: '#1a1a1a',
                 }
             },
+            animation: {
+                float: 'float 20s ease-in-out infinite',
+            },
+            keyframes: {
+                float: {
+                    '0%, 100%': { transform: 'translateX(0) translateY(0)' },
+                    '50%': { transform: 'translateX(30px) translateY(-10px)' },
+                },
+            },
             boxShadow: {
                 'book': '0 20px 40px -5px rgba(0, 0, 0, 0.3), 0 10px 20px -5px rgba(0, 0, 0, 0.2)',
                 'page-left': 'inset -20px 0 50px -20px rgba(0,0,0,0.1)',

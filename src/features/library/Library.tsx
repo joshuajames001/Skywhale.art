@@ -171,30 +171,17 @@ export const Library = ({ user, onOpenBook, onOpenMagic, onCreateCustom, onCreat
 
 
     return (
-        <div
-            className="w-full h-full relative overflow-hidden transition-colors duration-700"
-            style={{
-                backgroundColor: (activeTheme as any)?.background || '#0f0f11',
-                color: (activeTheme as any)?.text || '#ffffff'
-            }}
-        >
-            {/* Background Image with Transition */}
-            <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
-                <AnimatePresence mode="wait">
-                    {(activeTheme as any)?.backgroundImage && (
-                        <motion.div
-                            key={activeTheme?.id}
-                            initial={{ opacity: 0, scale: 1.1 }}
-                            animate={{ opacity: 0.15, scale: 1 }}
-                            exit={{ opacity: 0 }}
-                            transition={{ duration: 1 }}
-                            className="absolute inset-0 bg-cover bg-center"
-                            style={{ backgroundImage: `url(${(activeTheme as any)?.backgroundImage})` }}
-                        />
-                    )}
-                </AnimatePresence>
-                <div className="absolute inset-0 bg-gradient-to-b from-[#0f0f11] via-transparent to-[#0f0f11] opacity-80" />
+        <div className="w-full h-full relative overflow-hidden bg-gradient-to-br from-sky-50 via-white to-blue-50 text-slate-800">
+            {/* Decorative clouds & animals */}
+            <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
+                <div className="absolute top-12 left-8 text-6xl opacity-20 animate-[float_20s_ease-in-out_infinite]">☁️</div>
+                <div className="absolute top-24 right-16 text-5xl opacity-15 animate-[float_25s_ease-in-out_infinite_2s]">☁️</div>
+                <div className="absolute top-40 left-1/3 text-4xl opacity-10 animate-[float_30s_ease-in-out_infinite_4s]">☁️</div>
+                <div className="absolute bottom-24 right-12 text-3xl opacity-20">🐳</div>
+                <div className="absolute top-32 right-1/4 text-2xl opacity-15">🦋</div>
+                <div className="absolute bottom-40 left-16 text-2xl opacity-15">🐰</div>
             </div>
+
 
 
             {/* HEADER */}
@@ -203,7 +190,7 @@ export const Library = ({ user, onOpenBook, onOpenMagic, onCreateCustom, onCreat
                     <h1 className="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-sky-400 via-violet-400 to-fuchsia-400 font-title mb-2">
                         {t('library.title')}
                     </h1>
-                    <p className="text-slate-400 text-sm md:text-base max-w-md">
+                    <p className="text-slate-500 text-sm md:text-base max-w-md">
                         {t('library.subtitle')}
                     </p>
                 </div>
@@ -222,7 +209,7 @@ export const Library = ({ user, onOpenBook, onOpenMagic, onCreateCustom, onCreat
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                         onClick={onCreateCustom}
-                        className="px-4 py-3 rounded-full bg-white/5 border border-white/10 text-white font-bold hover:bg-white/10 transition-colors flex items-center gap-2"
+                        className="px-4 py-3 rounded-full bg-white border border-slate-200 text-slate-700 font-bold hover:bg-slate-50 transition-colors flex items-center gap-2 shadow-sm"
                     >
                         <Plus size={20} />
                         {t('library.custom_book')}
@@ -232,7 +219,7 @@ export const Library = ({ user, onOpenBook, onOpenMagic, onCreateCustom, onCreat
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                             onClick={onCreateCard}
-                            className="px-4 py-3 rounded-full bg-pink-500/10 border border-pink-500/30 text-pink-300 font-bold hover:bg-pink-500/20 transition-colors flex items-center gap-2"
+                            className="px-4 py-3 rounded-full bg-pink-50 border border-pink-200 text-pink-600 font-bold hover:bg-pink-100 transition-colors flex items-center gap-2"
                         >
                             <Calendar size={20} />
                             {t('library.cards')}
@@ -242,12 +229,12 @@ export const Library = ({ user, onOpenBook, onOpenMagic, onCreateCustom, onCreat
             </div>
 
             {/* TABS */}
-            <div className="relative z-10 px-6 md:px-12 mb-8 flex gap-8 border-b border-white/5 overflow-x-auto">
+            <div className="relative z-10 px-6 md:px-12 mb-8 flex gap-8 border-b border-slate-200 overflow-x-auto">
                 {tabs.filter(t => !t.hidden).map(tab => (
                     <button
                         key={tab.id}
                         onClick={() => setActiveTab(tab.id as LibraryTab)}
-                        className={`pb-4 px-2 relative transition-colors duration-300 flex items-center gap-2 ${activeTab === tab.id ? 'text-white' : 'text-slate-500 hover:text-slate-300'
+                        className={`pb-4 px-2 relative transition-colors duration-300 flex items-center gap-2 ${activeTab === tab.id ? 'text-slate-800' : 'text-slate-400 hover:text-slate-600'
                             }`}
                     >
                         <tab.icon size={18} />
