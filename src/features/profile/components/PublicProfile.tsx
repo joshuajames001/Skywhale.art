@@ -36,7 +36,7 @@ export const PublicProfile = ({ userId, onClose, onOpenBook }: PublicProfileProp
                     initial={{ scale: 0.9, y: 20 }}
                     animate={{ scale: 1, y: 0 }}
                     exit={{ scale: 0.9, y: 20 }}
-                    className="bg-gradient-to-br from-blue-100 via-purple-50 to-pink-100 rounded-3xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto custom-scrollbar"
+                    className="bg-gradient-to-br from-blue-100 via-purple-50 to-pink-100 rounded-3xl shadow-2xl max-w-[95vw] sm:max-w-lg md:max-w-4xl w-full max-h-[90vh] overflow-y-auto custom-scrollbar mx-4 sm:mx-auto"
                     onClick={(e) => e.stopPropagation()}
                 >
                     {/* Close Button */}
@@ -63,7 +63,7 @@ export const PublicProfile = ({ userId, onClose, onOpenBook }: PublicProfileProp
                         </div>
 
                         {/* Name */}
-                        <h2 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600 mb-2">
+                        <h2 className="text-2xl sm:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600 mb-2">
                             {profile?.nickname || 'Anonymní Autor'}
                         </h2>
 

@@ -83,7 +83,7 @@ export const DailyRewardModal: React.FC<DailyRewardModalProps> = ({ isOpen, onCl
                                             <div
                                                 className={`
                                                     rounded-full flex items-center justify-center transition-all duration-500 border-4
-                                                    ${isLast ? 'w-16 h-16' : 'w-10 h-10'}
+                                                    ${isLast ? 'w-12 h-12 sm:w-16 sm:h-16' : 'w-8 h-8 sm:w-10 sm:h-10'}
                                                     ${isCompleted
                                                         ? 'bg-yellow-400 border-yellow-400 text-white'
                                                         : isCurrent

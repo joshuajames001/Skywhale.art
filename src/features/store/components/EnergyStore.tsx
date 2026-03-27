@@ -139,7 +139,7 @@ export const EnergyStore: React.FC<EnergyStoreProps> = ({ onClose }) => {
             <motion.div
                 initial={{ scale: 0.9, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
-                className="relative bg-zinc-900 border border-white/10 rounded-3xl w-full max-w-6xl p-6 md:p-8 shadow-2xl overflow-hidden min-h-[80vh] mx-auto mt-10 mb-10"
+                className="relative bg-zinc-900 border border-white/10 rounded-3xl w-full max-w-[95vw] sm:max-w-lg md:max-w-6xl p-4 sm:p-6 md:p-8 shadow-2xl overflow-hidden min-h-[80vh] mx-auto mt-10 mb-10"
             >
                 {/* Close Button */}
                 <button onClick={onClose} className="absolute top-4 right-4 p-2 hover:bg-white/10 rounded-full transition-colors text-white/50 hover:text-white z-50">
@@ -161,22 +161,22 @@ export const EnergyStore: React.FC<EnergyStoreProps> = ({ onClose }) => {
                         <div className="inline-flex bg-white/5 p-1.5 rounded-full border border-white/10 relative min-w-max">
                             {/* Animated Background Indicator */}
                             <div
-                                className={`absolute inset-y-1.5 rounded-full bg-white/10 transition-all duration-300 ease-out w-[140px] md:w-[160px]
-                                ${activeTab === 'packages' ? 'left-1.5' : 'left-[150px] md:left-[170px]'}
+                                className={`absolute inset-y-1.5 rounded-full bg-white/10 transition-all duration-300 ease-out w-[calc(50%-6px)] sm:w-[140px] md:w-[160px]
+                                ${activeTab === 'packages' ? 'left-1.5' : 'left-[calc(50%+1.5px)] sm:left-[150px] md:left-[170px]'}
                                 `}
                             />
 
                             <button
                                 id="packages-tab-btn"
                                 onClick={() => setActiveTab('packages')}
-                                className={`px-4 md:px-8 py-3 rounded-full text-sm md:text-base font-bold transition-colors relative z-10 w-[140px] md:w-[160px] ${activeTab === 'packages' ? 'text-white' : 'text-white/40 hover:text-white/80'}`}
+                                className={`px-4 md:px-8 py-3 rounded-full text-sm md:text-base font-bold transition-colors relative z-10 flex-1 sm:w-[140px] md:w-[160px] ${activeTab === 'packages' ? 'text-white' : 'text-white/40 hover:text-white/80'}`}
                             >
                                 Jednorázově
                             </button>
                             <button
                                 id="subscriptions-tab-btn"
                                 onClick={() => setActiveTab('subscriptions')}
-                                className={`px-4 md:px-8 py-3 rounded-full text-sm md:text-base font-bold transition-colors relative z-10 w-[140px] md:w-[160px] ${activeTab === 'subscriptions' ? 'text-white' : 'text-white/40 hover:text-white/80'}`}
+                                className={`px-4 md:px-8 py-3 rounded-full text-sm md:text-base font-bold transition-colors relative z-10 flex-1 sm:w-[140px] md:w-[160px] ${activeTab === 'subscriptions' ? 'text-white' : 'text-white/40 hover:text-white/80'}`}
                             >
                                 Předplatné
                             </button>
