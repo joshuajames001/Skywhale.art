@@ -22,6 +22,8 @@ export const CustomBookEditorMobile: React.FC<SharedEditorProps> = ({ state, act
     const [showMenu, setShowMenu] = useState(false);
     const [showVoicePicker, setShowVoicePicker] = useState(false);
     const [showStylePicker, setShowStylePicker] = useState(false);
+    const [showPagesPicker, setShowPagesPicker] = useState(false);
+    const [isEditingTitle, setIsEditingTitle] = useState(false);
 
     const nextView = () => setActiveView(v => Math.min(v + 1, 2) as MobileView);
     const prevView = () => setActiveView(v => Math.max(v - 1, 0) as MobileView);
@@ -44,17 +46,38 @@ export const CustomBookEditorMobile: React.FC<SharedEditorProps> = ({ state, act
                     <ChevronLeft size={20} />
                 </button>
 
-                {/* Center: Chapter + dots */}
-                <div className="flex flex-col items-center gap-1 flex-1 mx-2">
-                    <span className="text-xs font-bold text-white/90 truncate max-w-[140px]">{pageLabel}</span>
-                    <div className="flex gap-1.5">
-                        {[0, 1, 2].map(i => (
-                            <button
-                                key={i}
-                                onClick={() => setActiveView(i as MobileView)}
-                                className={`w-2 h-2 rounded-full transition-all ${activeView === i ? 'bg-[#534AB7] scale-125' : 'bg-white/30'}`}
-                            />
-                        ))}
+                {/* Center: Title + page + dots */}
+                <div className="flex flex-col items-center gap-0.5 flex-1 mx-2 min-w-0">
+                    {isEditingTitle ? (
+                        <input
+                            autoFocus
+                            value={state.bookTitle}
+                            onChange={(e) => actions.setBookTitle(e.target.value)}
+                            onBlur={() => setIsEditingTitle(false)}
+                            onKeyDown={(e) => { if (e.key === 'Enter') setIsEditingTitle(false); }}
+                            className="text-xs font-bold text-white bg-white/10 rounded px-2 py-0.5 text-center w-full max-w-[160px] focus:outline-none focus:ring-1 focus:ring-[#534AB7]"
+                        />
+                    ) : (
+                        <button onClick={() => setIsEditingTitle(true)} className="text-xs font-bold text-white/90 truncate max-w-[140px]">
+                            {state.bookTitle || pageLabel}
+                        </button>
+                    )}
+                    <div className="flex items-center gap-2">
+                        <div className="flex gap-1.5">
+                            {[0, 1, 2].map(i => (
+                                <button
+                                    key={i}
+                                    onClick={() => setActiveView(i as MobileView)}
+                                    className={`w-2 h-2 rounded-full transition-all ${activeView === i ? 'bg-[#534AB7] scale-125' : 'bg-white/30'}`}
+                                />
+                            ))}
+                        </div>
+                        <button
+                            onClick={() => setShowPagesPicker(true)}
+                            className="text-[10px] text-white/60 font-bold bg-white/10 rounded-full px-2 py-0.5"
+                        >
+                            {state.maxPages} str.
+                        </button>
                     </div>
                 </div>
 
@@ -235,6 +258,25 @@ export const CustomBookEditorMobile: React.FC<SharedEditorProps> = ({ state, act
                                 <span className="text-lg">🖌️</span>
                                 <span className="text-sm font-medium text-gray-800 flex-1">{key.replace(/_/g, ' ')}</span>
                                 {state.selectedStyle === key && <Check size={16} className="text-[#534AB7]" />}
+                            </button>
+                        ))}
+                    </BottomSheet>
+                )}
+            </AnimatePresence>
+
+            {/* ── PAGES PICKER ── */}
+            <AnimatePresence>
+                {showPagesPicker && (
+                    <BottomSheet onClose={() => setShowPagesPicker(false)}>
+                        <h3 className="text-sm font-bold text-stone-800 px-5 mb-3">Počet stran</h3>
+                        {[10, 15, 25].map(n => (
+                            <button
+                                key={n}
+                                onClick={() => { actions.setMaxPages(n); setShowPagesPicker(false); }}
+                                className={`flex items-center justify-between w-full px-5 py-3.5 text-left hover:bg-gray-50 active:bg-gray-100 ${state.maxPages === n ? 'bg-[#EEEDFE]' : ''}`}
+                            >
+                                <span className="text-sm font-medium text-gray-800">{n} stran</span>
+                                {state.maxPages === n && <Check size={16} className="text-[#534AB7]" />}
                             </button>
                         ))}
                     </BottomSheet>

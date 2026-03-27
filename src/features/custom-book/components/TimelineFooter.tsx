@@ -1,5 +1,4 @@
 import React from 'react';
-import { Plus } from 'lucide-react';
 import { BookPage } from '../types';
 
 export const TimelineFooter = ({ state, actions }: any) => {
@@ -29,13 +28,6 @@ export const TimelineFooter = ({ state, actions }: any) => {
                     )}
                 </button>
             ))}
-
-            <button
-                onClick={actions.addNewPage}
-                className="shrink-0 w-16 h-20 rounded border border-white/5 border-dashed hover:border-purple-500/50 hover:bg-purple-500/10 flex items-center justify-center text-stone-500 hover:text-purple-400 transition-all"
-            >
-                <Plus size={24} />
-            </button>
         </footer>
     );
 };
