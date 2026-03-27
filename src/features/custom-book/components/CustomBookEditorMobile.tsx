@@ -193,7 +193,7 @@ const TextViewContent: React.FC<Pick<SharedEditorProps, 'state' | 'actions' | 't
     <div className="flex flex-col h-full">
         {/* Label */}
         <div className="flex items-center justify-between mb-3">
-            <span className="text-[10px] font-bold tracking-widest text-gray-400 uppercase">
+            <span className="text-[10px] font-bold tracking-widest text-white/70 uppercase">
                 {state.currentPage?.isCover ? t('library.custom_book_editor.title_page', 'Titulní strana') : 'Strana — Text'}
             </span>
             <div className="flex items-center gap-2">
@@ -292,7 +292,7 @@ interface ImageViewProps extends Pick<SharedEditorProps, 'state' | 'actions' | '
 const ImageViewContent: React.FC<ImageViewProps> = ({ state, actions, refs, t, onOpenHero }) => (
     <div className="flex flex-col h-full gap-4">
         {/* Label */}
-        <span className="text-[10px] font-bold tracking-widest text-gray-400 uppercase">Strana — Obrázek</span>
+        <span className="text-[10px] font-bold tracking-widest text-white/70 uppercase">Strana — Obrázek</span>
 
         {/* Image card */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 flex-1 min-h-[200px] flex items-center justify-center overflow-hidden relative">
@@ -377,7 +377,7 @@ const DictionaryViewContent: React.FC<Pick<SharedEditorProps, 'state' | 'actions
 
     return (
         <div className="flex flex-col h-full gap-4">
-            <span className="text-[10px] font-bold tracking-widest text-gray-400 uppercase">Magičtinář (slovník)</span>
+            <span className="text-[10px] font-bold tracking-widest text-white/70 uppercase">Magičtinář (slovník)</span>
 
             {/* Search input */}
             <div className="relative">
