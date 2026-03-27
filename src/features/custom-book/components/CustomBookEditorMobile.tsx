@@ -3,16 +3,22 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
     ChevronLeft, ImageIcon, Type, Book, Sparkles, Camera,
     Loader2, Star, X, Feather, Search, Languages,
-    Zap, Check, Copy,
+    Zap, Check, Copy, Volume2, Palette, MoreHorizontal,
+    Download, Share2, Save,
 } from 'lucide-react';
 import { SharedEditorProps } from '../types';
 import { checkTopicBlacklist } from '../../../lib/content-policy';
+import { VOICE_OPTIONS } from '../../../lib/audio-constants';
+import { STYLE_PROMPTS } from '../../../lib/ai';
 
 type MobileView = 0 | 1 | 2; // 0=text, 1=image, 2=dictionary
 
 export const CustomBookEditorMobile: React.FC<SharedEditorProps> = ({ state, actions, refs, onBack, t }) => {
     const [activeView, setActiveView] = useState<MobileView>(0);
     const [showHeroMode, setShowHeroMode] = useState(false);
+    const [showMenu, setShowMenu] = useState(false);
+    const [showVoicePicker, setShowVoicePicker] = useState(false);
+    const [showStylePicker, setShowStylePicker] = useState(false);
 
     const nextView = () => setActiveView(v => Math.min(v + 1, 2) as MobileView);
     const prevView = () => setActiveView(v => Math.max(v - 1, 0) as MobileView);
@@ -37,7 +43,7 @@ export const CustomBookEditorMobile: React.FC<SharedEditorProps> = ({ state, act
 
                 {/* Center: Chapter + dots */}
                 <div className="flex flex-col items-center gap-1 flex-1 mx-2">
-                    <span className="text-xs font-bold text-white/90 truncate max-w-[180px]">{pageLabel}</span>
+                    <span className="text-xs font-bold text-white/90 truncate max-w-[140px]">{pageLabel}</span>
                     <div className="flex gap-1.5">
                         {[0, 1, 2].map(i => (
                             <button
@@ -49,6 +55,27 @@ export const CustomBookEditorMobile: React.FC<SharedEditorProps> = ({ state, act
                     </div>
                 </div>
 
+                {/* Right: Audio, Style, Menu */}
+                <div className="flex items-center gap-1.5">
+                    <button
+                        onClick={() => setShowVoicePicker(true)}
+                        className="min-w-[36px] min-h-[36px] flex items-center justify-center bg-[#EEEDFE] border border-[#AFA9EC] rounded-xl transition-all"
+                    >
+                        <Volume2 size={16} className="text-[#534AB7]" />
+                    </button>
+                    <button
+                        onClick={() => setShowStylePicker(true)}
+                        className="min-w-[36px] min-h-[36px] flex items-center justify-center bg-[#EEEDFE] border border-[#AFA9EC] rounded-xl transition-all"
+                    >
+                        <Palette size={16} className="text-[#534AB7]" />
+                    </button>
+                    <button
+                        onClick={() => setShowMenu(true)}
+                        className="min-w-[36px] min-h-[36px] flex items-center justify-center bg-white/20 rounded-xl transition-all"
+                    >
+                        <MoreHorizontal size={18} className="text-white" />
+                    </button>
+                </div>
             </header>
 
             {/* ── SWIPEABLE VIEWS ── */}
@@ -162,6 +189,88 @@ export const CustomBookEditorMobile: React.FC<SharedEditorProps> = ({ state, act
                     </button>
                 ))}
             </div>
+
+            {/* ── VOICE PICKER ── */}
+            <AnimatePresence>
+                {showVoicePicker && (
+                    <BottomSheet onClose={() => setShowVoicePicker(false)}>
+                        <h3 className="text-sm font-bold text-stone-800 px-5 mb-3">Hlas vypravěče</h3>
+                        <button
+                            onClick={() => { actions.setSelectedVoice(''); setShowVoicePicker(false); }}
+                            className={`flex items-center gap-3 w-full px-5 py-3.5 text-left hover:bg-gray-50 active:bg-gray-100 ${!state.selectedVoice ? 'bg-[#EEEDFE]' : ''}`}
+                        >
+                            <span className="text-lg">🔇</span>
+                            <span className="text-sm font-medium text-gray-800 flex-1">Bez hlasu</span>
+                            {!state.selectedVoice && <Check size={16} className="text-[#534AB7]" />}
+                        </button>
+                        {VOICE_OPTIONS.map(v => (
+                            <button
+                                key={v.id}
+                                onClick={() => { actions.setSelectedVoice(v.id); setShowVoicePicker(false); }}
+                                className={`flex items-center gap-3 w-full px-5 py-3.5 text-left hover:bg-gray-50 active:bg-gray-100 ${state.selectedVoice === v.id ? 'bg-[#EEEDFE]' : ''}`}
+                            >
+                                <span className="text-lg">{v.emoji}</span>
+                                <span className="text-sm font-medium text-gray-800 flex-1">{v.name}</span>
+                                {state.selectedVoice === v.id && <Check size={16} className="text-[#534AB7]" />}
+                            </button>
+                        ))}
+                    </BottomSheet>
+                )}
+            </AnimatePresence>
+
+            {/* ── STYLE PICKER ── */}
+            <AnimatePresence>
+                {showStylePicker && (
+                    <BottomSheet onClose={() => setShowStylePicker(false)}>
+                        <h3 className="text-sm font-bold text-stone-800 px-5 mb-3">Vizuální styl</h3>
+                        {STYLE_KEYS.map(key => (
+                            <button
+                                key={key}
+                                onClick={() => { actions.setSelectedStyle(key); setShowStylePicker(false); }}
+                                className={`flex items-center gap-3 w-full px-5 py-3.5 text-left hover:bg-gray-50 active:bg-gray-100 ${state.selectedStyle === key ? 'bg-[#EEEDFE]' : ''}`}
+                            >
+                                <span className="text-lg">🖌️</span>
+                                <span className="text-sm font-medium text-gray-800 flex-1">{key.replace(/_/g, ' ')}</span>
+                                {state.selectedStyle === key && <Check size={16} className="text-[#534AB7]" />}
+                            </button>
+                        ))}
+                    </BottomSheet>
+                )}
+            </AnimatePresence>
+
+            {/* ── OVERFLOW MENU ── */}
+            <AnimatePresence>
+                {showMenu && (
+                    <BottomSheet onClose={() => setShowMenu(false)}>
+                        <button
+                            onClick={() => { actions.handleSave(false); setShowMenu(false); }}
+                            disabled={state.saving}
+                            className="flex items-center gap-3 w-full px-5 py-3.5 text-left hover:bg-gray-50 active:bg-gray-100"
+                        >
+                            <Save size={18} className="text-gray-500" />
+                            <span className="text-sm font-medium text-gray-800">Uložit</span>
+                            {state.saving && <Loader2 size={14} className="animate-spin text-gray-400" />}
+                        </button>
+                        <button
+                            onClick={() => { actions.handleExportPdf(); setShowMenu(false); }}
+                            disabled={state.isExportingPdf}
+                            className="flex items-center gap-3 w-full px-5 py-3.5 text-left hover:bg-gray-50 active:bg-gray-100"
+                        >
+                            <Download size={18} className="text-gray-500" />
+                            <span className="text-sm font-medium text-gray-800">Exportovat PDF</span>
+                            {state.isExportingPdf && <Loader2 size={14} className="animate-spin text-gray-400" />}
+                        </button>
+                        <button
+                            onClick={() => { actions.handleSave(true); setShowMenu(false); }}
+                            disabled={state.saving}
+                            className="flex items-center gap-3 w-full px-5 py-3.5 text-left hover:bg-gray-50 active:bg-gray-100"
+                        >
+                            <Share2 size={18} className="text-gray-500" />
+                            <span className="text-sm font-medium text-gray-800">Publikovat</span>
+                        </button>
+                    </BottomSheet>
+                )}
+            </AnimatePresence>
 
             {/* ── HERO MODE OVERLAY ── */}
             <AnimatePresence>
@@ -483,6 +592,35 @@ const DictionaryViewContent: React.FC<Pick<SharedEditorProps, 'state' | 'actions
         </div>
     );
 };
+
+/* ───────────────────────────────────────────────
+   BOTTOM SHEET (reusable)
+   ─────────────────────────────────────────────── */
+const BottomSheet: React.FC<{ onClose: () => void; children: React.ReactNode }> = ({ onClose, children }) => (
+    <>
+        <motion.div
+            className="fixed inset-0 bg-black/30 z-[90]"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onClose}
+        />
+        <motion.div
+            className="fixed bottom-0 left-0 right-0 bg-white rounded-t-2xl z-[91] pb-6 max-h-[70vh] overflow-y-auto"
+            initial={{ y: '100%' }}
+            animate={{ y: 0 }}
+            exit={{ y: '100%' }}
+            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+            onClick={(e) => e.stopPropagation()}
+        >
+            <div className="w-10 h-1 bg-gray-200 rounded-full mx-auto mt-3 mb-4" />
+            {children}
+        </motion.div>
+    </>
+);
+
+/* Style keys for picker (filtered — no duplicates) */
+const STYLE_KEYS = Object.keys(STYLE_PROMPTS).filter(k => !['Watercolor', 'Pixar 3D'].includes(k));
 
 /* ───────────────────────────────────────────────
    HERO MODE OVERLAY
