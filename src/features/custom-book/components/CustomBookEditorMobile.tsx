@@ -476,23 +476,12 @@ const ImageViewContent: React.FC<ImageViewProps> = ({ state, actions, refs, t, o
 
         {/* Image card */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 flex-1 min-h-[200px] flex items-center justify-center overflow-hidden relative">
-            {state.currentPage?.imageUrl ? (
+            {state.currentPage?.imageUrl && (
                 <img
                     src={state.currentPage.imageUrl}
                     alt="Scene"
                     className="w-full h-full object-contain"
                 />
-            ) : (
-                <button
-                    onClick={onGenerate}
-                    disabled={!state.currentPage?.text?.trim()}
-                    className="flex flex-col items-center gap-3 text-gray-300 p-6 disabled:opacity-40"
-                >
-                    <div className="w-16 h-16 rounded-2xl border-2 border-dashed border-gray-200 flex items-center justify-center">
-                        <ImageIcon size={24} className="text-gray-300" />
-                    </div>
-                    <span className="text-sm font-medium text-gray-400">{t('library.custom_book_editor.canvas_empty', 'Klikni pro vygenerování')}</span>
-                </button>
             )}
 
             {/* Cover badge */}
