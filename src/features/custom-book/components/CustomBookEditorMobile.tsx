@@ -49,13 +49,6 @@ export const CustomBookEditorMobile: React.FC<SharedEditorProps> = ({ state, act
                     </div>
                 </div>
 
-                {/* Right: Hero mode button */}
-                <button
-                    onClick={openHeroMode}
-                    className="min-w-[44px] min-h-[44px] flex items-center justify-center bg-[#EEEDFE] border border-[#AFA9EC] rounded-full transition-all"
-                >
-                    <ImageIcon size={18} className="text-[#534AB7]" />
-                </button>
             </header>
 
             {/* ── SWIPEABLE VIEWS ── */}
@@ -476,11 +469,6 @@ const DictionaryViewContent: React.FC<Pick<SharedEditorProps, 'state' | 'actions
                 )}
             </div>
 
-            {/* Add word row */}
-            <button className="flex items-center gap-2 bg-gray-50 rounded-lg px-4 py-3 text-sm text-gray-500">
-                <Book size={16} />
-                + Přidat slovo do slovníčku
-            </button>
         </div>
     );
 };
@@ -587,37 +575,6 @@ const HeroModeOverlay: React.FC<HeroOverlayProps> = ({ state, actions, refs, t, 
                     ))}
                 </div>
 
-                {/* Magic Mirror upload */}
-                <div className="flex gap-2">
-                    <input
-                        type="file"
-                        ref={refs.magicMirrorInputRef}
-                        onChange={actions.handleMagicMirrorUpload}
-                        accept="image/*"
-                        className="hidden"
-                    />
-                    <button
-                        onClick={() => refs.magicMirrorInputRef.current?.click()}
-                        className={`flex-1 flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium border transition-all ${state.magicMirrorUrl
-                            ? 'bg-purple-50 text-purple-700 border-purple-200'
-                            : 'border-gray-200 text-gray-500'
-                            }`}
-                    >
-                        <span>🪞</span>
-                        {state.magicMirrorUrl ? 'Mirror aktivní' : 'Magic Mirror'}
-                        {state.isUploadingMirror && <Loader2 size={14} className="animate-spin" />}
-                    </button>
-
-                    {state.magicMirrorUrl && (
-                        <button
-                            onClick={() => actions.handleGenerateScene()}
-                            disabled={!state.currentPage?.text?.trim() || state.isGeneratingImage}
-                            className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-br from-indigo-600 to-purple-700 text-white rounded-xl px-4 py-2.5 font-bold text-sm disabled:opacity-50"
-                        >
-                            ✨👤 {t('library.custom_book_editor.btn_conjure_me', 'S mou tváří')}
-                        </button>
-                    )}
-                </div>
             </motion.div>
         </motion.div>
     );
