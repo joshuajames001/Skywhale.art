@@ -630,9 +630,9 @@ interface HeroOverlayProps extends Pick<SharedEditorProps, 'state' | 'actions' |
 }
 
 const HERO_CHIPS = [
-    { label: 'velryba ve hvězdách', prompt: 'whale floating among stars in cosmic night sky' },
-    { label: 'kouzelný les', prompt: 'enchanted magical forest with glowing mushrooms and fireflies' },
-    { label: 'podmořský svět', prompt: 'underwater world with colorful coral reef and sea creatures' },
+    { label: 'whale in starry sky', prompt: 'whale floating among stars in cosmic night sky' },
+    { label: 'enchanted forest', prompt: 'enchanted magical forest with glowing mushrooms and fireflies' },
+    { label: 'underwater world', prompt: 'underwater world with colorful coral reef and sea creatures' },
 ];
 
 const HeroModeOverlay: React.FC<HeroOverlayProps> = ({ state, actions, refs, t, onClose }) => {
@@ -702,6 +702,7 @@ const HeroModeOverlay: React.FC<HeroOverlayProps> = ({ state, actions, refs, t, 
                         className="flex-1 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 bg-white focus:ring-2 focus:ring-[#534AB7]/30 focus:outline-none"
                         onKeyDown={(e) => { if (e.key === 'Enter') handleGenerate(); }}
                     />
+                    <p className="text-xs text-gray-400 mt-1">Write in English for best results</p>
                     <button
                         onClick={handleGenerate}
                         disabled={state.isGeneratingImage || (!state.currentPage?.text?.trim() && !localPrompt.trim())}

@@ -524,7 +524,7 @@ const TextEditorSheet: React.FC<TextEditorSheetProps> = ({ editor, onChange, onC
 /* ───────────────────────────────────────────────
    AI PANEL
    ─────────────────────────────────────────────── */
-const AI_CHIPS = ['velryba', 'kytička', 'hvězda', 'dort', 'srdíčko'];
+const AI_CHIPS = ['whale', 'flower', 'star', 'birthday cake', 'heart'];
 
 interface AIPanelProps {
     mode: 'sticker' | 'background';
@@ -564,6 +564,7 @@ const AIPanel: React.FC<AIPanelProps> = ({ mode, setMode, prompt, setPrompt, isG
                 className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 bg-white focus:ring-2 focus:ring-[#534AB7]/30 focus:outline-none"
                 onKeyDown={(e) => { if (e.key === 'Enter' && prompt.trim()) onGenerate(); }}
             />
+            <p className="text-xs text-gray-400 mt-1">Write in English for best results</p>
         </div>
 
         {/* Chips */}
