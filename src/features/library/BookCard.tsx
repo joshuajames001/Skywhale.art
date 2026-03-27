@@ -132,7 +132,7 @@ const BookCardBase = forwardRef<HTMLDivElement, BookCardProps>(({
                 onMouseLeave={handleMouseLeave}
                 onClick={() => onClick(book)}
                 whileHover={{ scale: 1.02 }}
-                className="group relative w-full bg-white rounded-[24px] border border-slate-200/60 hover:border-violet-300 transition-all duration-300 cursor-pointer shadow-lg hover:shadow-xl"
+                className="group relative w-full h-full flex flex-col bg-white rounded-[24px] border border-slate-200/60 hover:border-violet-300 transition-all duration-300 cursor-pointer shadow-lg hover:shadow-xl"
             >
                 {/* DYNAMIC GLOW (Hover Only) */}
                 <div
@@ -316,7 +316,7 @@ const BookCardBase = forwardRef<HTMLDivElement, BookCardProps>(({
 
                 {/* --- INFO AREA --- */}
                 <div
-                    className="p-5"
+                    className="p-5 flex-1 flex flex-col"
                     style={{ transform: "translateZ(10px)" }}
                 >
                     <h3 className="line-clamp-2 text-base sm:text-lg font-bold text-slate-800 mb-2 leading-tight group-hover:text-violet-600 transition-colors font-title">
