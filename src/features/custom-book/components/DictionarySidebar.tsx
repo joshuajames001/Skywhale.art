@@ -1,7 +1,8 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Book, X, Search, Loader2, Sparkles, Star, Languages } from 'lucide-react';
+import { Book, X, Search, Loader2, Languages } from 'lucide-react';
 import { SharedEditorProps } from '../types';
+import { DictionaryResults } from '../../../components/DictionaryResults';
 
 export const DictionarySidebar: React.FC<Pick<SharedEditorProps, 'state' | 'actions' | 't'>> = ({ state, actions, t }) => {
     return (
@@ -51,56 +52,19 @@ export const DictionarySidebar: React.FC<Pick<SharedEditorProps, 'state' | 'acti
                         <p>Listuji ve starých knihách...</p>
                     </div>
                 ) : state.dictionaryResult ? (
-                    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                        <div className="bg-white p-6 rounded-2xl shadow-sm border border-stone-100 text-center relative overflow-hidden">
-                            <div className="absolute top-0 left-0 w-full h-2 bg-orange-400" />
-                            <div className="text-6xl mb-4">{state.dictionaryResult.emoji}</div>
-                            <h3 className="text-3xl font-bold text-stone-800 mb-1">{state.dictionaryResult.primary_en}</h3>
-                            <p className="text-stone-400 italic font-serif">"{state.dictionaryQuery}"</p>
-                        </div>
-
-                        {state.dictionaryResult.synonyms?.length > 0 && (
-                            <div>
-                                <h4 className="text-xs font-bold uppercase tracking-widest text-stone-400 mb-3 flex items-center gap-2">
-                                    <Sparkles size={12} /> {t('library.custom_book_editor.synonyms_label')}
-                                </h4>
-                                <div className="flex flex-wrap gap-2">
-                                    {state.dictionaryResult.synonyms.map((syn: string) => (
-                                        <button
-                                            key={syn}
-                                            onClick={() => {
-                                                // Insert into prompt if in expert mode
-                                                if (state.isExpertMode) {
-                                                    const newPrompt = (state.currentPage.prompt || '') + " " + syn;
-                                                    const newPages = [...state.pages];
-                                                    newPages[state.currentPageIndex].prompt = newPrompt;
-                                                    actions.setPages(newPages);
-                                                }
-                                            }}
-                                            className="px-3 py-1.5 bg-white border border-stone-200 rounded-lg text-sm text-stone-600 hover:border-orange-400 hover:text-orange-500 transition-colors shadow-sm"
-                                        >
-                                            {syn}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-
-                        {state.dictionaryResult.related_adjectives?.length > 0 && (
-                            <div>
-                                <h4 className="text-xs font-bold uppercase tracking-widest text-stone-400 mb-3 flex items-center gap-2">
-                                    <Star size={12} /> {t('library.custom_book_editor.adjectives_label')}
-                                </h4>
-                                <div className="flex flex-wrap gap-2">
-                                    {state.dictionaryResult.related_adjectives.map((adj: string) => (
-                                        <span key={adj} className="px-3 py-1 bg-orange-50 text-orange-700 rounded-full text-xs font-bold border border-orange-100">
-                                            {adj}
-                                        </span>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-                    </div>
+                    <DictionaryResults
+                        result={state.dictionaryResult}
+                        query={state.dictionaryQuery}
+                        onWordClick={(word) => {
+                            if (state.isExpertMode) {
+                                const newPrompt = (state.currentPage.prompt || '') + " " + word;
+                                const newPages = [...state.pages];
+                                newPages[state.currentPageIndex].prompt = newPrompt;
+                                actions.setPages(newPages);
+                            }
+                        }}
+                        className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500"
+                    />
                 ) : (
                     <div className="text-center text-stone-400 py-10">
                         <Languages size={48} className="mx-auto mb-4 opacity-20" />

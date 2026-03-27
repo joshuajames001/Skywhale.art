@@ -3,12 +3,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
     ChevronLeft, ImageIcon, Type, Book, Sparkles, Camera,
     Loader2, Star, X, Feather, Search, Languages,
-    Zap, Check, Copy, Volume2, Palette, MoreHorizontal,
+    Zap, Check, Volume2, Palette, MoreHorizontal,
     Download, Share2, Save,
 } from 'lucide-react';
 import { SharedEditorProps } from '../types';
 import { checkTopicBlacklist } from '../../../lib/content-policy';
 import { BottomSheet } from '../../../components/BottomSheet';
+import { DictionaryResults } from '../../../components/DictionaryResults';
 import { useClipboardCopy } from '../../../hooks/useClipboardCopy';
 import { VOICE_OPTIONS } from '../../../lib/audio-constants';
 import { STYLE_PROMPTS } from '../../../lib/ai';
@@ -523,60 +524,11 @@ const DictionaryViewContent: React.FC<Pick<SharedEditorProps, 'state' | 'actions
                         <p className="text-sm">Listuji ve starých knihách...</p>
                     </div>
                 ) : state.dictionaryResult ? (
-                    <div className="space-y-4">
-                        {/* Main result card */}
-                        <button
-                            onClick={() => copyToClipboard(state.dictionaryResult.primary_en)}
-                            className="w-full bg-white p-5 rounded-2xl shadow-sm border border-gray-100 text-center relative overflow-hidden cursor-pointer hover:bg-gray-50 transition-colors"
-                        >
-                            <div className="absolute top-0 left-0 w-full h-1.5 bg-orange-400" />
-                            <div className="text-5xl mb-3">{state.dictionaryResult.emoji}</div>
-                            <h3 className="text-2xl font-bold text-stone-800 mb-1 flex items-center justify-center gap-2">
-                                {state.dictionaryResult.primary_en}
-                                {copied === state.dictionaryResult.primary_en
-                                    ? <Check size={16} className="text-green-500" />
-                                    : <Copy size={14} className="text-stone-300" />}
-                            </h3>
-                            <p className="text-stone-400 italic font-serif text-sm">"{state.dictionaryQuery}"</p>
-                        </button>
-
-                        {/* Synonyms */}
-                        {state.dictionaryResult.synonyms?.length > 0 && (
-                            <div>
-                                <h4 className="text-[10px] font-bold uppercase tracking-widest text-white/70 mb-2 flex items-center gap-1">
-                                    <Sparkles size={10} /> {t('library.custom_book_editor.synonyms_label', 'Synonyma')}
-                                </h4>
-                                <div className="flex flex-wrap gap-2">
-                                    {state.dictionaryResult.synonyms.map((syn: string) => (
-                                        <button
-                                            key={syn}
-                                            onClick={() => copyToClipboard(syn)}
-                                            className="px-3 py-1.5 bg-white border border-stone-200 rounded-lg text-sm text-stone-600 shadow-sm cursor-pointer hover:bg-[#EEEDFE] hover:border-[#AFA9EC] hover:text-[#534AB7] transition-colors flex items-center gap-1"
-                                        >
-                                            {copied === syn ? <Check size={12} className="text-green-500" /> : null}
-                                            {syn}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-
-                        {/* Adjectives */}
-                        {state.dictionaryResult.related_adjectives?.length > 0 && (
-                            <div>
-                                <h4 className="text-[10px] font-bold uppercase tracking-widest text-white/70 mb-2 flex items-center gap-1">
-                                    <Star size={10} /> {t('library.custom_book_editor.adjectives_label', 'Přídavná jména')}
-                                </h4>
-                                <div className="flex flex-wrap gap-2">
-                                    {state.dictionaryResult.related_adjectives.map((adj: string) => (
-                                        <span key={adj} className="px-3 py-1 bg-orange-50 text-orange-700 rounded-full text-xs font-bold border border-orange-100">
-                                            {adj}
-                                        </span>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-                    </div>
+                    <DictionaryResults
+                        result={state.dictionaryResult}
+                        query={state.dictionaryQuery}
+                        onWordClick={copyToClipboard}
+                    />
                 ) : (
                     <div className="text-center text-stone-400 py-10">
                         <Languages size={40} className="mx-auto mb-3 opacity-20" />
