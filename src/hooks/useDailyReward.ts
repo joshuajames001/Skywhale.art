@@ -66,13 +66,8 @@ export const useDailyReward = () => {
             return;
         }
 
-        // Optimistic UI Update (Verification: Real balance comes from subscription/listener)
-        // We don't reload window anymore
         setRewardStreak(newStreak);
         setShowDailyReward(false);
-
-        // Refresh 
-        window.location.reload(); // Simple refresh to update global state or just re-fetch
     };
 
     // Auto-check on mount

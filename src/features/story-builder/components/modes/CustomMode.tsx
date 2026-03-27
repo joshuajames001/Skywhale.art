@@ -11,7 +11,7 @@ import { generateCompleteStory } from '../../../../lib/ai/orchestrator';
 import { StoryBook } from '../../../../types';
 import { MagicLoading } from '../effects/MagicLoading';
 import { checkTopicBlacklist } from '../../../../lib/content-policy';
-import { STORY_COSTS } from '../../../../lib/constants';
+import { STORY_COSTS, IMAGE_COSTS } from '../../../../lib/constants';
 
 interface CustomModeProps {
     initialData?: any;
@@ -50,7 +50,7 @@ export const CustomMode: React.FC<CustomModeProps> = ({
         hero_image_url: initialData?.hero_image_url || undefined
     });
 
-    const requiredEnergy = (STORY_COSTS[formData.length as keyof typeof STORY_COSTS] || formData.length * 50) + (formData.voice_id ? formData.length * 20 : 0);
+    const requiredEnergy = (STORY_COSTS[formData.length as keyof typeof STORY_COSTS] || (formData.length + 1) * IMAGE_COSTS.FLUX_PRO) + (formData.voice_id ? formData.length * 20 : 0);
     const hasEnoughEnergy = userBalance !== null && userBalance >= requiredEnergy;
 
     const handleSubmit = async () => {
@@ -247,7 +247,7 @@ export const CustomMode: React.FC<CustomModeProps> = ({
                             </label>
                             <div className="grid grid-cols-4 gap-4">
                                 {[5, 10, 15, 25].map((len) => {
-                                    const baseCost = STORY_COSTS[len as keyof typeof STORY_COSTS] || len * 50;
+                                    const baseCost = STORY_COSTS[len as keyof typeof STORY_COSTS] || (len + 1) * IMAGE_COSTS.FLUX_PRO;
                                     const audioCost = formData.voice_id ? len * 20 : 0;
                                     const cost = baseCost + audioCost;
                                     const isAffordable = userBalance !== null && userBalance >= cost;

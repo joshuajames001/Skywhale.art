@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
+import { invokeEdgeFunction } from '../lib/edge-functions';
 
 export const useEnergy = () => {
     const [balance, setBalance] = useState<number | null>(null);
@@ -27,29 +28,16 @@ export const useEnergy = () => {
         }
     };
 
-    const GUMROAD_URLS: Record<string, string> = {
-        'starter':          'https://ghostfactory.gumroad.com/l/Zvedavec',
-        'writer':           'https://ghostfactory.gumroad.com/l/Spisovatel',
-        'master_wordsmith': 'https://ghostfactory.gumroad.com/l/MistrSlova',
-        'sub_start':        'https://ghostfactory.gumroad.com/l/Start',
-        'sub_advanced':     'https://ghostfactory.gumroad.com/l/pokrocily',
-        'sub_expert':       'https://ghostfactory.gumroad.com/l/expert',
-        'sub_master':       'https://ghostfactory.gumroad.com/l/mistr',
-    };
-
-    const buyPackage = async (packageId: string) => {
+    const purchaseEnergy = async (priceId: string, mode: 'payment' | 'subscription') => {
         setLoading(true);
         try {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (!session?.user) throw new Error('Nejsi přihlášen/a.');
+            const { data, error } = await invokeEdgeFunction<{ url: string }>('create-checkout-session', { priceId, mode });
 
-            const base = GUMROAD_URLS[packageId];
-            if (!base) throw new Error('Neplatný balíček.');
+            if (error || !data?.url) {
+                throw new Error(typeof error === 'string' ? error : 'Nepodařilo se vytvořit platbu.');
+            }
 
-            const email = session.user.email;
-            window.location.href = email
-                ? `${base}?email=${encodeURIComponent(email)}`
-                : base;
+            window.location.href = data.url;
         } catch (err) {
             console.error('Purchase failed:', err);
             const msg = err instanceof Error ? err.message : JSON.stringify(err);
@@ -165,7 +153,7 @@ export const useEnergy = () => {
     return {
         balance,
         loading,
-        buyPackage,
+        purchaseEnergy,
         claimEnergy,
         refreshBalance: fetchBalance
     };

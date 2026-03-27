@@ -4,6 +4,28 @@ Všechny významné změny projektu Magické Příběhy (SkyWhale).
 
 ## [Unreleased] — 2026-03-26
 
+### Payment, Feedback & Energy Sprint (GF-141, GF-143, GF-145)
+
+- **GF-145:** Energy cost rebalance
+  - Flux 2 Pro (story/Magic Mirror): 50 → **40** Energy/obrázek
+  - Flux Dev (custom book bez reference): 30 → **25** Energy/obrázek
+  - Card Studio (skywhale-flux): 0 → **5** Energy/obrázek (nový energy gate)
+  - `STORY_COSTS`: přidána délka 3 strany (200 Energy)
+- **GF-141:** Gumroad → Stripe migrace
+  - Nová Edge Function `stripe-webhook` — zpracovává `checkout.session.completed` + `invoice.payment_succeeded`, deduplikace přes `transactions`, grantuje energii přes `add_energy` RPC
+  - Nová Edge Function `create-checkout-session` — vytváří Stripe Checkout session s auth, origin z request headeru (funguje lokálně i v produkci)
+  - `src/features/store/constants.ts` — STRIPE_PRICES (11 price IDs, one-time + subscription monthly/yearly)
+  - `useEnergy` — `buyPackage()` (Gumroad redirect) nahrazen `purchaseEnergy()` (Stripe Checkout via Edge Function)
+  - EnergyStore + SubscriptionCard — priceId z konstant, přímé volání `purchaseEnergy`
+  - Smazáno: `supabase/functions/gumroad-webhook/` (celá složka)
+  - Config: `supabase/config.toml` — nové funkce, smazané legacy `create-checkout` + `stripe-webhook` entries
+- **GF-143:** Feedback přepis — nástěnka → email form
+  - Smazáno: FeedbackBoard.tsx + useFeedbackData.ts (Supabase CRUD nástěnka)
+  - Nová Edge Function `send-feedback` — Resend API email na FEEDBACK_EMAIL
+  - FeedbackForm.tsx — jednoduchý textarea + submit, success/error stavy
+  - useFeedbackForm.ts — hook s invokeEdgeFunction (Three-Layer Rule)
+  - Route `/feedback` — lazy loaded FeedbackForm místo přímého importu
+
 ### Card Studio & Encyclopedia Sprint (GF-133 → GF-138)
 
 - **GF-133:** Three-Layer fix CustomBookEditor — Supabase volání přesunuta do hooks

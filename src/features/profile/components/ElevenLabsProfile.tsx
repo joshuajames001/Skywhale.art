@@ -38,8 +38,6 @@ export const ElevenLabsProfile: React.FC<ElevenLabsProfileProps> = ({ user, prof
     const circumference = 2 * Math.PI * radius;
     const strokeDashoffset = circumference - (percentage / 100) * circumference;
 
-    console.log('ElevenLabsProfile:', { balance, peakEnergy, percentage, strokeDashoffset });
-
     return (
         <div className={`fixed right-6 z-50 flex items-center gap-4 ${className || 'top-6'}`}>
 

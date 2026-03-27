@@ -59,7 +59,7 @@ All product features live in `src/features/<feature-name>/`. Key features:
 | `library` | User's personal book library with reporting |
 | `game-hub` | Mini-games (puzzle, memory, coloring) and gamification |
 | `auth` | Supabase authentication |
-| `store` | Energy purchase (Gumroad subscription tiers) |
+| `store` | Energy purchase (Stripe Checkout) |
 | `profile` | User profile, achievements, referrals, avatar customization |
 | `audio` | Audio playback, TTS controls, voice preview (ElevenLabs) |
 | `landing` | Marketing landing page with parallax and showcase |
@@ -111,7 +111,8 @@ All product features live in `src/features/<feature-name>/`. Key features:
 | `skywhale-flux` | Flux Dev/Schnell for card studio, stickers, backgrounds |
 | `generate-audio` | ElevenLabs TTS (1 Energy per 20 characters) |
 | `process-story-image` | Legacy Flux Dev image generation (superseded by generate-story-image) |
-| `gumroad-webhook` | Gumroad subscription webhook — grants energy per tier |
+| `stripe-webhook` | Stripe payment webhook — grants energy on checkout/renewal |
+| `create-checkout-session` | Creates Stripe Checkout session for energy purchase |
 | `cleanup-storage` | Storage maintenance (expired Magic Mirror assets) |
 
 Shared modules in `supabase/functions/_shared/`: `cors.ts`, `ai-clients.ts` (`callGemini()` + `callAnthropic()`), `lang-utils.ts`.
@@ -130,7 +131,7 @@ Each adapter abstracts a feature's data dependencies:
 
 - **`useStory`** — story CRUD and generation state
 - **`useGemini`** — Google Gemini AI via `book-editor-assist` Edge Function (suggestions, image prompts)
-- **`useEnergy`** — energy balance + Gumroad package links + monthly grant
+- **`useEnergy`** — energy balance + Stripe checkout purchase + monthly grant
 - **`useDailyReward`** — daily login reward with 7-day streak cycle
 - **`useGuide`** — Zustand-based tutorial system with localStorage persistence
 - **`usePdfExport`** — PDF export with progress tracking
@@ -151,10 +152,11 @@ All AI text generation enforces Czech output for `text_cz` fields. Art prompts a
 
 ### Energy Economy
 
-- **Flux 2 Pro (story images):** 50 Energy / image
-- **Flux Dev (card studio/stickers):** 30 Energy / image
+- **Flux 2 Pro (story images + Magic Mirror):** 40 Energy / image
+- **Flux Dev (custom book, bez reference):** 25 Energy / image
+- **Flux Dev/Schnell (card studio/stickers):** 5 Energy / image
 - **Audio (ElevenLabs):** 1 Energy per 20 characters (min 1)
-- **Gumroad tiers:** Zvědavec (1k), Spisovatel (3k), Mistr Slova (7.5k), Start (1.6k), Pokročilý (4k), Expert (9k), Mistr (21k)
+- **Stripe tiers:** Zvědavec (1k), Spisovatel (3k), Mistr Slova (7.5k), Start (1.6k), Pokročilý (4k), Expert (9k), Mistr (21k)
 
 ### Path Alias
 

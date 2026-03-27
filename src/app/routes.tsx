@@ -2,7 +2,6 @@ import { lazy, ReactNode } from 'react';
 import { Navigate, useParams } from 'react-router-dom';
 import { LegalAgreements } from '../features/legal/components/LegalAgreements';
 import { PricingPage } from '../features/store/components/PricingPage';
-import { FeedbackBoard } from '../features/feedback/components/FeedbackBoard';
 import { EnergyStore } from '../features/store/components/EnergyStore';
 import { CardViewer } from '../features/card-studio/CardViewer';
 import { CardStudioProvider } from '../features/card-studio/CardStudioContext';
@@ -25,6 +24,7 @@ const LazyLibrary = lazy(() => import('../features/library/Library').then(m => (
 const LazyBookRouteWrapper = lazy(() => import('../features/reader/BookRouteWrapper').then(m => ({ default: m.BookRouteWrapper })));
 const LazyCinematicLanding = lazy(() => import('../features/landing/components/CinematicLanding').then(m => ({ default: m.CinematicLanding })));
 const LazyLandingPage = lazy(() => import('../features/landing/components/LandingPage').then(m => ({ default: m.LandingPage })));
+const LazyFeedbackForm = lazy(() => import('../features/feedback/components/FeedbackForm').then(m => ({ default: m.FeedbackForm })));
 
 export interface RouteConfig {
     path: string;
@@ -73,7 +73,7 @@ export const createRoutes = (ctx: RouteContext): RouteConfig[] => [
             <div className="absolute inset-0 z-0 opacity-50 pointer-events-none">
                 <LazyLandingPage onEnter={ctx.handleBookFromLanding} onNavigate={ctx.handleHubNavigate} user={ctx.user} onLogin={() => ctx.setShowAuth(true)} hideUI={true} />
             </div>
-            <FeedbackBoard onClose={() => ctx.navigate('/')} />
+            <LazyFeedbackForm onClose={() => ctx.navigate('/')} />
         </div>
     )},
     { path: '/library', element: (

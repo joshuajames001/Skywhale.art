@@ -403,9 +403,12 @@ entrypoint = "./functions/process-story-image/index.ts"
 # For example, if you want to serve static HTML pages in your function:
 # static_files = [ "./functions/process-story-image/*.html" ]
 
-[functions.create-checkout]
-verify_jwt = false
 [functions.stripe-webhook]
+enabled = true
+verify_jwt = false
+
+[functions.create-checkout-session]
+enabled = true
 verify_jwt = false
 
 [functions.generate-story-content]

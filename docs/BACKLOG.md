@@ -1,14 +1,15 @@
 # Backlog & Roadmap
 
-> Aktualizováno: 2026-03-26 | Zdroj: Linear (Skywhale.art) + audity
+> Aktualizováno: 2026-03-27 | Zdroj: Linear (Skywhale.art) + audity
 
 ## Stav projektu
 
-- **Linear issues:** 28 celkem (24 done, 2 canceled, 0 in progress, 2 odložené)
-- **Poslední sprint:** GF-133 → GF-138 (2026-03-26)
+- **Linear issues:** 31 celkem (27 done, 2 canceled, 0 in progress, 2 odložené)
+- **Poslední sprint:** GF-141/143/145/148 (2026-03-26)
 - **Build:** Zelený (tsc 0 errors + vite build pass)
 - **Test coverage:** 294 testů, 75.18% statements
 - **Main bundle:** 185.94 kB (vendor chunks separated)
+- **Platební brána:** Stripe (migrace z Gumroad dokončena GF-141)
 
 ## In Progress
 
@@ -41,7 +42,8 @@
 | pdfGenerator chunk | 591 kB — lazy-loaded, kandidát na lighter PDF lib | Build output |
 | `storyteller.ts` | Legacy TypeScript errors (non-blocking) + fragile response parsing | Audit |
 | Zastaralé buckety | `dino-content`, `card-assets`, `book-images` — kód je nepoužívá | Storage audit |
-| Discovery cleanup | ~~Staré komponenty smazány (9 souborů)~~ ✅ | GF-138 |
+| skywhale-flux | Energy odečtena PŘED generováním — při selhání Replicate se nerefunduje | GF-145/148 |
+| `purchaseEnergy` | Chybí unit test pro Stripe checkout flow v useEnergy.test.ts | GF-141 |
 
 ### Nízká priorita
 
@@ -64,11 +66,12 @@
 
 | Datum | Milestone |
 |-------|-----------|
+| 2026-03-26 | GF-141/143/145/148: Stripe migrace, Feedback→email, Energy rebalance, IMAGE_COSTS single source of truth |
 | 2026-03-26 | GF-138 dokončen: Encyklopedie v2 plně propojená (reader, audio, backgrounds, custom SVG ikony, 9 legacy souborů smazáno) |
 | 2026-03-25 | GF-133→GF-138: Card Studio share, coverage 75%, Encyklopedie v2 UI, Three.js cancelled |
 | 2026-03-24 | GF-17→GF-81: Coverage 65%, bundle 186 kB, Three-Layer 100%, security audit |
 | 2026-03-23 | Refactoring sprint complete (god components split, lazy routes, code splitting) |
 | 2026-03-22 | Edge Functions refactor (generate-story-content split) |
-| 2026-03-07 | Security + Gumroad payment integration |
+| 2026-03-07 | Security + Gumroad payment integration (now replaced by Stripe) |
 | 2026-02-15 | FSD architecture + adapter pattern |
 | 2026-01-18 | Flux 2 Pro pipeline + content moderation |

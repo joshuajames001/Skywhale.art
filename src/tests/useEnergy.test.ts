@@ -7,6 +7,10 @@ const mockSingle = vi.fn();
 const mockRpc = vi.fn();
 const mockSubscribe = vi.fn();
 
+vi.mock('../lib/edge-functions', () => ({
+    invokeEdgeFunction: vi.fn().mockResolvedValue({ data: null, error: null }),
+}));
+
 vi.mock('../lib/supabase', () => ({
     supabase: {
         auth: {

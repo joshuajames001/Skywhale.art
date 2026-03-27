@@ -90,10 +90,11 @@ supabase/functions/
   generate-story-content/ ← story structure (Anthropic) + ideas (Gemini)
   book-editor-assist/     ← 4 akce pro Custom Book Editor
   content-tools/          ← moderace + visual DNA extraction
-  generate-story-image/   ← Flux 2 Pro (50 Energy)
-  skywhale-flux/          ← Flux Dev/Schnell (30 Energy)
+  generate-story-image/   ← Flux 2 Pro (40 Energy) / Flux Dev (25 Energy)
+  skywhale-flux/          ← Flux Dev/Schnell (5 Energy)
   generate-audio/         ← ElevenLabs TTS
-  gumroad-webhook/        ← platby
+  stripe-webhook/          ← platby (Stripe)
+  create-checkout-session/ ← Stripe Checkout
   process-story-image/    ← legacy
   cleanup-storage/        ← údržba
 

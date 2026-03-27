@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { IMAGE_COSTS } from '../_shared/costs.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -100,11 +101,8 @@ serve(async (req) => {
         throw new Error(`Invalid User Token: ${authError?.message}`);
     }
     
-    // 2. Determine Cost (10x Inflation)
-    // Basic (Flux Dev) = 30 Energy (was 3)
-    // Premium (Flux 2 Pro) = 50 Energy (was 5)
-    // Note: The UI displays 'Package Prices', but this is the per-unit burn rate.
-    const cost = (model === 'dev' || model === 'basic') ? 30 : 50;
+    // 2. Determine Cost
+    const cost = (model === 'dev' || model === 'basic') ? IMAGE_COSTS.FLUX_DEV : IMAGE_COSTS.FLUX_PRO;
 
     // 3. Check Balance
     const { data: profile } = await supabaseAdmin

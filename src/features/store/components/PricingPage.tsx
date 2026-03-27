@@ -74,11 +74,11 @@ export const PricingPage: React.FC<PricingPageProps> = ({ onBack, onOpenStore })
                             </li>
                             <li className="flex justify-between items-center py-2 border-b border-white/5">
                                 <span className="text-slate-300 flex items-center gap-2"><ImageIcon size={14} className="text-slate-500" /> Obrázek (Flux 2.0 Pro)</span>
-                                <span className="font-bold text-white">50 <span className="text-xs text-slate-500 font-normal">Energie / ks</span></span>
+                                <span className="font-bold text-white">40 <span className="text-xs text-slate-500 font-normal">Energie / ks</span></span>
                             </li>
                             <li className="flex justify-between items-center py-2 border-b border-white/5">
                                 <span className="text-slate-300 flex items-center gap-2"><ImageIcon size={14} className="text-slate-500" /> Obrázek (Standard)</span>
-                                <span className="font-bold text-white">30 <span className="text-xs text-slate-500 font-normal">Energie / ks</span></span>
+                                <span className="font-bold text-white">25 <span className="text-xs text-slate-500 font-normal">Energie / ks</span></span>
                             </li>
                             <li className="flex justify-between items-center py-2 border-b border-white/5">
                                 <span className="text-slate-300 flex items-center gap-2"><Mic size={14} className="text-slate-500" /> Audiokniha (Dabing)</span>
@@ -90,7 +90,7 @@ export const PricingPage: React.FC<PricingPageProps> = ({ onBack, onOpenStore })
                             <p className="text-xs text-slate-400 mb-2 font-bold uppercase tracking-widest">Příklad ceny knihy (10 stran)</p>
                             <div className="flex justify-between items-baseline">
                                 <span className="text-sm text-slate-300">11x Pro Obrázek + Audio</span>
-                                <span className="text-lg font-bold text-amber-400">~750 Energie</span>
+                                <span className="text-lg font-bold text-amber-400">~640 Energie</span>
                             </div>
                         </div>
                     </motion.div>
@@ -111,7 +111,7 @@ export const PricingPage: React.FC<PricingPageProps> = ({ onBack, onOpenStore })
                         <ul className="space-y-4">
                             <li className="flex justify-between items-center py-2 border-b border-white/5">
                                 <span className="text-slate-300 flex items-center gap-2"><ImageIcon size={14} className="text-slate-500" /> Vlastní Samolepka (AI)</span>
-                                <span className="font-bold text-white">10 <span className="text-xs text-slate-500 font-normal">Energie / ks</span></span>
+                                <span className="font-bold text-white">5 <span className="text-xs text-slate-500 font-normal">Energie / ks</span></span>
                             </li>
                             <li className="flex justify-between items-center py-2 border-b border-white/5">
                                 <span className="text-slate-300 flex items-center gap-2"><ImageIcon size={14} className="text-slate-500" /> Odstranění pozadí</span>

@@ -4,6 +4,7 @@ import { Zap, Star, Gift, Crown, ShoppingBag, X, Check, Shield } from 'lucide-re
 import { useEnergy } from '../../../hooks/useEnergy';
 import { SubscriptionCard } from './SubscriptionCard';
 import { useGuide } from '../../../hooks/useGuide';
+import { STRIPE_PRICES } from '../constants';
 
 interface EnergyStoreProps {
     onClose: () => void;
@@ -12,6 +13,7 @@ interface EnergyStoreProps {
 const PACKAGES = [
     {
         id: 'starter',
+        priceId: STRIPE_PRICES.ONE_TIME.starter.priceId,
         name: 'Zvědavec',
         energy: 1000,
         price: '199 Kč',
@@ -21,6 +23,7 @@ const PACKAGES = [
     },
     {
         id: 'writer',
+        priceId: STRIPE_PRICES.ONE_TIME.writer.priceId,
         name: 'Spisovatel',
         energy: 3000,
         price: '499 Kč',
@@ -31,6 +34,7 @@ const PACKAGES = [
     },
     {
         id: 'master_wordsmith',
+        priceId: STRIPE_PRICES.ONE_TIME.master_wordsmith.priceId,
         name: 'Mistr Slova',
         energy: 7500,
         price: '1 099 Kč',
@@ -44,6 +48,8 @@ const PACKAGES = [
 const SUBSCRIPTION_TIERS = [
     {
         id: 'sub_start',
+        monthlyPriceId: STRIPE_PRICES.SUBSCRIPTION.sub_start.monthly,
+        yearlyPriceId: STRIPE_PRICES.SUBSCRIPTION.sub_start.yearly,
         name: 'Start',
         icon: Star,
         color: 'from-cyan-400 to-blue-500',
@@ -60,6 +66,8 @@ const SUBSCRIPTION_TIERS = [
     },
     {
         id: 'sub_advanced',
+        monthlyPriceId: STRIPE_PRICES.SUBSCRIPTION.sub_advanced.monthly,
+        yearlyPriceId: STRIPE_PRICES.SUBSCRIPTION.sub_advanced.yearly,
         name: 'Pokročilý',
         icon: Zap,
         color: 'from-blue-500 to-indigo-600',
@@ -76,6 +84,8 @@ const SUBSCRIPTION_TIERS = [
     },
     {
         id: 'sub_expert',
+        monthlyPriceId: STRIPE_PRICES.SUBSCRIPTION.sub_expert.monthly,
+        yearlyPriceId: STRIPE_PRICES.SUBSCRIPTION.sub_expert.yearly,
         name: 'Expert',
         icon: Crown,
         color: 'from-purple-500 to-pink-600',
@@ -93,6 +103,8 @@ const SUBSCRIPTION_TIERS = [
     },
     {
         id: 'sub_master',
+        monthlyPriceId: STRIPE_PRICES.SUBSCRIPTION.sub_master.monthly,
+        yearlyPriceId: STRIPE_PRICES.SUBSCRIPTION.sub_master.yearly,
         name: 'Mistr',
         icon: Shield,
         color: 'from-amber-400 to-orange-600',
@@ -113,7 +125,7 @@ const SUBSCRIPTION_TIERS = [
 
 
 export const EnergyStore: React.FC<EnergyStoreProps> = ({ onClose }) => {
-    const { balance, buyPackage, loading } = useEnergy();
+    const { balance, purchaseEnergy, loading } = useEnergy();
     const { startGuide, hasSeenGroups } = useGuide();
     const [activeTab, setActiveTab] = useState<'packages' | 'subscriptions'>('packages');
     const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('monthly');
@@ -238,7 +250,7 @@ export const EnergyStore: React.FC<EnergyStoreProps> = ({ onClose }) => {
                                 </div>
 
                                 <button
-                                    onClick={() => buyPackage(pkg.id)}
+                                    onClick={() => purchaseEnergy(pkg.priceId, 'payment')}
                                     disabled={loading}
                                     className={`w-full py-4 rounded-xl font-bold text-sm transition-all hover:brightness-110 active:scale-95 flex items-center justify-center gap-2 mt-auto
                                         ${pkg.id === 'starter' || pkg.popular || pkg.bestValue ? 'bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow-lg shadow-orange-900/20' : 'bg-white/10 hover:bg-white/20 text-white'}
@@ -269,7 +281,7 @@ export const EnergyStore: React.FC<EnergyStoreProps> = ({ onClose }) => {
                                     icon={tier.icon}
                                     savings={(data as any).savings}
                                     loading={loading}
-                                    onBuy={() => buyPackage(tier.id)}
+                                    onBuy={() => purchaseEnergy(billingPeriod === 'monthly' ? tier.monthlyPriceId : tier.yearlyPriceId, 'subscription')}
                                 />
                             );
                         })

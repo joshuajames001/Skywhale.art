@@ -12,7 +12,7 @@ import { StoryBook } from '../../../../types';
 import { MagicLoading } from '../effects/MagicLoading';
 import { MagicFlash } from '../effects/MagicFlash';
 import { checkTopicBlacklist, validateImageFile } from '../../../../lib/content-policy';
-import { STORY_COSTS } from '../../../../lib/constants';
+import { STORY_COSTS, IMAGE_COSTS } from '../../../../lib/constants';
 import { useHeroUpload } from '../../hooks/useHeroUpload';
 
 interface HeroModeProps {
@@ -51,7 +51,7 @@ export const HeroMode: React.FC<HeroModeProps> = ({
         hero_image_url: '' as string
     });
 
-    const requiredEnergy = (STORY_COSTS[formData.length as keyof typeof STORY_COSTS] || 550) + (formData.voice_id ? formData.length * 20 : 0);
+    const requiredEnergy = (STORY_COSTS[formData.length as keyof typeof STORY_COSTS] || (formData.length + 1) * IMAGE_COSTS.FLUX_PRO) + (formData.voice_id ? formData.length * 20 : 0);
     const hasEnoughEnergy = userBalance !== null && userBalance >= requiredEnergy;
 
     const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -200,7 +200,7 @@ export const HeroMode: React.FC<HeroModeProps> = ({
                             <label className="text-emerald-500 font-bold uppercase text-xs">{t('setup.fields.length')}</label>
                             <div className="grid grid-cols-4 gap-4">
                                 {[5, 10, 15, 25].map((len) => {
-                                    const cost = (STORY_COSTS[len as keyof typeof STORY_COSTS] || len * 50) + (formData.voice_id ? len * 20 : 0);
+                                    const cost = (STORY_COSTS[len as keyof typeof STORY_COSTS] || (len + 1) * IMAGE_COSTS.FLUX_PRO) + (formData.voice_id ? len * 20 : 0);
                                     const isAffordable = userBalance !== null && userBalance >= cost;
                                     return (
                                         <button key={len} onClick={() => setFormData({ ...formData, length: len })} className={`p-4 rounded-xl border-2 transition-all relative ${formData.length === len ? 'border-emerald-500 bg-emerald-500/10' : 'border-emerald-500/10 bg-black/20 hover:border-emerald-500/30'}`}>

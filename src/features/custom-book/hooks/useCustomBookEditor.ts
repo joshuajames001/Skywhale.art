@@ -7,6 +7,7 @@ import { BookPage, CustomBookEditorProps } from '../types';
 import { StoryPage } from '../../../types';
 import { useBookEditorAI } from './useBookEditorAI';
 import { useBookEditorPersistence } from './useBookEditorPersistence';
+import { IMAGE_COSTS } from '../../../lib/constants';
 
 const mkPages = (n: number): BookPage[] => [
     { id: 'cover', text: '', isCover: true },
@@ -42,7 +43,7 @@ export const useCustomBookEditor = ({ onOpenStore }: CustomBookEditorProps) => {
     const persistence = useBookEditorPersistence(bookId, '');
     const { startGuide, hasSeenGroups } = useGuide();
     const activeReference = magicMirrorUrl || continuityImageUrl;
-    const costPerImage = activeReference ? 50 : 30;
+    const costPerImage = activeReference ? IMAGE_COSTS.FLUX_PRO : IMAGE_COSTS.FLUX_DEV;
     const hasEnoughEnergy = persistence.userBalance !== null && persistence.userBalance >= costPerImage;
     const currentPage = pages[currentPageIndex];
 

@@ -1,8 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Zap, Check, Star } from 'lucide-react';
-import { useEnergy } from '../../../hooks/useEnergy';
-
 interface SubscriptionCardProps {
     id: string;
     name: string;
@@ -16,7 +14,7 @@ interface SubscriptionCardProps {
     icon: any;
     savings?: string; // e.g. "Ušetříte 990 Kč"
     loading?: boolean;
-    onBuy: (id: string) => void;
+    onBuy: () => void;
 }
 
 export const SubscriptionCard: React.FC<SubscriptionCardProps> = ({
@@ -104,7 +102,7 @@ export const SubscriptionCard: React.FC<SubscriptionCardProps> = ({
 
             {/* Action Button */}
             <button
-                onClick={() => onBuy(id)}
+                onClick={() => onBuy()}
                 disabled={loading}
                 className={`w-full py-4 rounded-xl font-bold text-sm transition-all hover:brightness-110 active:scale-95 shadow-lg
                     ${bestValue || popular

@@ -1,6 +1,7 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { IMAGE_COSTS } from '../_shared/costs.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -27,6 +28,34 @@ serve(async (req) => {
     if (!user) {
       return new Response("Unauthorized", { status: 401, headers: corsHeaders });
     }
+
+    // Energy check + deduction
+    const supabaseAdmin = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
+
+    const energyCost = IMAGE_COSTS.FLUX_CARD;
+
+    const { data: profile } = await supabaseAdmin
+      .from('profiles')
+      .select('energy_balance')
+      .eq('id', user.id)
+      .single();
+
+    const currentBalance = profile?.energy_balance || 0;
+
+    if (currentBalance < energyCost) {
+      return new Response(
+        JSON.stringify({ error: "Insufficient Energy", code: "INSUFFICIENT_ENERGY" }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 402 }
+      );
+    }
+
+    await supabaseAdmin.rpc('add_energy', {
+      p_user_id: user.id,
+      p_amount: -energyCost
+    });
 
     const body = await req.json();
     const { prompt, mode, user_id, image_prompt } = body;
@@ -150,22 +179,6 @@ serve(async (req) => {
       JSON.stringify({ imageUrl: replicateUrl }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
     );
-
-    // Select Model: Flux Schnell (Hardcoded hash for stability)
-    // Using the ID from process-story-image to match known working config
-    const MODEL_VERSION_ID = "5b518c761e08542c3809618175b9589d38c641d4016f4460d6911c471444585c"; 
-    // ^ This is Flux 1.1 Pro? Or Schnell? 
-    // process-story-image had: 970b... -> This is Flux-Schnell. Let's use that.
-    const CORRECT_HASH = "5b518c761e08542c3809618175b9589d38c641d4016f4460d6911c471444585c"; // Actually Replicate docs say standard Schnell is this? 
-    // Let's stick to the Alias approach by changing the fetch to POST directly if we use the alias? No, alias needs lookup.
-    // Let's use the explicit hash to avoid the lookup call which might be failing.
-    
-    // Using Flux Schnell Hash directly
-    const FLUX_SCHNELL = "f22f73a3889a718cda15383f9828d8448f76dfd224d0840b08055a40a2ed511c"; // Wait, these change.
-    // Let's use "black-forest-labs/flux-schnell" via the 'predictions' endpoint directly using `model` param if supported? No, Replicate uses versions.
-    
-    // Safer approach: DEBUG MODE - Return 200 with error.
-    // I will leave the lookup for now, but inspect the error.
 
   } catch (error: any) {
     console.error("error:", error);
