@@ -11,12 +11,11 @@ interface ElevenLabsProfileProps {
 }
 
 export const ElevenLabsProfile: React.FC<ElevenLabsProfileProps> = ({ user, profile, onOpenProfile, onOpenStore, className }) => {
-    if (!user || !profile) return null;
-
-    const balance = profile.energy_balance || 0;
+    const balance = profile?.energy_balance || 0;
 
     // Track peak energy balance (highest value ever achieved) in localStorage
     const [peakEnergy, setPeakEnergy] = useState(() => {
+        if (!user) return 0;
         const storageKey = `peak_energy_${user.id}`;
         const stored = localStorage.getItem(storageKey);
         return stored ? Math.max(parseInt(stored), balance) : balance;
@@ -24,12 +23,13 @@ export const ElevenLabsProfile: React.FC<ElevenLabsProfileProps> = ({ user, prof
 
     // Update peak when balance increases
     useEffect(() => {
-        if (balance > peakEnergy) {
-            const storageKey = `peak_energy_${user.id}`;
-            localStorage.setItem(storageKey, balance.toString());
-            setPeakEnergy(balance);
-        }
-    }, [balance, peakEnergy, user.id]);
+        if (!user || balance <= peakEnergy) return;
+        const storageKey = `peak_energy_${user.id}`;
+        localStorage.setItem(storageKey, balance.toString());
+        setPeakEnergy(balance);
+    }, [balance, peakEnergy, user?.id]);
+
+    if (!user || !profile) return null;
 
     // Calculate ring percentage based on peak
     const maxEnergyVisual = Math.max(peakEnergy, 100); // Minimum 100 to avoid division by zero

@@ -6,17 +6,7 @@ import { useDiscoveryHotspots } from '../hooks/useDiscoveryHotspots';
 import { TEXTURE_URL, PAGE_LABEL } from '../constants';
 
 export const DiscoveryPageView = ({ page, isDino, isSpace, onPageComplete }: { page: DiscoveryPage; isDino?: boolean; isSpace?: boolean; onPageComplete?: () => void }) => {
-    // GUARD CLAUSE
-    if (!page) return null;
-
-    // Determine Layout Mode
-    // Default to 'book' (split) unless Space is active -> 'cinematic'
-    const layout = isSpace ? 'cinematic' : 'book';
-    const isCinematic = layout === 'cinematic';
-
-    const isVideo = page.image_url?.toLowerCase().includes('.mp4');
-
-    const { hotspots } = useDiscoveryHotspots(page.id);
+    const { hotspots } = useDiscoveryHotspots(page?.id ?? '');
     const [activeHotspot, setActiveHotspot] = useState<typeof hotspots[number] | null>(null);
 
     // AUDIO STATE
@@ -26,7 +16,7 @@ export const DiscoveryPageView = ({ page, isDino, isSpace, onPageComplete }: { p
     const audioRef = useRef<HTMLAudioElement | null>(null);
 
     // Reset active hotspot when page changes
-    useEffect(() => { setActiveHotspot(null); }, [page.id]);
+    useEffect(() => { setActiveHotspot(null); }, [page?.id]);
 
     // Handle Audio
     useEffect(() => {
@@ -39,7 +29,7 @@ export const DiscoveryPageView = ({ page, isDino, isSpace, onPageComplete }: { p
         setCurrentTime(0);
         setDuration(0);
 
-        if (page.audio_url) {
+        if (page?.audio_url) {
             const audio = new Audio(page.audio_url);
 
             audio.onplay = () => setIsPlaying(true);
@@ -76,21 +66,23 @@ export const DiscoveryPageView = ({ page, isDino, isSpace, onPageComplete }: { p
             }
             window.removeEventListener('discovery:stop-audio', handleStopAll);
         };
-    }, [page.audio_url, onPageComplete]);
+    }, [page?.audio_url, onPageComplete]);
 
     const toggleAudio = () => {
         if (!audioRef.current) return;
-
-        if (isPlaying) {
-            audioRef.current.pause();
-        } else {
-            audioRef.current.play();
-        }
+        if (isPlaying) { audioRef.current.pause(); } else { audioRef.current.play(); }
         setIsPlaying(!isPlaying);
     };
 
-    // --- LAYOUT CONFIGURATION ---
+    // GUARD CLAUSE — after all hooks
+    if (!page) return null;
 
+    // Determine Layout Mode
+    const layout = isSpace ? 'cinematic' : 'book';
+    const isCinematic = layout === 'cinematic';
+    const isVideo = page.image_url?.toLowerCase().includes('.mp4');
+
+    // --- LAYOUT CONFIGURATION ---
     // CONTAINER CLASSES
     // Cinematic: Block (Full wrapper). Book: Flex Row (Split).
     const containerClasses = isCinematic

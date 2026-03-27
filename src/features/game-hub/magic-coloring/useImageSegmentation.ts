@@ -120,9 +120,9 @@ export const useImageSegmentation = () => {
 
                 // 3. Region Extraction (BFS) & Output Maps
                 // We'll do an initial pass, then a merging pass
-                let regionMap = new Int32Array(w * h).fill(-1);
+                const regionMap = new Int32Array(w * h).fill(-1);
                 const visited = new Uint8Array(w * h).fill(0);
-                let initialRegions: { id: number, label: number, pixels: number[] }[] = [];
+                const initialRegions: { id: number, label: number, pixels: number[] }[] = [];
                 let regionIdCounter = 0;
 
                 const getIdx = (x: number, y: number) => y * w + x;

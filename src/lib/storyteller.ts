@@ -148,8 +148,8 @@ export const generateStoryIdea = async (params?: { language?: string }): Promise
                 }
 
                 // --- SCHEMA MAPPING (Safely extract nested data if present) ---
-                let concept = idea.concept || {};
-                let technical_dna = idea.technical_dna || {};
+                const concept = idea.concept || {};
+                const technical_dna = idea.technical_dna || {};
 
                 // Map root fields to concept if concept is missing or fields are at root
                 // RESILIENCE FIX: Check for both _cz and _cs suffixes

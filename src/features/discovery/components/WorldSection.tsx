@@ -64,10 +64,8 @@ const seededRandom = (seed: number) => {
 
 const Particles = ({ slug }: { slug: string }) => {
     const config = PARTICLE_CONFIGS[slug];
-    if (!config) return null;
-
-    const { color, style, count, sizeRange } = config;
-    const [durMin, durMax] = ANIMATION_DURATIONS[style];
+    const { color, style, count, sizeRange } = config ?? { color: '', style: 'drift' as const, count: 0, sizeRange: [0, 0] as [number, number] };
+    const [durMin, durMax] = ANIMATION_DURATIONS[style] ?? [0, 0];
 
     const particles = useMemo(() =>
         Array.from({ length: count }).map((_, i) => {
@@ -83,6 +81,8 @@ const Particles = ({ slug }: { slug: string }) => {
             };
         }),
     [slug, count, sizeRange, durMin, durMax]);
+
+    if (!config) return null;
 
     return (
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
