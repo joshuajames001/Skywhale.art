@@ -1,5 +1,6 @@
 import React from 'react';
 import { Sparkles, Zap, Loader2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 const AI_CHIPS = ['whale', 'flower', 'star', 'birthday cake', 'heart'];
 
@@ -12,7 +13,9 @@ interface AIPanelProps {
     onGenerate: () => void;
 }
 
-export const AiPanel: React.FC<AIPanelProps> = ({ mode, setMode, prompt, setPrompt, isGenerating, onGenerate }) => (
+export const AiPanel: React.FC<AIPanelProps> = ({ mode, setMode, prompt, setPrompt, isGenerating, onGenerate }) => {
+    const { t } = useTranslation();
+    return (
     <div className="space-y-5">
         {/* Tab switcher */}
         <div className="flex bg-gray-100 rounded-xl p-1">
@@ -20,13 +23,13 @@ export const AiPanel: React.FC<AIPanelProps> = ({ mode, setMode, prompt, setProm
                 onClick={() => setMode('sticker')}
                 className={`flex-1 py-2.5 rounded-lg text-sm font-bold flex items-center justify-center gap-1 transition-all ${mode === 'sticker' ? 'bg-white text-[#534AB7] shadow-sm' : 'text-gray-500'}`}
             >
-                Nálepka <Zap size={12} className="text-amber-500" /> 5
+                {t('tools.sticker_tab')} <Zap size={12} className="text-amber-500" /> 5
             </button>
             <button
                 onClick={() => setMode('background')}
                 className={`flex-1 py-2.5 rounded-lg text-sm font-bold flex items-center justify-center gap-1 transition-all ${mode === 'background' ? 'bg-white text-[#534AB7] shadow-sm' : 'text-gray-500'}`}
             >
-                Pozadí <Zap size={12} className="text-amber-500" /> 5
+                {t('tools.background_tab')} <Zap size={12} className="text-amber-500" /> 5
             </button>
         </div>
 
@@ -37,11 +40,11 @@ export const AiPanel: React.FC<AIPanelProps> = ({ mode, setMode, prompt, setProm
                 type="text"
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
-                placeholder={mode === 'sticker' ? 'Popiš nálepku…' : 'Popiš pozadí…'}
+                placeholder={mode === 'sticker' ? t('tools.describe_sticker') : t('tools.describe_background')}
                 className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 bg-white focus:ring-2 focus:ring-[#534AB7]/30 focus:outline-none"
                 onKeyDown={(e) => { if (e.key === 'Enter' && prompt.trim()) onGenerate(); }}
             />
-            <p className="text-xs text-gray-400 mt-1">Write in English for best results</p>
+            <p className="text-xs text-gray-400 mt-1">{t('tools.en_hint')}</p>
         </div>
 
         {/* Chips */}
@@ -64,10 +67,11 @@ export const AiPanel: React.FC<AIPanelProps> = ({ mode, setMode, prompt, setProm
             className="w-full bg-[#534AB7] text-white rounded-xl px-4 py-3 font-bold text-sm disabled:opacity-50 flex items-center justify-center gap-2"
         >
             {isGenerating ? (
-                <><Loader2 size={16} className="animate-spin" /> Generuji…</>
+                <><Loader2 size={16} className="animate-spin" /> {t('common.generating')}</>
             ) : (
-                <><Sparkles size={16} /> Generovat {mode === 'sticker' ? 'nálepku' : 'pozadí'}</>
+                <><Sparkles size={16} /> {mode === 'sticker' ? t('tools.generate_sticker') : t('tools.generate_background')}</>
             )}
         </button>
     </div>
-);
+    );
+};

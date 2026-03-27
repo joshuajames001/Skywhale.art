@@ -1,7 +1,9 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { BACKGROUND_TEXTURES } from '../../data/stickers';
 
 export const BackgroundPanel: React.FC<{ onSelect: (bg: string) => void }> = ({ onSelect }) => {
+    const { t } = useTranslation();
     const colors = BACKGROUND_TEXTURES.filter(b => b.type === 'color');
     const images = BACKGROUND_TEXTURES.filter(b => b.type === 'image');
 
@@ -9,7 +11,7 @@ export const BackgroundPanel: React.FC<{ onSelect: (bg: string) => void }> = ({ 
         <div className="space-y-6">
             {/* Colors */}
             <div>
-                <h4 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-3">Barvy</h4>
+                <h4 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-3">{t('tools.colors')}</h4>
                 <div className="flex flex-wrap gap-2">
                     {colors.map(bg => (
                         <button
@@ -24,7 +26,7 @@ export const BackgroundPanel: React.FC<{ onSelect: (bg: string) => void }> = ({ 
             </div>
             {/* Patterns */}
             <div>
-                <h4 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-3">Vzory</h4>
+                <h4 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-3">{t('tools.patterns')}</h4>
                 <div className="grid grid-cols-2 gap-3">
                     {images.map(bg => (
                         <button

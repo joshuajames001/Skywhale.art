@@ -5,6 +5,7 @@ import {
     RotateCcw, RotateCw, MoreHorizontal, BookOpen,
     LucideIcon,
 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { CardCanvas } from './CardCanvas';
 import { SharedCardStudioProps, CardPage } from './types';
 import { Panel, TextEditorState } from './mobile/types';
@@ -17,9 +18,9 @@ import { DictionaryPanel } from './mobile/panels/DictionaryPanel';
 import { TextEditorSheet } from './mobile/sheets/TextEditorSheet';
 import { OverflowMenuSheet } from './mobile/sheets/OverflowMenuSheet';
 
-const PANEL_TITLES: Record<Exclude<Panel, null>, string> = {
-    templates: 'Šablony', background: 'Pozadí', stickers: 'Nálepky',
-    text: 'Text', dictionary: 'Slovník', ai: 'AI generátor',
+const PANEL_TITLE_KEYS: Record<Exclude<Panel, null>, string> = {
+    templates: 'tools.templates', background: 'tools.background', stickers: 'tools.stickers',
+    text: 'tools.text', dictionary: 'tools.dictionary_label', ai: 'tools.ai_generator',
 };
 
 const TOOLBAR_ITEMS: { id: Exclude<Panel, null>; icon: LucideIcon; label: string; accent?: boolean }[] = [
@@ -33,7 +34,8 @@ const TOOLBAR_ITEMS: { id: Exclude<Panel, null>; icon: LucideIcon; label: string
 
 export const CardStudioMobile: React.FC<SharedCardStudioProps> = (props) => {
     const { state, ai, selectedId, setSelectedId, stageRef, isSaving,
-        onSave, onDownload, onShare, onNewProject, onGenerateAI, onAddText, onSelectTemplate, t } = props;
+        onSave, onDownload, onShare, onNewProject, onGenerateAI, onAddText, onSelectTemplate } = props;
+    const { t } = useTranslation();
 
     const [activePanel, setActivePanel] = useState<Panel>(null);
     const [aiMode, setAiMode] = useState<'sticker' | 'background'>('sticker');
@@ -93,7 +95,7 @@ export const CardStudioMobile: React.FC<SharedCardStudioProps> = (props) => {
                                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
                                     <path d="M12 2L13.8 8.2H20.2L14.9 11.8L16.7 18L12 14.4L7.3 18L9.1 11.8L3.8 8.2H10.2Z" fill="#E2D9F3" stroke="#AFA9EC" strokeWidth="1"/>
                                 </svg>
-                                <span className="text-[10px] text-[#AFA9EC]">Přidej text nebo nálepku</span>
+                                <span className="text-[10px] text-[#AFA9EC]">{t('tools.empty_hint')}</span>
                             </div>
                         )}
                     </div>
@@ -143,7 +145,7 @@ export const CardStudioMobile: React.FC<SharedCardStudioProps> = (props) => {
                             <button onClick={() => setActivePanel(null)} className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full hover:bg-gray-100">
                                 <ChevronLeft size={20} className="text-gray-600" />
                             </button>
-                            <span className="text-base font-bold text-gray-800">{PANEL_TITLES[activePanel]}</span>
+                            <span className="text-base font-bold text-gray-800">{t(PANEL_TITLE_KEYS[activePanel])}</span>
                         </div>
                         <div className="flex-1 overflow-y-auto p-4">
                             {activePanel === 'templates' && <TemplatesPanel onSelect={(tmpl) => { onSelectTemplate(tmpl); setActivePanel(null); }} />}

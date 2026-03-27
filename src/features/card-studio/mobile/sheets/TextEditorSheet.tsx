@@ -1,5 +1,6 @@
 import React from 'react';
 import { Check } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { TextEditorState } from '../types';
 import { BottomSheet } from '../../../../components/BottomSheet';
 
@@ -25,7 +26,9 @@ interface TextEditorSheetProps {
     onClose: () => void;
 }
 
-export const TextEditorSheet: React.FC<TextEditorSheetProps> = ({ editor, onChange, onConfirm, onClose }) => (
+export const TextEditorSheet: React.FC<TextEditorSheetProps> = ({ editor, onChange, onConfirm, onClose }) => {
+    const { t } = useTranslation();
+    return (
     <BottomSheet onClose={onClose} maxHeight="80vh">
         <div className="px-5 space-y-5">
             <textarea
@@ -37,7 +40,7 @@ export const TextEditorSheet: React.FC<TextEditorSheetProps> = ({ editor, onChan
                 style={{ fontSize: editor.fontSize, fontFamily: editor.fontFamily, color: editor.color }}
             />
             <div>
-                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 block">Velikost</label>
+                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 block">{t('tools.size')}</label>
                 <div className="flex gap-2">
                     {EDITOR_SIZES.map(s => (
                         <button key={s.label} onClick={() => onChange({ ...editor, fontSize: s.value })}
@@ -48,7 +51,7 @@ export const TextEditorSheet: React.FC<TextEditorSheetProps> = ({ editor, onChan
                 </div>
             </div>
             <div>
-                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 block">Barva</label>
+                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 block">{t('tools.color')}</label>
                 <div className="flex gap-2">
                     {EDITOR_COLORS.map(c => (
                         <button key={c.value} onClick={() => onChange({ ...editor, color: c.value })}
@@ -58,7 +61,7 @@ export const TextEditorSheet: React.FC<TextEditorSheetProps> = ({ editor, onChan
                 </div>
             </div>
             <div>
-                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 block">Písmo</label>
+                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 block">{t('tools.font')}</label>
                 <div className="flex gap-2">
                     {EDITOR_FONTS.map(f => (
                         <button key={f} onClick={() => onChange({ ...editor, fontFamily: f })}
@@ -71,8 +74,9 @@ export const TextEditorSheet: React.FC<TextEditorSheetProps> = ({ editor, onChan
             </div>
             <button onClick={onConfirm} disabled={!editor.text.trim()}
                 className="w-full bg-[#534AB7] text-white rounded-xl py-3 font-bold text-sm disabled:opacity-50 flex items-center justify-center gap-2">
-                <Check size={16} /> Přidat na kartu
+                <Check size={16} /> {t('tools.add_to_card')}
             </button>
         </div>
     </BottomSheet>
-);
+    );
+};

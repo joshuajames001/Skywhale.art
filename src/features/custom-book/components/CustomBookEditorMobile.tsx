@@ -218,13 +218,13 @@ export const CustomBookEditorMobile: React.FC<SharedEditorProps> = ({ state, act
             <AnimatePresence>
                 {showVoicePicker && (
                     <BottomSheet onClose={() => setShowVoicePicker(false)}>
-                        <h3 className="text-sm font-bold text-stone-800 px-5 mb-3">Hlas vypravěče</h3>
+                        <h3 className="text-sm font-bold text-stone-800 px-5 mb-3">{t('library.custom_book_editor.voice_narrator')}</h3>
                         <button
                             onClick={() => { actions.setSelectedVoice(''); setShowVoicePicker(false); }}
                             className={`flex items-center gap-3 w-full px-5 py-3.5 text-left hover:bg-gray-50 active:bg-gray-100 ${!state.selectedVoice ? 'bg-[#EEEDFE]' : ''}`}
                         >
                             <span className="text-lg">🔇</span>
-                            <span className="text-sm font-medium text-gray-800 flex-1">Bez hlasu</span>
+                            <span className="text-sm font-medium text-gray-800 flex-1">{t('library.custom_book_editor.no_voice')}</span>
                             {!state.selectedVoice && <Check size={16} className="text-[#534AB7]" />}
                         </button>
                         {VOICE_OPTIONS.map(v => (
@@ -248,7 +248,7 @@ export const CustomBookEditorMobile: React.FC<SharedEditorProps> = ({ state, act
             <AnimatePresence>
                 {showStylePicker && (
                     <BottomSheet onClose={() => setShowStylePicker(false)}>
-                        <h3 className="text-sm font-bold text-stone-800 px-5 mb-3">Vizuální styl</h3>
+                        <h3 className="text-sm font-bold text-stone-800 px-5 mb-3">{t('library.custom_book_editor.visual_style')}</h3>
                         {STYLE_KEYS.map(key => (
                             <button
                                 key={key}
@@ -268,14 +268,14 @@ export const CustomBookEditorMobile: React.FC<SharedEditorProps> = ({ state, act
             <AnimatePresence>
                 {showPagesPicker && (
                     <BottomSheet onClose={() => setShowPagesPicker(false)}>
-                        <h3 className="text-sm font-bold text-stone-800 px-5 mb-3">Počet stran</h3>
+                        <h3 className="text-sm font-bold text-stone-800 px-5 mb-3">{t('library.custom_book_editor.page_count_label')}</h3>
                         {[10, 15, 25].map(n => (
                             <button
                                 key={n}
                                 onClick={() => { actions.setMaxPages(n); setShowPagesPicker(false); }}
                                 className={`flex items-center justify-between w-full px-5 py-3.5 text-left hover:bg-gray-50 active:bg-gray-100 ${state.maxPages === n ? 'bg-[#EEEDFE]' : ''}`}
                             >
-                                <span className="text-sm font-medium text-gray-800">{n} stran</span>
+                                <span className="text-sm font-medium text-gray-800">{t('library.custom_book_editor.pages_n', { n })}</span>
                                 {state.maxPages === n && <Check size={16} className="text-[#534AB7]" />}
                             </button>
                         ))}
@@ -293,7 +293,7 @@ export const CustomBookEditorMobile: React.FC<SharedEditorProps> = ({ state, act
                             className="flex items-center gap-3 w-full px-5 py-3.5 text-left hover:bg-gray-50 active:bg-gray-100"
                         >
                             <Save size={18} className="text-gray-500" />
-                            <span className="text-sm font-medium text-gray-800">Uložit</span>
+                            <span className="text-sm font-medium text-gray-800">{t('common.save')}</span>
                             {state.saving && <Loader2 size={14} className="animate-spin text-gray-400" />}
                         </button>
                         <button
@@ -302,7 +302,7 @@ export const CustomBookEditorMobile: React.FC<SharedEditorProps> = ({ state, act
                             className="flex items-center gap-3 w-full px-5 py-3.5 text-left hover:bg-gray-50 active:bg-gray-100"
                         >
                             <Download size={18} className="text-gray-500" />
-                            <span className="text-sm font-medium text-gray-800">Exportovat PDF</span>
+                            <span className="text-sm font-medium text-gray-800">{t('common.export_pdf')}</span>
                             {state.isExportingPdf && <Loader2 size={14} className="animate-spin text-gray-400" />}
                         </button>
                         {/* Charge Energy */}
@@ -312,7 +312,7 @@ export const CustomBookEditorMobile: React.FC<SharedEditorProps> = ({ state, act
                                 className="flex items-center gap-3 w-full px-5 py-3.5 text-left hover:bg-gray-50 active:bg-gray-100"
                             >
                                 <Zap size={18} className="text-amber-500" />
-                                <span className="text-sm font-medium text-amber-600">Dobít energii</span>
+                                <span className="text-sm font-medium text-amber-600">{t('library.custom_book_editor.charge_energy')}</span>
                                 <span className="text-xs text-gray-400 ml-auto">{state.userBalance ?? '?'} ⚡</span>
                             </button>
                         )}
@@ -323,7 +323,7 @@ export const CustomBookEditorMobile: React.FC<SharedEditorProps> = ({ state, act
                             className="flex items-center gap-3 w-full px-5 py-3.5 text-left hover:bg-gray-50 active:bg-gray-100"
                         >
                             <GraduationCap size={18} className={state.isExpertMode ? 'text-[#534AB7]' : 'text-gray-500'} />
-                            <span className="text-sm font-medium text-gray-800 flex-1">Expert Mode</span>
+                            <span className="text-sm font-medium text-gray-800 flex-1">{t('library.custom_book_editor.expert_mode_label')}</span>
                             <div className={`w-10 h-6 rounded-full p-1 transition-colors ${state.isExpertMode ? 'bg-[#534AB7]' : 'bg-gray-200'}`}>
                                 <div className={`w-4 h-4 rounded-full bg-white shadow-sm transition-transform ${state.isExpertMode ? 'translate-x-4' : 'translate-x-0'}`} />
                             </div>
@@ -338,7 +338,7 @@ export const CustomBookEditorMobile: React.FC<SharedEditorProps> = ({ state, act
                             className="flex items-center gap-3 w-full px-5 py-3.5 text-left hover:bg-red-50 active:bg-red-100"
                         >
                             <Trash2 size={18} className="text-red-400" />
-                            <span className="text-sm font-medium text-red-500">Nová kniha (smazat vše)</span>
+                            <span className="text-sm font-medium text-red-500">{t('library.custom_book_editor.new_book_label')}</span>
                         </button>
                     </BottomSheet>
                 )}
@@ -356,7 +356,7 @@ const TextViewContent: React.FC<Pick<SharedEditorProps, 'state' | 'actions' | 't
         {/* Label */}
         <div className="flex items-center justify-between mb-3">
             <span className="text-[10px] font-bold tracking-widest text-white/70 uppercase">
-                {state.currentPage?.isCover ? t('library.custom_book_editor.title_page', 'Titulní strana') : 'Strana — Text'}
+                {state.currentPage?.isCover ? t('library.custom_book_editor.title_page') : t('library.custom_book_editor.page_text_label')}
             </span>
             <div className="flex items-center gap-2">
                 {/* Gemini assist */}
@@ -448,13 +448,13 @@ const ImageViewContent: React.FC<ImageViewProps> = ({ state, actions, refs, t, o
     <div className="flex flex-col h-full gap-4">
         {/* Label + Magic Mirror */}
         <div className="flex items-center justify-between">
-            <span className="text-[10px] font-bold tracking-widest text-white/70 uppercase">Strana — Obrázek</span>
+            <span className="text-[10px] font-bold tracking-widest text-white/70 uppercase">{t('library.custom_book_editor.page_image_label')}</span>
             <button
                 onClick={() => refs.magicMirrorInputRef.current?.click()}
                 className={`flex items-center gap-1 text-sm font-medium transition-all ${state.magicMirrorUrl ? 'text-purple-300' : 'text-[#534AB7]/70'}`}
             >
                 <span>🪞</span>
-                {state.magicMirrorUrl ? 'Mirror aktivní' : 'Magic Mirror'}
+                {state.magicMirrorUrl ? t('library.custom_book_editor.mirror_active') : t('library.custom_book_editor.magic_mirror')}
                 {state.isUploadingMirror && <Loader2 size={12} className="animate-spin" />}
             </button>
         </div>
@@ -510,7 +510,7 @@ const ImageViewContent: React.FC<ImageViewProps> = ({ state, actions, refs, t, o
                 className="flex-1 flex items-center justify-center gap-2 bg-[#534AB7] text-white rounded-xl px-4 py-2.5 font-medium text-sm disabled:opacity-50"
             >
                 {state.isGeneratingImage ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={16} />}
-                AI generovat
+                {t('library.custom_book_editor.ai_generate')}
             </button>
         </div>
 
@@ -542,7 +542,7 @@ const DictionaryViewContent: React.FC<Pick<SharedEditorProps, 'state' | 'actions
 
     return (
         <div className="flex flex-col h-full gap-4">
-            <span className="text-[10px] font-bold tracking-widest text-white/70 uppercase">Magičtinář (slovník)</span>
+            <span className="text-[10px] font-bold tracking-widest text-white/70 uppercase">{t('dictionary.title')}</span>
 
             {/* Search input */}
             <div className="relative">
