@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     ChevronLeft, Save, Layout, Image, Layers, Type, Sparkles,
-    Plus, Loader2, Zap, Check,
+    Plus, Loader2, Zap, Check, RotateCcw, RotateCw, MoreHorizontal,
+    Download, Share2, FilePlus,
 } from 'lucide-react';
 import { CardCanvas } from './CardCanvas';
 import { SharedCardStudioProps, CardPage } from './types';
@@ -13,11 +14,12 @@ type Panel = 'templates' | 'background' | 'stickers' | 'text' | 'ai' | null;
 
 export const CardStudioMobile: React.FC<SharedCardStudioProps> = (props) => {
     const { state, ai, selectedId, setSelectedId, stageRef, isSaving,
-        onSave, onGenerateAI, onAddText, onSelectTemplate, t } = props;
+        onSave, onDownload, onShare, onNewProject, onGenerateAI, onAddText, onSelectTemplate, t } = props;
 
     const [activePanel, setActivePanel] = useState<Panel>(null);
     const [aiMode, setAiMode] = useState<'sticker' | 'background'>('sticker');
     const [aiPrompt, setAiPrompt] = useState('');
+    const [showMenu, setShowMenu] = useState(false);
     const [textEditor, setTextEditor] = useState<{
         text: string; color: string; fontSize: number; fontFamily: string;
     } | null>(null);
@@ -45,13 +47,28 @@ export const CardStudioMobile: React.FC<SharedCardStudioProps> = (props) => {
                         ))}
                     </div>
                 </div>
-                <button
-                    onClick={onSave}
-                    disabled={isSaving}
-                    className="min-w-[44px] min-h-[44px] flex items-center justify-center bg-white/10 rounded-full text-white"
-                >
-                    {isSaving ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
-                </button>
+                <div className="flex items-center gap-1.5">
+                    <button
+                        onClick={state.undo}
+                        disabled={!state.canUndo}
+                        className={`min-w-[36px] min-h-[36px] flex items-center justify-center bg-white/10 rounded-full text-white transition-all ${!state.canUndo ? 'opacity-30 pointer-events-none' : ''}`}
+                    >
+                        <RotateCcw size={16} />
+                    </button>
+                    <button
+                        onClick={state.redo}
+                        disabled={!state.canRedo}
+                        className={`min-w-[36px] min-h-[36px] flex items-center justify-center bg-white/10 rounded-full text-white transition-all ${!state.canRedo ? 'opacity-30 pointer-events-none' : ''}`}
+                    >
+                        <RotateCw size={16} />
+                    </button>
+                    <button
+                        onClick={() => setShowMenu(true)}
+                        className="min-w-[36px] min-h-[36px] flex items-center justify-center bg-white/10 rounded-full text-white"
+                    >
+                        <MoreHorizontal size={18} />
+                    </button>
+                </div>
             </header>
 
             {/* ── CANVAS AREA ── */}
@@ -179,6 +196,57 @@ export const CardStudioMobile: React.FC<SharedCardStudioProps> = (props) => {
                             )}
                         </div>
                     </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* ── OVERFLOW MENU ── */}
+            <AnimatePresence>
+                {showMenu && (
+                    <>
+                        <motion.div
+                            className="fixed inset-0 bg-black/30 z-[90]"
+                            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                            onClick={() => setShowMenu(false)}
+                        />
+                        <motion.div
+                            className="fixed bottom-0 left-0 right-0 bg-white rounded-t-2xl z-[91] pb-6"
+                            initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
+                            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <div className="w-10 h-1 bg-gray-200 rounded-full mx-auto mt-3 mb-4" />
+                            <button
+                                onClick={() => { onSave(); setShowMenu(false); }}
+                                disabled={isSaving}
+                                className="flex items-center gap-3 w-full px-5 py-3.5 text-left hover:bg-gray-50 active:bg-gray-100"
+                            >
+                                <Save size={18} className="text-gray-500" />
+                                <span className="text-sm font-medium text-gray-800">Uložit</span>
+                                {isSaving && <Loader2 size={14} className="animate-spin text-gray-400" />}
+                            </button>
+                            <button
+                                onClick={() => { onDownload(); setShowMenu(false); }}
+                                className="flex items-center gap-3 w-full px-5 py-3.5 text-left hover:bg-gray-50 active:bg-gray-100"
+                            >
+                                <Download size={18} className="text-gray-500" />
+                                <span className="text-sm font-medium text-gray-800">Stáhnout PNG</span>
+                            </button>
+                            <button
+                                onClick={() => { onShare(); setShowMenu(false); }}
+                                className="flex items-center gap-3 w-full px-5 py-3.5 text-left hover:bg-gray-50 active:bg-gray-100"
+                            >
+                                <Share2 size={18} className="text-gray-500" />
+                                <span className="text-sm font-medium text-gray-800">Sdílet</span>
+                            </button>
+                            <button
+                                onClick={() => { onNewProject(); setShowMenu(false); }}
+                                className="flex items-center gap-3 w-full px-5 py-3.5 text-left hover:bg-gray-50 active:bg-gray-100"
+                            >
+                                <FilePlus size={18} className="text-gray-500" />
+                                <span className="text-sm font-medium text-gray-800">Nová karta</span>
+                            </button>
+                        </motion.div>
+                    </>
                 )}
             </AnimatePresence>
 
