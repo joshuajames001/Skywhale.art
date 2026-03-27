@@ -371,14 +371,6 @@ const TextViewContent: React.FC<Pick<SharedEditorProps, 'state' | 'actions' | 't
                 >
                     {state.geminiLoading ? <Loader2 size={16} className="animate-spin" /> : <Feather size={16} />}
                 </button>
-                {/* Generate image */}
-                <button
-                    onClick={onGenerate}
-                    disabled={!state.currentPage?.text?.trim() || state.isGeneratingImage}
-                    className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl bg-[#EEEDFE] border border-[#AFA9EC] transition-all disabled:opacity-40"
-                >
-                    {state.isGeneratingImage ? <Loader2 size={16} className="animate-spin text-[#534AB7]" /> : <Sparkles size={16} className="text-[#534AB7]" />}
-                </button>
             </div>
         </div>
 
