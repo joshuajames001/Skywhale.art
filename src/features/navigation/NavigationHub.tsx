@@ -2,9 +2,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Book, Home, Sparkles, Palette, Gamepad2, Compass, PenTool, Zap, MessageSquare, LogIn, User, LogOut, Shield, Languages } from 'lucide-react';
 import { ScrollableRow } from '../../components/ui/ScrollableRow';
 import { useState, useEffect } from 'react';
-// useEnergy removed: Dead code
 import { PricingPage } from '../store/components/PricingPage';
 import { useTranslation } from 'react-i18next';
+import { useScrollDirectionContext } from '../../contexts/ScrollDirectionContext';
 // supabase removed: Dead code
 
 interface NavigationHubProps {
@@ -19,6 +19,8 @@ export const NavigationHub = ({ onNavigate, currentView, user, onLogin, onLogout
     const { t, i18n } = useTranslation();
     const [isExpanded, setIsExpanded] = useState(false);
     const [showProfileMenu, setShowProfileMenu] = useState(false);
+    const { direction: scrollDir } = useScrollDirectionContext();
+    const hideNav = scrollDir === 'down';
 
     // Nickname fetch removed: Dead code
 
@@ -208,7 +210,10 @@ export const NavigationHub = ({ onNavigate, currentView, user, onLogin, onLogout
 
             {/* MOBILE BOTTOM NAVIGATION BAR */}
             {currentView !== 'card_studio' && currentView !== 'create_custom' && currentView !== 'game-hub' && (
-                <div className="sm:hidden fixed bottom-0 left-0 w-full z-[9999] pb-safe bg-black/90 backdrop-blur-xl border-t border-white/10 pointer-events-auto">
+                <motion.div
+                    animate={{ y: hideNav ? 100 : 0 }}
+                    transition={{ duration: 0.3, ease: 'easeInOut' }}
+                    className="sm:hidden fixed bottom-0 left-0 w-full z-[9999] pb-safe bg-black/90 backdrop-blur-xl border-t border-white/10 pointer-events-auto">
                     <ScrollableRow className="px-2 py-3" itemClassName="gap-6 px-2 justify-between min-w-full">
                         {mobileNavItems.map((item) => {
                             const isActive = currentView === item.id;
@@ -235,7 +240,7 @@ export const NavigationHub = ({ onNavigate, currentView, user, onLogin, onLogout
                             )
                         })}
                     </ScrollableRow>
-                </div>
+                </motion.div>
             )}
         </>
     );

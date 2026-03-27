@@ -6,6 +6,7 @@ import { AlertTriangle } from 'lucide-react';
 import { isSupabaseConfigured } from '../../lib/supabase';
 import { useTranslation } from 'react-i18next';
 import { getRouteFlags, getNavigationView } from './routeHelpers';
+import { ScrollDirectionProvider } from '../../contexts/ScrollDirectionContext';
 
 // Components
 import { CookieConsent } from '../../features/legal/components/CookieConsent';
@@ -92,6 +93,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
     const { isImmersive, isLanding, hideGlobalUI } = getRouteFlags(location.pathname);
 
     return (
+        <ScrollDirectionProvider>
         <div className={`min-h-[100svh] w-full max-w-[100vw] relative pb-24 md:pb-0 ${!hideGlobalUI && !isImmersive
             ? 'flex flex-col sm:flex-row sm:items-center sm:justify-center perspective-1000'
             : ''
@@ -202,5 +204,6 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
             <GuideOverlay />
 
         </div >
+        </ScrollDirectionProvider>
     );
 };

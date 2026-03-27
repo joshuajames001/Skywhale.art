@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { User } from '@supabase/supabase-js';
 import { StoryBook } from '../../types';
 import { BookCard } from './BookCard';
@@ -8,6 +8,8 @@ import { Plus, Sparkles, AlertCircle, Globe, Lock, Heart, Calendar } from 'lucid
 import { getTheme } from '../../lib/themes';
 import { PublicProfile } from '../profile/components/PublicProfile';
 import { AudioConfirmDialog } from '../../components/audio/AudioConfirmDialog';
+import { useScrollDirection } from '../../hooks/useScrollDirection';
+import { useScrollDirectionContext } from '../../contexts/ScrollDirectionContext';
 import { useEnergy } from '../../hooks/useEnergy';
 import { useGuide } from '../../hooks/useGuide';
 import { useTranslation } from 'react-i18next';
@@ -161,6 +163,14 @@ export const Library = ({ user, onOpenBook, onOpenMagic, onCreateCustom, onCreat
         { id: 'cards', label: t('library.tabs.cards'), icon: Sparkles, hidden: !user },
     ];
 
+    const scrollRef = useRef<HTMLDivElement>(null);
+    const scrollDir = useScrollDirection(scrollRef);
+    const { setDirection } = useScrollDirectionContext();
+    const isHeaderHidden = scrollDir === 'down';
+
+    // Sync scroll direction to global context (for NavigationHub)
+    useEffect(() => { setDirection(scrollDir); return () => setDirection('top'); }, [scrollDir, setDirection]);
+
     // Scroll handler for auto-pagination
     const handleScroll = (e: any) => {
         const { scrollTop, clientHeight, scrollHeight } = e.target;
@@ -171,7 +181,7 @@ export const Library = ({ user, onOpenBook, onOpenMagic, onCreateCustom, onCreat
 
 
     return (
-        <div className="w-full h-full relative overflow-hidden bg-gradient-to-br from-sky-50 via-white to-blue-50 text-slate-800">
+        <div className="w-full h-full relative overflow-hidden bg-gradient-to-br from-sky-50 via-white to-blue-50 text-slate-800 flex flex-col">
             {/* Decorative clouds & animals */}
             <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
                 <div className="hidden sm:block absolute top-12 left-8 text-6xl opacity-20 animate-[float_20s_ease-in-out_infinite]">☁️</div>
@@ -184,8 +194,13 @@ export const Library = ({ user, onOpenBook, onOpenMagic, onCreateCustom, onCreat
 
 
 
-            {/* HEADER */}
-            <div className="relative z-10 pt-8 pb-6 px-6 md:px-12 flex flex-col md:flex-row items-center justify-between gap-6">
+            {/* HEADER + TABS (auto-hide on scroll) */}
+            <motion.div
+                animate={{ height: isHeaderHidden ? 0 : 'auto', opacity: isHeaderHidden ? 0 : 1 }}
+                transition={{ duration: 0.3, ease: 'easeInOut' }}
+                className="relative z-10 overflow-hidden"
+            >
+            <div className="pt-8 pb-6 px-6 md:px-12 flex flex-col md:flex-row items-center justify-between gap-6">
                 <div>
                     <h1 className="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-sky-400 via-violet-400 to-fuchsia-400 font-title mb-2">
                         {t('library.title')}
@@ -248,10 +263,12 @@ export const Library = ({ user, onOpenBook, onOpenMagic, onCreateCustom, onCreat
                     </button>
                 ))}
             </div>
+            </motion.div>
 
             {/* CONTENT GRID */}
             <div
-                className="relative z-10 px-4 sm:px-6 md:px-12 pb-20 h-[calc(100vh-200px)] sm:h-[calc(100vh-280px)] overflow-y-auto custom-scrollbar"
+                ref={scrollRef}
+                className="relative z-10 px-4 sm:px-6 md:px-12 pb-20 flex-1 overflow-y-auto custom-scrollbar"
                 onScroll={handleScroll}
             >
                 {loading ? (
