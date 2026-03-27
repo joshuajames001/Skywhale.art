@@ -2,7 +2,38 @@
 
 Všechny významné změny projektu Magické Příběhy (SkyWhale).
 
-## [Unreleased] — 2026-03-26
+## [Unreleased] — 2026-03-27
+
+### Mobile Responsivity Sprint (GF-165–GF-187)
+
+- **GF-165:** Kompletní mobile audit — 40 issues identifikováno (7 CRITICAL, 17 HIGH, 12 MEDIUM, 4 LOW)
+- **GF-166 Wave 1–3:** 24/24 CRITICAL+HIGH opraveno
+  - Touch targety 44px (BookCard, BookReader), responsive gridy (CustomMode, HeroMode)
+  - CardCanvas containerRef + resize listener, CardViewer aspect-[5/7]
+  - Font scaling (CinematicLanding), nav arrows (BookReader), modal widths (PublicProfile, EnergyStore)
+  - Streak circles (DailyRewardModal), tooltip flip (ElevenLabsProfile), voice grid (CustomMode)
+- **GF-166:** CustomBookEditor mobile redesign
+  - Nová architektura: orchestrátor + `CustomBookEditorDesktop` + `CustomBookEditorMobile`
+  - `useMediaQuery` hook (`src/hooks/useMediaQuery.ts`)
+  - `SharedEditorProps` interface, 3 swipovatelné views (Text/Obrázek/Slovník)
+  - Hero mode slide-up overlay, bottom nav, page timeline
+- **GF-169–173:** CustomBookEditor bugfixy
+  - GraduationCap → Hero mode button, Magic Mirror do Image view
+  - Synonym chips → clipboard copy, prompt input text contrast
+  - Smazání duplicitních elementů (hero btn, mirror overlay, add-word btn)
+- **GF-176:** CustomBookEditor top bar — voice/style pickers + overflow menu (save/PDF/publish)
+- **GF-175:** Card Studio mobile redesign
+  - `CardStudioDesktop` + `CardStudioMobile` + `SharedCardStudioProps`
+  - Dark canvas bg (#0d1117) + starfield, portrait karta (max 200px), page strip 52×72px
+  - 5-tab bottom toolbar: Šablony, Pozadí, Nálepky, Text, AI
+  - Fullscreen panely s Framer Motion transitions
+- **GF-177:** Card Studio Text Editor bottom sheet (textarea + size/color/font picker)
+- **GF-178:** Přáníčkový vibe — teplá bílá #fffef8, inset shadow, decorative empty hint
+- **GF-179:** Undo/Redo v top baru + overflow menu (Stáhnout PNG, Sdílet, Nová karta)
+- **GF-182:** Sticker grid + → AI panel s předvoleným sticker tabem
+- **GF-185:** Slovník panel v Card Studio (search, clipboard copy, synonyma)
+- **GF-186:** EN suggestion chips + "Write in English" hint pod prompt inputy
+- **GF-187:** CardStudioMobile refaktor — 700→160 řádků, split do `mobile/panels/` + `mobile/sheets/`
 
 ### Payment, Feedback, Energy, UI & Quality Sprint (GF-141–GF-164)
 
