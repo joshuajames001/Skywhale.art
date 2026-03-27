@@ -19,7 +19,6 @@ type MobileView = 0 | 1 | 2; // 0=text, 1=image, 2=dictionary
 
 export const CustomBookEditorMobile: React.FC<SharedEditorProps> = ({ state, actions, refs, onBack, onOpenStore, t }) => {
     const [activeView, setActiveView] = useState<MobileView>(0);
-    const [showHeroMode, setShowHeroMode] = useState(false);
     const [showMenu, setShowMenu] = useState(false);
     const [showVoicePicker, setShowVoicePicker] = useState(false);
     const [showStylePicker, setShowStylePicker] = useState(false);
@@ -32,8 +31,6 @@ export const CustomBookEditorMobile: React.FC<SharedEditorProps> = ({ state, act
     const pageLabel = state.currentPage?.isCover
         ? t('library.custom_book_editor.title_page', 'Obálka')
         : `Strana ${state.currentPageIndex}`;
-
-    const openHeroMode = () => setShowHeroMode(true);
 
     return (
         <>
@@ -124,12 +121,12 @@ export const CustomBookEditorMobile: React.FC<SharedEditorProps> = ({ state, act
                     >
                         {/* VIEW 1 — TEXT */}
                         <div className="w-full shrink-0 h-full overflow-y-auto p-4">
-                            <TextViewContent state={state} actions={actions} t={t} onOpenHero={openHeroMode} />
+                            <TextViewContent state={state} actions={actions} t={t} onGenerate={() => actions.handleGenerateScene()} />
                         </div>
 
                         {/* VIEW 2 — IMAGE */}
                         <div className="w-full shrink-0 h-full overflow-y-auto p-4">
-                            <ImageViewContent state={state} actions={actions} refs={refs} t={t} onOpenHero={openHeroMode} />
+                            <ImageViewContent state={state} actions={actions} refs={refs} t={t} onGenerate={() => actions.handleGenerateScene()} />
                         </div>
 
                         {/* VIEW 3 — DICTIONARY */}
@@ -347,18 +344,6 @@ export const CustomBookEditorMobile: React.FC<SharedEditorProps> = ({ state, act
                 )}
             </AnimatePresence>
 
-            {/* ── HERO MODE OVERLAY ── */}
-            <AnimatePresence>
-                {showHeroMode && (
-                    <HeroModeOverlay
-                        state={state}
-                        actions={actions}
-                        refs={refs}
-                        t={t}
-                        onClose={() => setShowHeroMode(false)}
-                    />
-                )}
-            </AnimatePresence>
         </>
     );
 };
@@ -366,7 +351,7 @@ export const CustomBookEditorMobile: React.FC<SharedEditorProps> = ({ state, act
 /* ───────────────────────────────────────────────
    TEXT VIEW
    ─────────────────────────────────────────────── */
-const TextViewContent: React.FC<Pick<SharedEditorProps, 'state' | 'actions' | 't'> & { onOpenHero: () => void }> = ({ state, actions, t, onOpenHero }) => (
+const TextViewContent: React.FC<Pick<SharedEditorProps, 'state' | 'actions' | 't'> & { onGenerate: () => void }> = ({ state, actions, t, onGenerate }) => (
     <div className="flex flex-col h-full">
         {/* Label */}
         <div className="flex items-center justify-between mb-3">
@@ -386,12 +371,13 @@ const TextViewContent: React.FC<Pick<SharedEditorProps, 'state' | 'actions' | 't
                 >
                     {state.geminiLoading ? <Loader2 size={16} className="animate-spin" /> : <Feather size={16} />}
                 </button>
-                {/* Hero mode */}
+                {/* Generate image */}
                 <button
-                    onClick={onOpenHero}
-                    className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl bg-[#EEEDFE] border border-[#AFA9EC] transition-all"
+                    onClick={onGenerate}
+                    disabled={!state.currentPage?.text?.trim() || state.isGeneratingImage}
+                    className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl bg-[#EEEDFE] border border-[#AFA9EC] transition-all disabled:opacity-40"
                 >
-                    <ImageIcon size={16} className="text-[#534AB7]" />
+                    {state.isGeneratingImage ? <Loader2 size={16} className="animate-spin text-[#534AB7]" /> : <Sparkles size={16} className="text-[#534AB7]" />}
                 </button>
             </div>
         </div>
@@ -463,10 +449,10 @@ const TextViewContent: React.FC<Pick<SharedEditorProps, 'state' | 'actions' | 't
    IMAGE VIEW
    ─────────────────────────────────────────────── */
 interface ImageViewProps extends Pick<SharedEditorProps, 'state' | 'actions' | 'refs' | 't'> {
-    onOpenHero: () => void;
+    onGenerate: () => void;
 }
 
-const ImageViewContent: React.FC<ImageViewProps> = ({ state, actions, refs, t, onOpenHero }) => (
+const ImageViewContent: React.FC<ImageViewProps> = ({ state, actions, refs, t, onGenerate }) => (
     <div className="flex flex-col h-full gap-4">
         {/* Label + Magic Mirror */}
         <div className="flex items-center justify-between">
@@ -498,8 +484,9 @@ const ImageViewContent: React.FC<ImageViewProps> = ({ state, actions, refs, t, o
                 />
             ) : (
                 <button
-                    onClick={onOpenHero}
-                    className="flex flex-col items-center gap-3 text-gray-300 p-6"
+                    onClick={onGenerate}
+                    disabled={!state.currentPage?.text?.trim()}
+                    className="flex flex-col items-center gap-3 text-gray-300 p-6 disabled:opacity-40"
                 >
                     <div className="w-16 h-16 rounded-2xl border-2 border-dashed border-gray-200 flex items-center justify-center">
                         <ImageIcon size={24} className="text-gray-300" />
@@ -537,10 +524,11 @@ const ImageViewContent: React.FC<ImageViewProps> = ({ state, actions, refs, t, o
                 {t('library.custom_book_editor.btn_upload_photo', 'Z galerie')}
             </button>
             <button
-                onClick={onOpenHero}
-                className="flex-1 flex items-center justify-center gap-2 bg-[#534AB7] text-white rounded-xl px-4 py-2.5 font-medium text-sm"
+                onClick={onGenerate}
+                disabled={!state.currentPage?.text?.trim() || state.isGeneratingImage}
+                className="flex-1 flex items-center justify-center gap-2 bg-[#534AB7] text-white rounded-xl px-4 py-2.5 font-medium text-sm disabled:opacity-50"
             >
-                <Sparkles size={16} />
+                {state.isGeneratingImage ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={16} />}
                 AI generovat
             </button>
         </div>
@@ -616,110 +604,4 @@ const DictionaryViewContent: React.FC<Pick<SharedEditorProps, 'state' | 'actions
 /* Style keys for picker (filtered — no duplicates) */
 const STYLE_KEYS = Object.keys(STYLE_PROMPTS).filter(k => !['Watercolor', 'Pixar 3D'].includes(k));
 
-/* ───────────────────────────────────────────────
-   HERO MODE OVERLAY
-   ─────────────────────────────────────────────── */
-interface HeroOverlayProps extends Pick<SharedEditorProps, 'state' | 'actions' | 'refs' | 't'> {
-    onClose: () => void;
-}
 
-const HERO_CHIPS = [
-    { label: 'whale in starry sky', prompt: 'whale floating among stars in cosmic night sky' },
-    { label: 'enchanted forest', prompt: 'enchanted magical forest with glowing mushrooms and fireflies' },
-    { label: 'underwater world', prompt: 'underwater world with colorful coral reef and sea creatures' },
-];
-
-const HeroModeOverlay: React.FC<HeroOverlayProps> = ({ state, actions, refs, t, onClose }) => {
-    const [localPrompt, setLocalPrompt] = useState(state.currentPage?.prompt || '');
-
-    const handleGenerate = () => {
-        if (localPrompt.trim()) {
-            const newPages = [...state.pages];
-            newPages[state.currentPageIndex].prompt = localPrompt;
-            actions.setPages(newPages);
-        }
-        actions.handleGenerateScene();
-        onClose();
-    };
-
-    return (
-        <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] flex items-end justify-center bg-black/40"
-            onClick={onClose}
-        >
-            <motion.div
-                initial={{ y: '100%' }}
-                animate={{ y: 0 }}
-                exit={{ y: '100%' }}
-                transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-                className="w-full bg-white rounded-t-3xl p-5 pb-8 max-h-[85vh] overflow-y-auto"
-                onClick={(e) => e.stopPropagation()}
-            >
-                {/* Header */}
-                <div className="flex items-center justify-between mb-5">
-                    <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-xl bg-[#EEEDFE] flex items-center justify-center">
-                            <Sparkles size={18} className="text-[#534AB7]" />
-                        </div>
-                        <div>
-                            <h3 className="font-bold text-stone-800 text-base">Hero mode — AI obrázek</h3>
-                            <div className="flex items-center gap-1 text-xs text-stone-400">
-                                <Zap size={10} className="text-amber-500" /> {state.costPerImage} ⚡
-                            </div>
-                        </div>
-                    </div>
-                    <button onClick={onClose} className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full hover:bg-gray-100">
-                        <X size={20} className="text-stone-400" />
-                    </button>
-                </div>
-
-                {/* Preview area */}
-                <div className="bg-[#EEEDFE] rounded-xl h-[140px] flex items-center justify-center mb-5 overflow-hidden">
-                    {state.currentPage?.imageUrl ? (
-                        <img src={state.currentPage.imageUrl} alt="" className="w-full h-full object-contain" />
-                    ) : (
-                        <span className="text-sm text-[#534AB7]/60 font-medium">Náhled se zobrazí zde</span>
-                    )}
-                </div>
-
-                {/* Prompt input */}
-                <label className="text-xs font-bold text-stone-500 uppercase tracking-wider mb-2 block">Prompt</label>
-                <div className="flex gap-2 mb-4">
-                    <input
-                        type="text"
-                        value={localPrompt}
-                        onChange={(e) => setLocalPrompt(e.target.value)}
-                        placeholder="Popiš svůj obrázek…"
-                        className="flex-1 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 bg-white focus:ring-2 focus:ring-[#534AB7]/30 focus:outline-none"
-                        onKeyDown={(e) => { if (e.key === 'Enter') handleGenerate(); }}
-                    />
-                    <p className="text-xs text-gray-400 mt-1">Write in English for best results</p>
-                    <button
-                        onClick={handleGenerate}
-                        disabled={state.isGeneratingImage || (!state.currentPage?.text?.trim() && !localPrompt.trim())}
-                        className="bg-[#534AB7] text-white rounded-xl px-4 py-2.5 font-bold text-sm disabled:opacity-50 flex items-center gap-1"
-                    >
-                        {state.isGeneratingImage ? <Loader2 size={16} className="animate-spin" /> : 'Generovat'}
-                    </button>
-                </div>
-
-                {/* Quick chips */}
-                <div className="flex flex-wrap gap-2 mb-4">
-                    {HERO_CHIPS.map(chip => (
-                        <button
-                            key={chip.label}
-                            onClick={() => setLocalPrompt(chip.prompt)}
-                            className="bg-[#EEEDFE] text-[#534AB7] border border-[#AFA9EC] rounded-full text-xs px-3 py-1 font-medium"
-                        >
-                            {chip.label}
-                        </button>
-                    ))}
-                </div>
-
-            </motion.div>
-        </motion.div>
-    );
-};
