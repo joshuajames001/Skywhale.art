@@ -63,15 +63,15 @@ export const UserProfile = ({ user, onBack, onLogin, onLogout, onNavigate }: Use
         <div className="h-screen w-full relative overflow-y-auto bg-gradient-to-br from-blue-100 via-purple-50 to-pink-100 text-slate-800 font-sans custom-scrollbar">
             {/* Playful Background Elements */}
             <div className="fixed inset-0 pointer-events-none overflow-hidden">
-                <div className="absolute top-10 left-10 text-6xl opacity-40">☁️</div>
-                <div className="absolute top-32 right-20 text-5xl opacity-30">☁️</div>
-                <div className="absolute top-64 left-1/3 text-7xl opacity-20">☁️</div>
+                <div className="hidden sm:block absolute top-10 left-10 text-6xl opacity-40">☁️</div>
+                <div className="hidden sm:block absolute top-32 right-20 text-5xl opacity-30">☁️</div>
+                <div className="hidden sm:block absolute top-64 left-1/3 text-7xl opacity-20">☁️</div>
                 <div className="absolute top-20 right-1/4 text-3xl animate-pulse">⭐</div>
                 <div className="absolute top-96 left-1/4 text-2xl animate-pulse" style={{ animationDelay: '0.5s' }}>✨</div>
                 <div className="absolute bottom-32 right-1/3 text-3xl animate-pulse" style={{ animationDelay: '1s' }}>🌟</div>
             </div>
 
-            <div className="relative z-10 max-w-5xl mx-auto p-8 pt-24">
+            <div className="relative z-10 max-w-5xl mx-auto p-4 sm:p-8 pt-24">
                 <ProfileHeader
                     user={user}
                     nickname={nickname}

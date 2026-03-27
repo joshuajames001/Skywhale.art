@@ -158,7 +158,7 @@ export const HeroMode: React.FC<HeroModeProps> = ({
 
                 {step === 1 && (
                     <motion.div key="step1" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="flex-1 space-y-8">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-12">
                             <div className="space-y-8">
                                 <AnimatedInput label={t('setup.fields.title')} icon={Book} value={formData.title} onChange={(e: any) => setFormData({ ...formData, title: e.target.value })} placeholder={t('setup.fields.title_placeholder')} />
                                 <AnimatedInput label={t('setup.fields.hero')} icon={User} value={formData.main_character} onChange={(e: any) => setFormData({ ...formData, main_character: e.target.value })} placeholder={t('setup.fields.hero_placeholder')} />
@@ -219,7 +219,7 @@ export const HeroMode: React.FC<HeroModeProps> = ({
                                 {policyError && (
                                     <p className="text-red-400 text-sm text-right">{policyError}</p>
                                 )}
-                                <button onClick={handleSubmit} disabled={!hasEnoughEnergy} className={`bg-emerald-600 text-white px-12 py-4 rounded-full font-bold text-lg hover:shadow-2xl hover:shadow-emerald-500/30 transition-all transform hover:scale-105 flex items-center gap-3 ${!hasEnoughEnergy ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                                <button onClick={handleSubmit} disabled={!hasEnoughEnergy} className={`bg-emerald-600 text-white px-6 sm:px-12 py-4 rounded-full font-bold text-lg hover:shadow-2xl hover:shadow-emerald-500/30 transition-all transform hover:scale-105 flex items-center gap-3 ${!hasEnoughEnergy ? 'opacity-50 cursor-not-allowed' : ''}`}>
                                     <Sparkles size={20} /> {hasEnoughEnergy ? t('setup.create_action') : t('setup.energy.insufficient_button')}
                                 </button>
                             </div>

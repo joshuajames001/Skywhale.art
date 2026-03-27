@@ -227,7 +227,7 @@ export const NavigationHub = ({ onNavigate, currentView, user, onLogin, onLogout
                                     className={`relative flex flex-col items-center gap-1 shrink-0 ${isActive ? 'text-purple-400' : 'text-white/50'}`}
                                     whileTap={{ scale: 0.9 }}
                                 >
-                                    <div className="p-1">
+                                    <div className="p-2">
                                         <item.icon size={22} strokeWidth={isActive ? 2.5 : 2} />
                                     </div>
                                     <span className="text-[9px] font-medium whitespace-nowrap">{item.label}</span>

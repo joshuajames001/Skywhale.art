@@ -140,7 +140,7 @@ export const CustomMode: React.FC<CustomModeProps> = ({
                         exit={{ opacity: 0, x: -20 }}
                         className="flex-1"
                     >
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-12">
                             <div className="space-y-8">
                                 <AnimatedInput
                                     label={t('setup.fields.title')}
@@ -286,7 +286,7 @@ export const CustomMode: React.FC<CustomModeProps> = ({
                                 <button
                                     onClick={handleSubmit}
                                     disabled={!hasEnoughEnergy}
-                                    className={`bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white px-12 py-4 rounded-full font-bold text-lg hover:shadow-2xl hover:shadow-fuchsia-500/30 transition-all transform hover:scale-105 flex items-center gap-3 ${!hasEnoughEnergy ? 'opacity-50 grayscale cursor-not-allowed' : ''}`}
+                                    className={`bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white px-6 sm:px-12 py-4 rounded-full font-bold text-lg hover:shadow-2xl hover:shadow-fuchsia-500/30 transition-all transform hover:scale-105 flex items-center gap-3 ${!hasEnoughEnergy ? 'opacity-50 grayscale cursor-not-allowed' : ''}`}
                                 >
                                     <Sparkles size={20} className="animate-spin-slow" />
                                     {hasEnoughEnergy ? t('setup.create_action') : t('setup.energy.insufficient_button')}

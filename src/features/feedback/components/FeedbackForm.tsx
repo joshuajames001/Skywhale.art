@@ -65,7 +65,7 @@ export const FeedbackForm: React.FC<FeedbackFormProps> = ({ onClose }) => {
                                     onChange={(e) => setMessage(e.target.value)}
                                     maxLength={1000}
                                     placeholder="Co máš na srdci?"
-                                    className="w-full h-36 bg-black/30 border border-white/10 rounded-xl p-4 text-white placeholder:text-white/20 focus:outline-none focus:border-purple-500/50 resize-none text-sm"
+                                    className="w-full h-28 sm:h-36 bg-black/30 border border-white/10 rounded-xl p-4 text-white placeholder:text-white/20 focus:outline-none focus:border-purple-500/50 resize-none text-sm"
                                 />
                                 <div className="flex items-center justify-between px-1">
                                     {error && <p className="text-red-400 text-xs">{error}</p>}

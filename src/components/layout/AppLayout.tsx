@@ -153,7 +153,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
             {/* Notification Toast */}
             {
                 notification && (
-                    <div className="absolute top-16 left-1/2 -translate-x-1/2 bg-green-500 text-white px-6 py-2 rounded-full shadow-xl z-[100] font-bold animate-pulse">
+                    <div className="absolute top-20 left-1/2 -translate-x-1/2 bg-green-500 text-white px-6 py-2 rounded-full shadow-xl z-[100] font-bold animate-pulse">
                         {notification}
                     </div>
                 )

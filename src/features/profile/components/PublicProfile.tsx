@@ -51,7 +51,7 @@ export const PublicProfile = ({ userId, onClose, onOpenBook }: PublicProfileProp
                     <div className="text-center pt-12 pb-8 px-8">
                         {/* Avatar */}
                         <div className="relative inline-block mb-4">
-                            <div className="w-32 h-32 rounded-full bg-gradient-to-tr from-pink-400 via-purple-400 to-blue-400 p-1.5 shadow-2xl">
+                            <div className="w-20 h-20 sm:w-32 sm:h-32 rounded-full bg-gradient-to-tr from-pink-400 via-purple-400 to-blue-400 p-1.5 shadow-2xl">
                                 <div className="w-full h-full rounded-full bg-white flex items-center justify-center text-6xl">
                                     {profile?.avatar_emoji || '👤'}
                                 </div>

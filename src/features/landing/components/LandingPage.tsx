@@ -199,7 +199,7 @@ export const LandingPage = ({ onEnter, onNavigate, user, onLogin, hideUI = false
                     <span className="inline-block px-4 py-1 mb-4 rounded-full bg-white/5 border border-white/10 text-purple-200 text-sm font-bold tracking-widest uppercase backdrop-blur-md">
                         {t('landing.hero.badge')}
                     </span>
-                    <h1 className="font-title text-5xl md:text-8xl lg:text-9xl mb-2 bg-clip-text text-transparent bg-gradient-to-br from-white via-purple-100 to-purple-400 drop-shadow-[0_0_30px_rgba(168,85,247,0.5)]">
+                    <h1 className="font-title text-3xl sm:text-5xl md:text-8xl lg:text-9xl mb-2 bg-clip-text text-transparent bg-gradient-to-br from-white via-purple-100 to-purple-400 drop-shadow-[0_0_30px_rgba(168,85,247,0.5)]">
                         Skywhale.
                     </h1>
                     <p className="font-serif italic text-xl md:text-2xl text-purple-200/60 max-w-2xl mx-auto">
@@ -418,7 +418,7 @@ export const LandingPage = ({ onEnter, onNavigate, user, onLogin, hideUI = false
 
             {/* 7. LEGAL FOOTER */}
             <footer className="relative z-10 w-full py-12 px-6 bg-[#050510] border-t border-white/5 flex flex-col items-center">
-                <div className="flex flex-wrap justify-center gap-8 mb-8 text-sm font-medium text-white/40">
+                <div className="flex flex-wrap justify-center gap-4 sm:gap-8 mb-8 text-sm font-medium text-white/40">
                     <button
                         onClick={() => document.getElementById('about-us')?.scrollIntoView({ behavior: 'smooth' })}
                         className="hover:text-purple-400 transition-colors uppercase tracking-widest"

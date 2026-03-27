@@ -268,7 +268,7 @@ export const Library = ({ user, onOpenBook, onOpenMagic, onCreateCustom, onCreat
                         <p>{t('library.empty_state')}</p>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 md:gap-8 auto-rows-max">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-6 md:gap-8 auto-rows-max">
                         <AnimatePresence mode='popLayout'>
                             {books.slice(0, visibleCount).map((book, index) => (
                                 <BookCard

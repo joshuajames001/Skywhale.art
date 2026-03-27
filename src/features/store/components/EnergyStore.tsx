@@ -142,7 +142,7 @@ export const EnergyStore: React.FC<EnergyStoreProps> = ({ onClose }) => {
                 className="relative bg-zinc-900 border border-white/10 rounded-3xl w-full max-w-[95vw] sm:max-w-lg md:max-w-6xl p-4 sm:p-6 md:p-8 shadow-2xl overflow-hidden min-h-[80vh] mx-auto mt-10 mb-10"
             >
                 {/* Close Button */}
-                <button onClick={onClose} className="absolute top-4 right-4 p-2 hover:bg-white/10 rounded-full transition-colors text-white/50 hover:text-white z-50">
+                <button onClick={onClose} className="absolute top-4 right-4 min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-white/10 rounded-full transition-colors text-white/50 hover:text-white z-50">
                     <X size={24} />
                 </button>
 
@@ -190,9 +190,9 @@ export const EnergyStore: React.FC<EnergyStoreProps> = ({ onClose }) => {
                                 <span className={`text-sm font-bold transition-colors ${billingPeriod === 'monthly' ? 'text-white' : 'text-white/40'}`}>Měsíčně</span>
                                 <button
                                     onClick={() => setBillingPeriod(prev => prev === 'monthly' ? 'yearly' : 'monthly')}
-                                    className={`w-12 h-6 rounded-full p-1 transition-colors duration-300 ${billingPeriod === 'yearly' ? 'bg-amber-500' : 'bg-white/20'}`}
+                                    className={`w-14 h-8 rounded-full p-1 transition-colors duration-300 ${billingPeriod === 'yearly' ? 'bg-amber-500' : 'bg-white/20'}`}
                                 >
-                                    <div className={`w-4 h-4 rounded-full bg-white shadow-sm transition-transform duration-300 ${billingPeriod === 'yearly' ? 'translate-x-6' : 'translate-x-0'}`} />
+                                    <div className={`w-6 h-6 rounded-full bg-white shadow-sm transition-transform duration-300 ${billingPeriod === 'yearly' ? 'translate-x-6' : 'translate-x-0'}`} />
                                 </button>
                                 <span className={`text-sm font-bold transition-colors ${billingPeriod === 'yearly' ? 'text-white' : 'text-white/40'}`}>
                                     Ročně <span className="text-amber-400 text-xs">(až 2 měsíce zdarma)</span>
