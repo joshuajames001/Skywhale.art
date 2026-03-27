@@ -126,7 +126,7 @@ export const StorySpread = ({
             </div>
 
             {/* Text Area (Night Sky Mode) */}
-            <div className="w-full md:w-1/2 h-1/2 md:h-full relative p-6 md:p-12 lg:p-16 flex flex-col justify-start bg-gradient-to-b from-black/10 to-black/30 md:bg-black/20 overflow-y-auto custom-scrollbar">
+            <div className="w-full md:w-1/2 h-auto min-h-[50%] md:h-full relative p-4 sm:p-6 md:p-12 lg:p-16 flex flex-col justify-start bg-gradient-to-b from-black/10 to-black/30 md:bg-black/20 overflow-y-auto custom-scrollbar">
                 {/* Night Sky Texture */}
                 <div
                     className="absolute inset-0 opacity-10 pointer-events-none"

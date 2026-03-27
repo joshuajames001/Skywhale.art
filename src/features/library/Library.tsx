@@ -174,8 +174,8 @@ export const Library = ({ user, onOpenBook, onOpenMagic, onCreateCustom, onCreat
         <div className="w-full h-full relative overflow-hidden bg-gradient-to-br from-sky-50 via-white to-blue-50 text-slate-800">
             {/* Decorative clouds & animals */}
             <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
-                <div className="absolute top-12 left-8 text-6xl opacity-20 animate-[float_20s_ease-in-out_infinite]">☁️</div>
-                <div className="absolute top-24 right-16 text-5xl opacity-15 animate-[float_25s_ease-in-out_infinite_2s]">☁️</div>
+                <div className="hidden sm:block absolute top-12 left-8 text-6xl opacity-20 animate-[float_20s_ease-in-out_infinite]">☁️</div>
+                <div className="hidden sm:block absolute top-24 right-16 text-5xl opacity-15 animate-[float_25s_ease-in-out_infinite_2s]">☁️</div>
                 <div className="absolute top-40 left-1/3 text-4xl opacity-10 animate-[float_30s_ease-in-out_infinite_4s]">☁️</div>
                 <div className="absolute bottom-24 right-12 text-3xl opacity-20">🐳</div>
                 <div className="absolute top-32 right-1/4 text-2xl opacity-15">🦋</div>
@@ -195,7 +195,7 @@ export const Library = ({ user, onOpenBook, onOpenMagic, onCreateCustom, onCreat
                     </p>
                 </div>
 
-                <div className="flex gap-3">
+                <div className="flex flex-wrap gap-2 sm:gap-3">
                     <motion.button
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
@@ -251,7 +251,7 @@ export const Library = ({ user, onOpenBook, onOpenMagic, onCreateCustom, onCreat
 
             {/* CONTENT GRID */}
             <div
-                className="relative z-10 px-6 md:px-12 pb-20 h-[calc(100vh-280px)] overflow-y-auto custom-scrollbar"
+                className="relative z-10 px-4 sm:px-6 md:px-12 pb-20 h-[calc(100vh-200px)] sm:h-[calc(100vh-280px)] overflow-y-auto custom-scrollbar"
                 onScroll={handleScroll}
             >
                 {loading ? (

@@ -71,13 +71,13 @@ export const CinematicLanding = ({ onEnter, onNavigate }: CinematicLandingProps)
                 </div>
 
                 {/* Desktop Links */}
-                <div className="hidden md:flex items-center gap-8 text-sm font-medium tracking-widest uppercase text-white/80">
+                <div className="hidden md:flex items-center gap-3 sm:gap-8 text-xs sm:text-sm font-medium tracking-widest uppercase text-white/80">
                     {/* Studio Dropdown */}
                     <div className="relative group">
                         <button className="flex items-center gap-2 hover:text-white hover:drop-shadow-[0_0_8px_rgba(255,255,255,0.5)] transition-all py-2">
                             {t('landing.nav.studio')} <ChevronRight size={12} className="rotate-90 group-hover:-rotate-90 transition-transform duration-300" />
                         </button>
-                        <div className="absolute top-full left-1/2 -translate-x-1/2 pt-4 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform group-hover:translate-y-0 translate-y-2 w-64">
+                        <div className="absolute top-full left-1/2 -translate-x-1/2 pt-4 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform group-hover:translate-y-0 translate-y-2 w-56 sm:w-64">
                             <div className="bg-[#0a0a16]/90 backdrop-blur-xl border border-white/10 rounded-2xl p-2 shadow-2xl flex flex-col gap-1">
                                 <button onClick={() => onEnter()} className="flex items-center gap-3 p-3 rounded-xl hover:bg-white/10 transition-colors text-left group/item">
                                     <div className="p-2 rounded-lg bg-purple-500/20 text-purple-300 group-hover/item:text-white transition-colors"><BookOpen size={16} /></div>
@@ -128,7 +128,7 @@ export const CinematicLanding = ({ onEnter, onNavigate }: CinematicLandingProps)
 
             {/* 3. HERO SECTION */}
             <div className="relative z-20 h-full flex flex-col items-center justify-center px-4 text-center">
-                <h1 className="font-title text-6xl md:text-8xl lg:text-9xl mb-6 text-white drop-shadow-2xl tracking-tighter">
+                <h1 className="font-title text-3xl sm:text-5xl md:text-8xl lg:text-9xl mb-6 text-white drop-shadow-2xl tracking-tighter">
                     Skywhale<span className="text-purple-400">.</span>
                 </h1>
 
@@ -139,7 +139,7 @@ export const CinematicLanding = ({ onEnter, onNavigate }: CinematicLandingProps)
                 <div className="flex flex-col items-center mt-12">
                     <button
                         onClick={() => onNavigate?.('landing')}
-                        className="group relative px-10 py-4 rounded-full border border-white/30 hover:border-white bg-transparent hover:bg-white/5 transition-all w-64 text-center overflow-hidden"
+                        className="group relative px-10 py-4 rounded-full border border-white/30 hover:border-white bg-transparent hover:bg-white/5 transition-all w-full sm:w-64 text-center overflow-hidden"
                     >
                         <span className="relative z-10 font-bold text-lg tracking-widest uppercase flex items-center justify-center gap-2 text-white">
                             {t('landing.hero.enter')} <ChevronRight size={16} />
