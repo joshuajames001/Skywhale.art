@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     ChevronLeft, ImageIcon, Type, Book, Sparkles, Camera,
-    Loader2, Star, X, Feather, GraduationCap, Search, Languages,
+    Loader2, Star, X, Feather, Search, Languages,
     Zap,
 } from 'lucide-react';
 import { SharedEditorProps } from '../types';
@@ -77,7 +77,7 @@ export const CustomBookEditorMobile: React.FC<SharedEditorProps> = ({ state, act
                     >
                         {/* VIEW 1 — TEXT */}
                         <div className="w-full shrink-0 h-full overflow-y-auto p-4">
-                            <TextViewContent state={state} actions={actions} t={t} />
+                            <TextViewContent state={state} actions={actions} t={t} onOpenHero={openHeroMode} />
                         </div>
 
                         {/* VIEW 2 — IMAGE */}
@@ -189,7 +189,7 @@ export const CustomBookEditorMobile: React.FC<SharedEditorProps> = ({ state, act
 /* ───────────────────────────────────────────────
    TEXT VIEW
    ─────────────────────────────────────────────── */
-const TextViewContent: React.FC<Pick<SharedEditorProps, 'state' | 'actions' | 't'>> = ({ state, actions, t }) => (
+const TextViewContent: React.FC<Pick<SharedEditorProps, 'state' | 'actions' | 't'> & { onOpenHero: () => void }> = ({ state, actions, t, onOpenHero }) => (
     <div className="flex flex-col h-full">
         {/* Label */}
         <div className="flex items-center justify-between mb-3">
@@ -209,12 +209,12 @@ const TextViewContent: React.FC<Pick<SharedEditorProps, 'state' | 'actions' | 't
                 >
                     {state.geminiLoading ? <Loader2 size={16} className="animate-spin" /> : <Feather size={16} />}
                 </button>
-                {/* Expert mode */}
+                {/* Hero mode */}
                 <button
-                    onClick={() => actions.setIsExpertMode(!state.isExpertMode)}
-                    className={`min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full transition-all ${state.isExpertMode ? 'bg-indigo-100 text-indigo-600 ring-2 ring-indigo-200' : 'bg-white text-gray-400 border border-gray-100 shadow-sm'}`}
+                    onClick={onOpenHero}
+                    className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl bg-[#EEEDFE] border border-[#AFA9EC] transition-all"
                 >
-                    <GraduationCap size={16} />
+                    <ImageIcon size={16} className="text-[#534AB7]" />
                 </button>
             </div>
         </div>
@@ -291,8 +291,25 @@ interface ImageViewProps extends Pick<SharedEditorProps, 'state' | 'actions' | '
 
 const ImageViewContent: React.FC<ImageViewProps> = ({ state, actions, refs, t, onOpenHero }) => (
     <div className="flex flex-col h-full gap-4">
-        {/* Label */}
-        <span className="text-[10px] font-bold tracking-widest text-white/70 uppercase">Strana — Obrázek</span>
+        {/* Label + Magic Mirror */}
+        <div className="flex items-center justify-between">
+            <span className="text-[10px] font-bold tracking-widest text-white/70 uppercase">Strana — Obrázek</span>
+            <button
+                onClick={() => refs.magicMirrorInputRef.current?.click()}
+                className={`flex items-center gap-1 text-sm font-medium transition-all ${state.magicMirrorUrl ? 'text-purple-300' : 'text-[#534AB7]/70'}`}
+            >
+                <span>🪞</span>
+                {state.magicMirrorUrl ? 'Mirror aktivní' : 'Magic Mirror'}
+                {state.isUploadingMirror && <Loader2 size={12} className="animate-spin" />}
+            </button>
+        </div>
+        <input
+            type="file"
+            ref={refs.magicMirrorInputRef}
+            onChange={actions.handleMagicMirrorUpload}
+            accept="image/*"
+            className="hidden"
+        />
 
         {/* Image card */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 flex-1 min-h-[200px] flex items-center justify-center overflow-hidden relative">
@@ -417,9 +434,19 @@ const DictionaryViewContent: React.FC<Pick<SharedEditorProps, 'state' | 'actions
                                 </h4>
                                 <div className="flex flex-wrap gap-2">
                                     {state.dictionaryResult.synonyms.map((syn: string) => (
-                                        <span key={syn} className="px-3 py-1.5 bg-white border border-stone-200 rounded-lg text-sm text-stone-600 shadow-sm">
+                                        <button
+                                            key={syn}
+                                            onClick={() => {
+                                                const cur = state.currentPage?.prompt || '';
+                                                const updated = cur ? `${cur}, ${syn}` : syn;
+                                                const newPages = [...state.pages];
+                                                newPages[state.currentPageIndex].prompt = updated;
+                                                actions.setPages(newPages);
+                                            }}
+                                            className="px-3 py-1.5 bg-white border border-stone-200 rounded-lg text-sm text-stone-600 shadow-sm cursor-pointer hover:bg-[#EEEDFE] hover:border-[#AFA9EC] hover:text-[#534AB7] transition-colors"
+                                        >
                                             {syn}
-                                        </span>
+                                        </button>
                                     ))}
                                 </div>
                             </div>
@@ -535,7 +562,7 @@ const HeroModeOverlay: React.FC<HeroOverlayProps> = ({ state, actions, refs, t, 
                         value={localPrompt}
                         onChange={(e) => setLocalPrompt(e.target.value)}
                         placeholder="Popiš svůj obrázek…"
-                        className="flex-1 border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-[#534AB7]/30 focus:outline-none"
+                        className="flex-1 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 bg-white focus:ring-2 focus:ring-[#534AB7]/30 focus:outline-none"
                         onKeyDown={(e) => { if (e.key === 'Enter') handleGenerate(); }}
                     />
                     <button
