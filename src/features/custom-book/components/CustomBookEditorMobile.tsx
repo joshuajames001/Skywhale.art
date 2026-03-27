@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
     ChevronLeft, ImageIcon, Type, Book, Sparkles, Camera,
     Loader2, Star, X, Feather, Search, Languages,
-    Zap,
+    Zap, Check, Copy,
 } from 'lucide-react';
 import { SharedEditorProps } from '../types';
 import { checkTopicBlacklist } from '../../../lib/content-policy';
@@ -376,6 +376,14 @@ const ImageViewContent: React.FC<ImageViewProps> = ({ state, actions, refs, t, o
    DICTIONARY VIEW (Magičtinář)
    ─────────────────────────────────────────────── */
 const DictionaryViewContent: React.FC<Pick<SharedEditorProps, 'state' | 'actions' | 't'>> = ({ state, actions, t }) => {
+    const [copied, setCopied] = useState<string | null>(null);
+
+    const copyToClipboard = (word: string) => {
+        navigator.clipboard.writeText(word);
+        setCopied(word);
+        setTimeout(() => setCopied(null), 1500);
+    };
+
     const handleSearch = () => {
         if (!state.dictionaryQuery) return;
         actions.setIsSearchingDict(true);
@@ -412,12 +420,20 @@ const DictionaryViewContent: React.FC<Pick<SharedEditorProps, 'state' | 'actions
                 ) : state.dictionaryResult ? (
                     <div className="space-y-4">
                         {/* Main result card */}
-                        <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 text-center relative overflow-hidden">
+                        <button
+                            onClick={() => copyToClipboard(state.dictionaryResult.primary_en)}
+                            className="w-full bg-white p-5 rounded-2xl shadow-sm border border-gray-100 text-center relative overflow-hidden cursor-pointer hover:bg-gray-50 transition-colors"
+                        >
                             <div className="absolute top-0 left-0 w-full h-1.5 bg-orange-400" />
                             <div className="text-5xl mb-3">{state.dictionaryResult.emoji}</div>
-                            <h3 className="text-2xl font-bold text-stone-800 mb-1">{state.dictionaryResult.primary_en}</h3>
+                            <h3 className="text-2xl font-bold text-stone-800 mb-1 flex items-center justify-center gap-2">
+                                {state.dictionaryResult.primary_en}
+                                {copied === state.dictionaryResult.primary_en
+                                    ? <Check size={16} className="text-green-500" />
+                                    : <Copy size={14} className="text-stone-300" />}
+                            </h3>
                             <p className="text-stone-400 italic font-serif text-sm">"{state.dictionaryQuery}"</p>
-                        </div>
+                        </button>
 
                         {/* Synonyms */}
                         {state.dictionaryResult.synonyms?.length > 0 && (
@@ -429,15 +445,10 @@ const DictionaryViewContent: React.FC<Pick<SharedEditorProps, 'state' | 'actions
                                     {state.dictionaryResult.synonyms.map((syn: string) => (
                                         <button
                                             key={syn}
-                                            onClick={() => {
-                                                const cur = state.currentPage?.prompt || '';
-                                                const updated = cur ? `${cur}, ${syn}` : syn;
-                                                const newPages = [...state.pages];
-                                                newPages[state.currentPageIndex].prompt = updated;
-                                                actions.setPages(newPages);
-                                            }}
-                                            className="px-3 py-1.5 bg-white border border-stone-200 rounded-lg text-sm text-stone-600 shadow-sm cursor-pointer hover:bg-[#EEEDFE] hover:border-[#AFA9EC] hover:text-[#534AB7] transition-colors"
+                                            onClick={() => copyToClipboard(syn)}
+                                            className="px-3 py-1.5 bg-white border border-stone-200 rounded-lg text-sm text-stone-600 shadow-sm cursor-pointer hover:bg-[#EEEDFE] hover:border-[#AFA9EC] hover:text-[#534AB7] transition-colors flex items-center gap-1"
                                         >
+                                            {copied === syn ? <Check size={12} className="text-green-500" /> : null}
                                             {syn}
                                         </button>
                                     ))}
