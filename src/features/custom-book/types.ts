@@ -20,5 +20,6 @@ export interface SharedEditorProps {
     actions: ReturnType<typeof import('./hooks/useCustomBookEditor').useCustomBookEditor>['actions'];
     refs: ReturnType<typeof import('./hooks/useCustomBookEditor').useCustomBookEditor>['refs'];
     onBack: () => void;
+    onOpenStore?: () => void;
     t: TFunction;
 }

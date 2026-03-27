@@ -4,19 +4,20 @@ import {
     ChevronLeft, ImageIcon, Type, Book, Sparkles, Camera,
     Loader2, Star, X, Feather, Search, Languages,
     Zap, Check, Volume2, Palette, MoreHorizontal,
-    Download, Share2, Save,
+    Download, Share2, Save, GraduationCap, Trash2,
 } from 'lucide-react';
 import { SharedEditorProps } from '../types';
 import { checkTopicBlacklist } from '../../../lib/content-policy';
 import { BottomSheet } from '../../../components/BottomSheet';
 import { DictionaryResults } from '../../../components/DictionaryResults';
+import { VoicePreviewButton } from '../../../components/audio/VoicePreviewButton';
 import { useClipboardCopy } from '../../../hooks/useClipboardCopy';
 import { VOICE_OPTIONS } from '../../../lib/audio-constants';
 import { STYLE_PROMPTS } from '../../../lib/ai';
 
 type MobileView = 0 | 1 | 2; // 0=text, 1=image, 2=dictionary
 
-export const CustomBookEditorMobile: React.FC<SharedEditorProps> = ({ state, actions, refs, onBack, t }) => {
+export const CustomBookEditorMobile: React.FC<SharedEditorProps> = ({ state, actions, refs, onBack, onOpenStore, t }) => {
     const [activeView, setActiveView] = useState<MobileView>(0);
     const [showHeroMode, setShowHeroMode] = useState(false);
     const [showMenu, setShowMenu] = useState(false);
@@ -230,15 +231,17 @@ export const CustomBookEditorMobile: React.FC<SharedEditorProps> = ({ state, act
                             {!state.selectedVoice && <Check size={16} className="text-[#534AB7]" />}
                         </button>
                         {VOICE_OPTIONS.map(v => (
-                            <button
-                                key={v.id}
-                                onClick={() => { actions.setSelectedVoice(v.id); setShowVoicePicker(false); }}
-                                className={`flex items-center gap-3 w-full px-5 py-3.5 text-left hover:bg-gray-50 active:bg-gray-100 ${state.selectedVoice === v.id ? 'bg-[#EEEDFE]' : ''}`}
-                            >
-                                <span className="text-lg">{v.emoji}</span>
-                                <span className="text-sm font-medium text-gray-800 flex-1">{v.name}</span>
-                                {state.selectedVoice === v.id && <Check size={16} className="text-[#534AB7]" />}
-                            </button>
+                            <div key={v.id} className={`flex items-center gap-3 w-full px-5 py-3.5 hover:bg-gray-50 ${state.selectedVoice === v.id ? 'bg-[#EEEDFE]' : ''}`}>
+                                <button
+                                    onClick={() => { actions.setSelectedVoice(v.id); setShowVoicePicker(false); }}
+                                    className="flex items-center gap-3 flex-1 text-left"
+                                >
+                                    <span className="text-lg">{v.emoji}</span>
+                                    <span className="text-sm font-medium text-gray-800 flex-1">{v.name}</span>
+                                    {state.selectedVoice === v.id && <Check size={16} className="text-[#534AB7]" />}
+                                </button>
+                                <VoicePreviewButton previewUrl={v.previewUrl} isActive={state.selectedVoice === v.id} />
+                            </div>
                         ))}
                     </BottomSheet>
                 )}
@@ -312,6 +315,42 @@ export const CustomBookEditorMobile: React.FC<SharedEditorProps> = ({ state, act
                         >
                             <Share2 size={18} className="text-gray-500" />
                             <span className="text-sm font-medium text-gray-800">Publikovat</span>
+                        </button>
+
+                        {/* Charge Energy */}
+                        {onOpenStore && (
+                            <button
+                                onClick={() => { onOpenStore(); setShowMenu(false); }}
+                                className="flex items-center gap-3 w-full px-5 py-3.5 text-left hover:bg-gray-50 active:bg-gray-100"
+                            >
+                                <Zap size={18} className="text-amber-500" />
+                                <span className="text-sm font-medium text-amber-600">Dobít energii</span>
+                                <span className="text-xs text-gray-400 ml-auto">{state.userBalance ?? '?'} ⚡</span>
+                            </button>
+                        )}
+
+                        {/* Expert Mode toggle */}
+                        <button
+                            onClick={() => { actions.setIsExpertMode(!state.isExpertMode); setShowMenu(false); }}
+                            className="flex items-center gap-3 w-full px-5 py-3.5 text-left hover:bg-gray-50 active:bg-gray-100"
+                        >
+                            <GraduationCap size={18} className={state.isExpertMode ? 'text-[#534AB7]' : 'text-gray-500'} />
+                            <span className="text-sm font-medium text-gray-800 flex-1">Expert Mode</span>
+                            <div className={`w-10 h-6 rounded-full p-1 transition-colors ${state.isExpertMode ? 'bg-[#534AB7]' : 'bg-gray-200'}`}>
+                                <div className={`w-4 h-4 rounded-full bg-white shadow-sm transition-transform ${state.isExpertMode ? 'translate-x-4' : 'translate-x-0'}`} />
+                            </div>
+                        </button>
+
+                        {/* Separator */}
+                        <div className="h-px bg-gray-100 mx-5 my-1" />
+
+                        {/* New Book (destructive) */}
+                        <button
+                            onClick={() => { actions.handleNewBook(); setShowMenu(false); }}
+                            className="flex items-center gap-3 w-full px-5 py-3.5 text-left hover:bg-red-50 active:bg-red-100"
+                        >
+                            <Trash2 size={18} className="text-red-400" />
+                            <span className="text-sm font-medium text-red-500">Nová kniha (smazat vše)</span>
                         </button>
                     </BottomSheet>
                 )}

@@ -14,7 +14,7 @@ const CustomBookEditor: React.FC<CustomBookEditorProps> = ({ onBack, onOpenStore
     const { state, actions, refs } = useCustomBookEditor({ onBack, onOpenStore });
     const isMobile = !useMediaQuery('(min-width: 768px)');
 
-    const sharedProps = { state, actions, refs, onBack, t };
+    const sharedProps = { state, actions, refs, onBack, onOpenStore, t };
 
     return (
         <div className="fixed inset-0 w-full h-full bg-gradient-to-br from-indigo-400 via-purple-400 to-pink-400 text-stone-100 font-sans selection:bg-purple-500/30 flex flex-col overflow-hidden z-40">
