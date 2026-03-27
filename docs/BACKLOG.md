@@ -4,8 +4,8 @@
 
 ## Stav projektu
 
-- **Linear issues:** 37 celkem (33 done, 2 canceled, 0 in progress, 2 odložené)
-- **Poslední sprint:** GF-141–GF-152 (2026-03-26/27)
+- **Linear issues:** 43 celkem (39 done, 2 canceled, 0 in progress, 2 odložené)
+- **Poslední sprint:** GF-141–GF-164 (2026-03-26/27)
 - **Build:** Zelený (tsc 0 errors + vite build pass)
 - **Test coverage:** 298 testů, ~76% statements
 - **Main bundle:** 185.94 kB (vendor chunks separated)
@@ -64,7 +64,7 @@
 
 | Datum | Milestone |
 |-------|-----------|
-| 2026-03-27 | GF-146/150/152 + CinematicLanding: Energy refund, purchaseEnergy testy (+4→298), console.log cleanup, hero-only refactor, video z Supabase Storage |
+| 2026-03-27 | GF-146–GF-164: Energy refund, Three-Layer fixes (CardViewer, PublicProfile, BookReader), Library light mode, sidebar fix, i18n, debug cleanup, CinematicLanding hero-only |
 | 2026-03-26 | GF-141/143/145/148/151: Stripe migrace, Feedback→email, Energy rebalance, IMAGE_COSTS SSoT, daily reward fix + RPC migrace |
 | 2026-03-26 | GF-138 dokončen: Encyklopedie v2 plně propojená (reader, audio, backgrounds, custom SVG ikony, 9 legacy souborů smazáno) |
 | 2026-03-25 | GF-133→GF-138: Card Studio share, coverage 75%, Encyklopedie v2 UI, Three.js cancelled |

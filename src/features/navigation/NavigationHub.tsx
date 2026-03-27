@@ -55,7 +55,7 @@ export const NavigationHub = ({ onNavigate, currentView, user, onLogin, onLogout
             {/* DESKTOP LEFT DOCK */}
             <div
                 className={`hidden sm:flex fixed z-[100] flex-col gap-4 items-start pointer-events-auto transition-all duration-500
-                    ${(currentView === 'landing' || currentView === 'library' || currentView === 'setup' || currentView === 'book' || currentView === 'arcade' || currentView === 'energy_store') ? 'top-6 left-6' :
+                    ${(currentView === 'landing' || currentView === 'library' || currentView === 'setup' || currentView === 'book' || currentView === 'arcade' || currentView === 'energy_store' || currentView === 'feedback_board') ? 'top-6 left-6' :
                         ((currentView === 'card_studio' || currentView === 'create_custom') ? 'top-20 left-6' :
                             (currentView === 'discovery' ? 'top-24 left-6' : 'top-28 left-6'))}
                 `}

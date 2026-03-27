@@ -4,8 +4,16 @@ Všechny významné změny projektu Magické Příběhy (SkyWhale).
 
 ## [Unreleased] — 2026-03-26
 
-### Payment, Feedback, Energy & Quality Sprint (GF-141–GF-152)
+### Payment, Feedback, Energy, UI & Quality Sprint (GF-141–GF-164)
 
+- **GF-156:** CardViewer Three-Layer fix — `useSharedCard` hook
+- **GF-158:** PublicProfile Three-Layer fix — `usePublicProfile` hook
+- **GF-159:** BookRouteWrapper — smazán nepoužívaný supabase import
+- **GF-160:** BookReader — `useAudioGeneration` hook (nahrazuje přímé `invokeEdgeFunction`)
+- **GF-163:** Library light mode — sky gradient, mráčky/zvířátka dekorace, BookCard bílé karty
+- **GF-164:** Sidebar aktivní ikona fix — `/home` chyběl v `getNavigationView`, navigace pozice fix pro feedback view
+- **i18n:** Chybějící `library.*` klíče (title, subtitle, tabs.community, tabs.my_books aj.)
+- **Cleanup:** Smazány debug soubory (list-models.js, models.json, models.md, supabase_migration_trailer.sql)
 - **GF-146:** Energy refund pattern — generate-story-image + skywhale-flux refundují energy při Replicate selhání
 - **GF-148:** IMAGE_COSTS single source of truth — `_shared/costs.ts` + `src/lib/constants.ts`, STORY_COSTS odvozené výpočtem
 - **GF-150:** purchaseEnergy test coverage — +4 testy (294→298), Stripe checkout flow pokryt

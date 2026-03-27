@@ -34,7 +34,7 @@ export const getNavigationView = (pathname: string): string => {
     if (pathname === '/custom') return 'create_custom';
     if (pathname === '/store') return 'energy_store';
     if (pathname === '/profile') return 'profile';
-    if (pathname === '/' || pathname === '/magic') return 'landing';
+    if (pathname === '/' || pathname === '/home' || pathname === '/magic') return 'landing';
     if (pathname.includes('/book')) return 'library';
     if (pathname.includes('/studio')) return 'card_studio';
     return 'library';
