@@ -9,6 +9,7 @@ interface VoicePreviewButtonProps {
 export const VoicePreviewButton: React.FC<VoicePreviewButtonProps> = ({ previewUrl, isActive }) => {
     const [isPlaying, setIsPlaying] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+    const [hasError, setHasError] = useState(false);
     const audioRef = useRef<HTMLAudioElement | null>(null);
 
     // Reset audio instance when previewUrl changes
@@ -19,6 +20,7 @@ export const VoicePreviewButton: React.FC<VoicePreviewButtonProps> = ({ previewU
         }
         setIsPlaying(false);
         setIsLoading(false);
+        setHasError(false);
     }, [previewUrl]);
 
     // Stop playing if another voice becomes active or component unmounts
@@ -30,17 +32,19 @@ export const VoicePreviewButton: React.FC<VoicePreviewButtonProps> = ({ previewU
     }, [isActive]);
 
     const togglePlay = (e: React.MouseEvent) => {
-        e.stopPropagation(); // Prevent triggering parent selection logic
+        e.stopPropagation();
+
+        if (!previewUrl) return;
 
         if (!audioRef.current) {
             audioRef.current = new Audio(previewUrl);
             audioRef.current.onended = () => setIsPlaying(false);
             audioRef.current.onwaiting = () => setIsLoading(true);
-            audioRef.current.onplaying = () => setIsLoading(false);
-            audioRef.current.onerror = (e) => {
-                console.error("Audio playback error", e);
+            audioRef.current.onplaying = () => { setIsLoading(false); setHasError(false); };
+            audioRef.current.onerror = () => {
                 setIsLoading(false);
                 setIsPlaying(false);
+                setHasError(true);
             };
         }
 
@@ -59,11 +63,14 @@ export const VoicePreviewButton: React.FC<VoicePreviewButtonProps> = ({ previewU
         }
     };
 
+    const disabled = !previewUrl || hasError;
+
     return (
         <button
             onClick={togglePlay}
-            className={`p-2 rounded-full transition-all ${isPlaying ? 'bg-indigo-500 text-white shadow-lg scale-110' : 'bg-white/10 text-white/70 hover:bg-white/20 hover:text-white'}`}
-            title={isPlaying ? "Zastavit ukázku" : "Přehrát ukázku"}
+            disabled={disabled}
+            className={`p-2 rounded-full transition-all ${disabled ? 'opacity-30 cursor-not-allowed bg-white/5 text-white/30' : isPlaying ? 'bg-indigo-500 text-white shadow-lg scale-110' : 'bg-white/10 text-white/70 hover:bg-white/20 hover:text-white'}`}
+            title={hasError ? "Ukázka není dostupná" : isPlaying ? "Zastavit ukázku" : "Přehrát ukázku"}
         >
             {isLoading ? (
                 <Loader2 size={12} className="animate-spin" />
