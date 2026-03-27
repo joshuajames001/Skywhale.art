@@ -17,7 +17,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ```bash
 npm run dev        # Vite dev server (default port 5173)
 npm run build      # tsc + vite build (production)
-npm run lint       # ESLint (0 max-warnings, strict)
+npm run lint       # ESLint 9.x flat config (0 errors, warnings OK)
 npm run preview    # Preview production build on port 5174
 
 # Testing (vitest)
@@ -90,7 +90,7 @@ All product features live in `src/features/<feature-name>/`. Key features:
 - **`achievements.ts`** — `checkAndUnlockAchievement()`, `checkBookCountAchievements()` — achievement system
 - **`storage-service.ts`** — `storageService` singleton for image upload to Supabase Storage
 - **`themes.ts`** — `THEMES` registry (8 palettes: Fantasy, Adventure, Bedtime, Sci-Fi, Watercolor, Pixar 3D, Futuristic, Sketch)
-- **`audio-constants.ts`** — `VOICE_OPTIONS` (4 ElevenLabs voices), `DEFAULT_VOICE_ID`
+- **`audio-constants.ts`** — `VOICE_OPTIONS` (4 ElevenLabs voices with Supabase Storage preview URLs), `DEFAULT_VOICE_ID`
 
 ### Story Generation Pipeline (`src/lib/ai/orchestrator.ts`)
 
@@ -136,11 +136,27 @@ Each adapter abstracts a feature's data dependencies:
 - **`useGuide`** — Zustand-based tutorial system with localStorage persistence
 - **`usePdfExport`** — PDF export with progress tracking
 - **`useLocalStorage`** — generic localStorage hook
+- **`useMediaQuery`** — responsive breakpoint detection (SSR-safe)
+- **`useScrollDirection`** — ref-based scroll direction detection (up/down/top)
+- **`useClipboardCopy`** — clipboard write with 1.5s copied state reset
 - **Core hooks** (`src/hooks/core/`): `useAppAuth`, `useAppNavigation`, `useMagicTransition`, `useUrlHandlers`
+
+### Shared Components (`src/components/`)
+
+- **`BottomSheet`** — Framer Motion slide-up overlay (z-[90]/z-[91]), reused by 3+ consumers
+- **`DictionaryResults`** — emoji card + synonyms + adjectives display, reused by 3 dictionary panels
 
 ### Data Model (`src/types/index.ts`)
 
-Key types: `StoryBook`, `StoryPage`, `UserProfile`, `Achievement`, `CardProject`. These are the shared data contracts across the entire app.
+Key types: `StoryBook`, `StoryPage`, `UserProfile`, `Achievement`, `CardProject`, `DictionaryResult`. These are the shared data contracts across the entire app.
+
+### Mobile Responsive Architecture
+
+Complex editors use **dual-variant pattern**: orchestrator + Desktop + Mobile via `useMediaQuery('(min-width: 768px)')`.
+- `CustomBookEditor` → `CustomBookEditorDesktop` / `CustomBookEditorMobile`
+- `GreetingCardEditor` → `CardStudioDesktop` / `CardStudioMobile` (with `mobile/panels/` + `mobile/sheets/`)
+
+Touch targets: min 44px. Purple accent: `#534AB7` / `#EEEDFE` / `#AFA9EC`.
 
 ### Dual-Language Content Architecture
 

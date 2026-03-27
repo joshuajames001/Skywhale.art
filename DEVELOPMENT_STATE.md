@@ -1,6 +1,6 @@
 # DEVELOPMENT STATE
 
-Source of Truth pro aktuální stav vývoje. Aktualizováno: **2026-03-26**.
+Source of Truth pro aktuální stav vývoje. Aktualizováno: **2026-03-28**.
 
 ## 1. Aktuální metriky
 
@@ -12,8 +12,11 @@ Source of Truth pro aktuální stav vývoje. Aktualizováno: **2026-03-26**.
 | Sdílené moduly | 3 v `supabase/functions/_shared/` |
 | Code splitting | 10 lazy-loaded chunks (via `src/app/routes.tsx`) |
 | Main bundle | **185.94 kB** (vendor chunks separated) |
-| Test coverage | **294 testů**, 75.18% statements |
+| Test coverage | **298 testů**, ~76% statements |
 | Build | `tsc && vite build` — zelený |
+| ESLint | **0 errors**, 304 warnings (eslint 9.39.4, flat config) |
+| Mobile audit | **40/40** issues opraveno (GF-165) |
+| Mobile editory | CustomBookEditor + CardStudio — dual-variant (Desktop/Mobile) |
 
 ## 2. Dokončené refaktory (GF-10 → GF-138)
 
@@ -49,6 +52,18 @@ Source of Truth pro aktuální stav vývoje. Aktualizováno: **2026-03-26**.
 | GF-78 | Discovery cover fallback | storage_folder field + processBooks generic fallback |
 | GF-137 | Encyklopedie v1 (Three.js) | **Cancelled** — přesunuto na GF-138 (2D approach) |
 | GF-138 | Encyklopedie v2 (CSS/Framer) | **Done** — WorldsScene, SVG animace, custom ikony, reader propojení, 9 legacy souborů smazáno |
+| GF-141–164 | Payment + UI sprint | Stripe migrace, Feedback→email, Energy rebalance, Three-Layer fixes, Library light mode |
+| GF-165–166 | Mobile audit + fixes | 40/40 issues (7 CRITICAL + 17 HIGH + 12 MEDIUM + 4 LOW) |
+| GF-166 | CustomBookEditor mobile | Dual-variant split, 3 swipovatelné views, voice/style pickers, overflow menu |
+| GF-175–187 | Card Studio mobile | Dual-variant split, dark canvas, 6 panelů, text editor sheet, dictionary, refaktor do mobile/ |
+| GF-188–189 | CustomBookEditor polish | Title input, max pages, expert mode, voice preview, charge energy, new book |
+| GF-190 | Voice preview fix | URLs z Supabase Storage (book-media bucket), disabled guard + error state |
+| GF-191–193 | Cleanup | Publish button smazán, style audit OK, Hero Mode smazán z mobile |
+| GF-194 | Discovery audit | Three-Layer čisté, žádné any[], žádné hardcoded URLs |
+| GF-195 | i18n mobile | ~40 klíčů cs.json + en.json, 8 souborů |
+| GF-196 | ESLint migrace | Flat config (9.39.4), 0 errors, hooks violations fixed |
+| GF-195b | Library scroll-hide | useScrollDirection + ScrollDirectionContext, auto-hide header+nav |
+| GF-196b | Library grid alignment | BookCard h-full flex-col, grid bez auto-rows-max |
 
 ## 3. Strategic Rules (The Constitution)
 
@@ -66,9 +81,9 @@ Source of Truth pro aktuální stav vývoje. Aktualizováno: **2026-03-26**.
 - `process-story-image` Edge Function — legacy, nahrazena `generate-story-image`
 - `style_manifest` + `status` sloupce na books — migrace vytvořena, potřeba spustit v Supabase SQL Editor
 - Zastaralé Storage buckety: `dino-content`, `card-assets`, `book-images` — kód je nepoužívá
-- Discovery `DiscoveryPageView.tsx` — Three-Layer violation (přímé Supabase volání hotspotů v komponentě), god component (299 řádků)
-- Discovery `utils.ts` — `any[]` typy, přímé Supabase storage volání
-- Discovery `DiscoveryHub.tsx` — hardcoded Supabase URLs (reader backgrounds)
+- ~~Discovery Three-Layer~~ — ✅ audit čistý (GF-194)
+- Card Studio mobile: translation tool, reset bg to black, bg category grouping
+- ESLint: 304 warnings (mostly no-explicit-any + unused-vars) — nízká priorita
 
 ## 5. Architektura (quick reference)
 
@@ -77,13 +92,15 @@ src/
   app/routes.tsx          ← typed route config + lazy imports
   App.tsx                 ← orchestrátor (86 řádků)
   features/               ← 19 feature modules (FSD)
-  hooks/                  ← sdílené hooks (useStory, useGemini, useEnergy, ...)
+  hooks/                  ← sdílené hooks (useStory, useGemini, useEnergy, useMediaQuery, useScrollDirection, useClipboardCopy, ...)
   hooks/core/             ← core hooks (useAppAuth, useAppNavigation, ...)
+  contexts/               ← ScrollDirectionContext
   providers/              ← 4 adaptery (CardStudio, GameHub, Library, BookReader)
   lib/                    ← knihovny (supabase, ai, storyteller, moderation, constants, ...)
+  components/             ← sdílené UI (BottomSheet, DictionaryResults)
   components/audio/       ← sdílené audio UI (VoicePreviewButton, MiniPlayer, AudioConfirmDialog)
   components/layout/      ← sdílené layout komponenty
-  types/                  ← globální TypeScript typy
+  types/                  ← globální TypeScript typy (+ DictionaryResult)
 
 supabase/functions/
   _shared/                ← ai-clients, cors, lang-utils
