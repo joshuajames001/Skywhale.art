@@ -210,7 +210,7 @@ export const CustomMode: React.FC<CustomModeProps> = ({
                                 <label className="flex items-center gap-2 text-slate-500 font-bold uppercase tracking-wider text-xs mt-6">
                                     <Mic size={14} /> {t('setup.fields.voice')}
                                 </label>
-                                <div className="grid grid-cols-2 gap-3">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                     {VOICE_OPTIONS.map((voice) => (
                                         <div
                                             key={voice.id}
@@ -245,7 +245,7 @@ export const CustomMode: React.FC<CustomModeProps> = ({
                             <label className="flex items-center gap-2 text-slate-500 font-bold uppercase tracking-wider text-xs">
                                 <Book size={14} /> {t('setup.fields.length')}
                             </label>
-                            <div className="grid grid-cols-4 gap-4">
+                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                                 {[5, 10, 15, 25].map((len) => {
                                     const baseCost = STORY_COSTS[len as keyof typeof STORY_COSTS] || (len + 1) * IMAGE_COSTS.FLUX_PRO;
                                     const audioCost = formData.voice_id ? len * 20 : 0;

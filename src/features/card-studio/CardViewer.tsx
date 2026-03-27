@@ -96,7 +96,7 @@ export const CardViewer = ({ cardId, onClose }: { cardId: string | null, onClose
                             {pages[viewStartIndex + 1] ? (
                                 <ViewerPage page={pages[viewStartIndex + 1]} />
                             ) : (
-                                <div className="w-[400px] h-[560px] bg-slate-900/50 flex items-center justify-center" />
+                                <div className="w-full max-w-[400px] aspect-[5/7] bg-slate-900/50 flex items-center justify-center" />
                             )}
                         </div>
                     </div>

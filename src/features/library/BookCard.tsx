@@ -149,7 +149,7 @@ const BookCardBase = forwardRef<HTMLDivElement, BookCardProps>(({
                             e.stopPropagation();
                             onToggleFavorite?.(book.book_id!);
                         }}
-                        className={`p-2 rounded-full backdrop-blur-md border transition-all duration-300 ${isFavorited ? 'bg-rose-500 text-white border-rose-500 shadow-lg shadow-rose-500/40' : 'bg-white/80 border-slate-200 text-slate-400 hover:text-slate-600'}`}
+                        className={`p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full backdrop-blur-md border transition-all duration-300 ${isFavorited ? 'bg-rose-500 text-white border-rose-500 shadow-lg shadow-rose-500/40' : 'bg-white/80 border-slate-200 text-slate-400 hover:text-slate-600'}`}
                     >
                         <Heart size={18} fill={isFavorited ? "currentColor" : "none"} />
                     </motion.button>
@@ -162,7 +162,7 @@ const BookCardBase = forwardRef<HTMLDivElement, BookCardProps>(({
                             whileHover={{ scale: 1.2 }}
                             whileTap={{ scale: 0.9 }}
                             onClick={(e) => { e.stopPropagation(); onReport(book.book_id!); }}
-                            className="p-2 rounded-full backdrop-blur-md border bg-white/80 border-slate-200 text-slate-400 hover:text-red-400 hover:border-red-500/30 transition-all"
+                            className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full backdrop-blur-md border bg-white/80 border-slate-200 text-slate-400 hover:text-red-400 hover:border-red-500/30 transition-all"
                             title="Nahlásit knihu"
                         >
                             <Flag size={16} />
@@ -180,7 +180,7 @@ const BookCardBase = forwardRef<HTMLDivElement, BookCardProps>(({
                                 e.stopPropagation();
                                 setShowDropdown(!showDropdown);
                             }}
-                            className="p-2 rounded-full backdrop-blur-md border bg-white/80 border-slate-200 text-slate-500 hover:text-slate-700 transition-all"
+                            className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full backdrop-blur-md border bg-white/80 border-slate-200 text-slate-500 hover:text-slate-700 transition-all"
                         >
                             <MoreVertical size={20} />
                         </motion.button>

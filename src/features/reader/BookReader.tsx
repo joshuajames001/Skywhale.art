@@ -135,7 +135,7 @@ export const BookReader: React.FC<BookReaderProps> = ({
                         ) : (
                             <button
                                 onClick={() => setIsAudioDialogOpen(true)}
-                                className="flex items-center justify-center bg-violet-500/80 backdrop-blur-md text-white p-2.5 rounded-full shadow-lg hover:bg-violet-500 transition-all border border-violet-400/50 hover:scale-110 active:scale-95 group"
+                                className="flex items-center justify-center bg-violet-500/80 backdrop-blur-md text-white p-3 rounded-full shadow-lg hover:bg-violet-500 transition-all border border-violet-400/50 hover:scale-110 active:scale-95 group"
                                 title={t('audio.generate_button', 'Vytvořit Audioknihu')}
                             >
                                 <span className="sr-only">Vytvořit audio</span>
@@ -148,7 +148,7 @@ export const BookReader: React.FC<BookReaderProps> = ({
                     <button
                         onClick={handleExportPdf}
                         disabled={isExportingPdf}
-                        className="flex items-center justify-center bg-white/10 backdrop-blur-md text-white/80 p-2.5 rounded-full shadow-lg hover:bg-white/20 transition-all border border-white/20 hover:scale-110 active:scale-95 disabled:opacity-50"
+                        className="flex items-center justify-center bg-white/10 backdrop-blur-md text-white/80 p-3 rounded-full shadow-lg hover:bg-white/20 transition-all border border-white/20 hover:scale-110 active:scale-95 disabled:opacity-50"
                         title={t('app.tooltips.download_pdf')}
                     >
                         {isExportingPdf ? (
@@ -165,7 +165,7 @@ export const BookReader: React.FC<BookReaderProps> = ({
                         onClick={onSave}
                         disabled={isSaving}
                         title={t('app.tooltips.save')}
-                        className="flex items-center justify-center bg-white/10 backdrop-blur-md text-white/80 p-2.5 rounded-full shadow-lg hover:bg-white/20 transition-all border border-white/20 hover:scale-110 active:scale-95 disabled:opacity-50"
+                        className="flex items-center justify-center bg-white/10 backdrop-blur-md text-white/80 p-3 rounded-full shadow-lg hover:bg-white/20 transition-all border border-white/20 hover:scale-110 active:scale-95 disabled:opacity-50"
                     >
                         {isSaving ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
                     </button>
@@ -271,7 +271,7 @@ export const BookReader: React.FC<BookReaderProps> = ({
                 !isCover && (
                     <button
                         onClick={handlePrev}
-                        className="hidden md:flex absolute top-1/2 -left-16 transform -translate-y-1/2 w-12 h-12 bg-white/10 hover:bg-white/20 rounded-full items-center justify-center text-white transition-all hover:scale-110 z-[60]"
+                        className="hidden md:flex absolute top-1/2 md:left-2 lg:-left-16 transform -translate-y-1/2 w-12 h-12 bg-white/10 hover:bg-white/20 rounded-full items-center justify-center text-white transition-all hover:scale-110 z-[60]"
                     >
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6" /></svg>
                     </button>
@@ -282,7 +282,7 @@ export const BookReader: React.FC<BookReaderProps> = ({
                 currentIndex < story.pages.length && (
                     <button
                         onClick={handleNext}
-                        className="hidden md:flex absolute top-1/2 -right-16 transform -translate-y-1/2 w-12 h-12 bg-white/10 hover:bg-white/20 rounded-full items-center justify-center text-white transition-all hover:scale-110 z-[60]"
+                        className="hidden md:flex absolute top-1/2 md:right-2 lg:-right-16 transform -translate-y-1/2 w-12 h-12 bg-white/10 hover:bg-white/20 rounded-full items-center justify-center text-white transition-all hover:scale-110 z-[60]"
                     >
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6" /></svg>
                     </button>

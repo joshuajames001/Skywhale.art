@@ -138,7 +138,7 @@ export const HeroMode: React.FC<HeroModeProps> = ({
                             <div className="relative group cursor-pointer">
                                 <input type="file" accept="image/*" onChange={handleUpload} className="hidden" id="hero-upload-initial" />
                                 <label htmlFor="hero-upload-initial" className="block">
-                                    <div className="w-64 h-64 mx-auto rounded-3xl border-4 border-dashed border-emerald-500/30 hover:border-emerald-400/80 hover:bg-emerald-500/10 transition-all flex flex-col items-center justify-center p-6 group-hover:scale-105">
+                                    <div className="w-48 h-48 sm:w-64 sm:h-64 mx-auto rounded-3xl border-4 border-dashed border-emerald-500/30 hover:border-emerald-400/80 hover:bg-emerald-500/10 transition-all flex flex-col items-center justify-center p-6 group-hover:scale-105">
                                         {isUploading ? (
                                             <Sparkles className="animate-spin text-emerald-400" size={48} />
                                         ) : (
@@ -198,7 +198,7 @@ export const HeroMode: React.FC<HeroModeProps> = ({
                         {/* LENGTH SELECTOR */}
                         <div className="space-y-6 border-t border-emerald-500/10 pt-6">
                             <label className="text-emerald-500 font-bold uppercase text-xs">{t('setup.fields.length')}</label>
-                            <div className="grid grid-cols-4 gap-4">
+                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                                 {[5, 10, 15, 25].map((len) => {
                                     const cost = (STORY_COSTS[len as keyof typeof STORY_COSTS] || (len + 1) * IMAGE_COSTS.FLUX_PRO) + (formData.voice_id ? len * 20 : 0);
                                     const isAffordable = userBalance !== null && userBalance >= cost;

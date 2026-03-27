@@ -185,9 +185,21 @@ export interface CardCanvasProps {
 
 export const CardCanvas = ({ items, selectedId, onSelect, onUpdate, domRef, background = "#fffcf5", onItemDragStart, onItemDragEnd }: CardCanvasProps) => {
 
-    // Canvas dimensions (A5 ratio or similar)
-    const WIDTH = 400;
-    const HEIGHT = 560; // ~1.4 ratio
+    // Canvas dimensions (A5 ratio or similar) — responsive for mobile
+    const containerRef = useRef<HTMLDivElement>(null);
+    const [canvasWidth, setCanvasWidth] = useState(Math.min(typeof window !== 'undefined' ? window.innerWidth - 32 : 400, 400));
+    const WIDTH = canvasWidth;
+    const HEIGHT = Math.round(canvasWidth * 1.4);
+
+    useEffect(() => {
+        const handleResize = () => {
+            const w = containerRef.current?.clientWidth ?? (window.innerWidth - 32);
+            setCanvasWidth(Math.min(w, 400));
+        };
+        handleResize();
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     const checkDeselect = (e: any) => {
         // deselect when clicked on empty area (Stage) OR the Background layer
@@ -208,7 +220,7 @@ export const CardCanvas = ({ items, selectedId, onSelect, onUpdate, domRef, back
     const isBackgroundImage = background && (background.startsWith('http') || background.startsWith('data:'));
 
     return (
-        <div className="relative shadow-2xl rounded-xl overflow-hidden border-4 border-[#fffcf5]">
+        <div ref={containerRef} className="relative shadow-2xl rounded-xl overflow-hidden border-4 border-[#fffcf5] w-full max-w-[400px]">
             <Stage
                 width={WIDTH}
                 height={HEIGHT}

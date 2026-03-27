@@ -39,7 +39,7 @@ export const ElevenLabsProfile: React.FC<ElevenLabsProfileProps> = ({ user, prof
     const strokeDashoffset = circumference - (percentage / 100) * circumference;
 
     return (
-        <div className={`fixed right-6 z-50 flex items-center gap-4 ${className || 'top-6'}`}>
+        <div className={`fixed right-3 sm:right-6 z-50 flex items-center gap-4 ${className || 'top-6'}`}>
 
             {/* Energy Tooltip (Visible on Hover or always?) - Let's make it appear to the left */}
             <div className="group relative">
@@ -82,7 +82,7 @@ export const ElevenLabsProfile: React.FC<ElevenLabsProfileProps> = ({ user, prof
                 </button>
 
                 {/* Hover Tooltip - Přezdívka a Energie */}
-                <div className="absolute right-full top-1/2 -translate-y-1/2 mr-3 opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-300 translate-x-2 group-hover:translate-x-0">
+                <div className="absolute right-full sm:right-full top-full sm:top-1/2 translate-y-2 sm:translate-y-0 sm:-translate-y-1/2 mr-0 sm:mr-3 opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-300 sm:translate-x-2 sm:group-hover:translate-x-0">
                     <div className="bg-black/80 backdrop-blur-md border border-white/10 px-3 py-2 rounded-xl shadow-xl whitespace-nowrap">
                         <div className="text-xs font-bold text-white mb-1">
                             {profile.nickname || profile.username || user?.email?.split('@')[0]}
