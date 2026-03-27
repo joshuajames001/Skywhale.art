@@ -4,7 +4,7 @@ import {
     ChevronLeft, ImageIcon, Type, Book, Sparkles, Camera,
     Loader2, Star, X, Feather, Search, Languages,
     Zap, Check, Volume2, Palette, MoreHorizontal,
-    Download, Share2, Save, GraduationCap, Trash2,
+    Download, Save, GraduationCap, Trash2,
 } from 'lucide-react';
 import { SharedEditorProps } from '../types';
 import { checkTopicBlacklist } from '../../../lib/content-policy';
@@ -308,15 +308,6 @@ export const CustomBookEditorMobile: React.FC<SharedEditorProps> = ({ state, act
                             <span className="text-sm font-medium text-gray-800">Exportovat PDF</span>
                             {state.isExportingPdf && <Loader2 size={14} className="animate-spin text-gray-400" />}
                         </button>
-                        <button
-                            onClick={() => { actions.handleSave(true); setShowMenu(false); }}
-                            disabled={state.saving}
-                            className="flex items-center gap-3 w-full px-5 py-3.5 text-left hover:bg-gray-50 active:bg-gray-100"
-                        >
-                            <Share2 size={18} className="text-gray-500" />
-                            <span className="text-sm font-medium text-gray-800">Publikovat</span>
-                        </button>
-
                         {/* Charge Energy */}
                         {onOpenStore && (
                             <button

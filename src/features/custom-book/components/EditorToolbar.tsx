@@ -1,5 +1,5 @@
 import React from 'react';
-import { ChevronLeft, Mic, Palette, Zap, Download, Save, Rocket, Plus, Loader2 } from 'lucide-react';
+import { ChevronLeft, Mic, Palette, Zap, Download, Save, Plus, Loader2 } from 'lucide-react';
 import { VOICE_OPTIONS } from '../../../lib/audio-constants';
 import { VoicePreviewButton } from '../../../components/audio/VoicePreviewButton';
 import { STYLE_PROMPTS } from '../../../lib/ai';
@@ -198,14 +198,6 @@ export const EditorToolbar = ({ state, actions, refs, onBack, t }: any) => {
                     className="hidden md:flex items-center justify-center p-2.5 bg-white/10 backdrop-blur-md rounded-full text-white/80 border border-white/20 transition-all hover:scale-110 active:scale-95 hover:bg-white/20 disabled:opacity-50 disabled:scale-100 disabled:cursor-not-allowed shadow-lg"
                 >
                     {state.saving ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
-                </button>
-                <button
-                    onClick={() => actions.handleSave(true)}
-                    disabled={state.saving || state.isGeneratingImage || state.isUploading || state.isUploadingMirror || state.geminiLoading}
-                    title={t('library.custom_book_editor.tooltip_publish')}
-                    className="hidden md:flex items-center justify-center p-2.5 bg-white/10 backdrop-blur-md rounded-full text-white/80 border border-white/20 transition-all hover:scale-110 active:scale-95 hover:bg-white/20 disabled:opacity-50 disabled:scale-100 disabled:cursor-not-allowed shadow-lg"
-                >
-                    {state.saving ? <Loader2 size={18} className="animate-spin" /> : <Rocket size={18} />}
                 </button>
             </div>
         </header>
