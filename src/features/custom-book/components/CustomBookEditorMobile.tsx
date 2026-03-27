@@ -93,7 +93,7 @@ export const CustomBookEditorMobile: React.FC<SharedEditorProps> = ({ state, act
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: 10 }}
-                        className="absolute bottom-24 left-4 right-4 z-30 bg-white shadow-xl shadow-purple-500/10 rounded-2xl p-4 border-2 border-purple-50 cursor-pointer"
+                        className="absolute bottom-44 left-4 right-4 z-30 bg-white shadow-xl shadow-purple-500/10 rounded-2xl p-4 border-2 border-purple-50 cursor-pointer"
                         onClick={actions.acceptSuggestion}
                     >
                         <button
