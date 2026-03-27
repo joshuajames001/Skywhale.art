@@ -1,11 +1,11 @@
 # Backlog & Roadmap
 
-> Aktualizováno: 2026-03-27 | Zdroj: Linear (Skywhale.art) + audity
+> Aktualizováno: 2026-03-27 (evening) | Zdroj: Linear (Skywhale.art) + audity
 
 ## Stav projektu
 
-- **Linear issues:** 57+ celkem (53 done, 2 canceled, 0 in progress, 2 odložené)
-- **Poslední sprint:** GF-165–GF-187 (2026-03-27) — Mobile Responsivity Sprint
+- **Linear issues:** 65+ celkem (61 done, 2 canceled, 0 in progress, 2 odložené)
+- **Poslední sprint:** GF-165–GF-194 (2026-03-27) — Mobile + Tech Debt Sprint
 - **Build:** Zelený (tsc 0 errors + vite build pass)
 - **Test coverage:** 298 testů, ~76% statements
 - **Main bundle:** 185.94 kB (vendor chunks separated)
@@ -32,11 +32,6 @@
 | DB migrace | `style_manifest` + `status` sloupce — migrace vytvořena, potřeba spustit | GF-76 audit |
 | DB migrace | `shared_cards` — migrace vytvořena (GF-134), potřeba spustit v Supabase SQL Editor | GF-134 |
 | PDF export | CORS s cross-origin obrázky stále potenciální issue | GF-80 |
-| Discovery PageView | Three-Layer violation — přímé Supabase volání hotspotů v komponentě, god component (299 řádků) | GF-138 audit |
-| Discovery utils.ts | `any[]` typy, přímé Supabase storage volání | GF-138 audit |
-| Discovery Hub | Hardcoded Supabase URLs (reader backgrounds) — měly by používat `getStorageUrl()` | GF-138 audit |
-| Mobile audit | 12 MEDIUM + 4 LOW issues zbývá z GF-165 auditu (Wave 4–5) | GF-165 |
-| CustomBookEditor mobile | Chybí: title input, max pages selector, expert mode, new book, help, voice preview, add page, charge energy | Audit GF-166 |
 | Card Studio mobile | Chybí: translation tool, reset bg to black, bg category grouping | Audit GF-175 |
 
 ### Střední priorita
@@ -68,7 +63,8 @@
 
 | Datum | Milestone |
 |-------|-----------|
-| 2026-03-27 | GF-165–GF-187: Mobile Responsivity Sprint — 24/24 audit fixes, CustomBookEditor mobile (3-view swipe + Hero mode), Card Studio mobile (dark canvas + 6 panels), refaktor do panel souborů, 26 commitů |
+| 2026-03-27 | GF-188–GF-194: Tech Debt + Polish — title/maxPages/expert mode/voice preview/charge energy on mobile, Wave 4+5 complete (40/40), shared BottomSheet + useClipboardCopy + DictionaryResults, Discovery audit clean, Hero Mode removed |
+| 2026-03-27 | GF-165–GF-187: Mobile Responsivity Sprint — 40/40 audit fixes, CustomBookEditor mobile (3-view swipe), Card Studio mobile (dark canvas + 6 panels), refaktor do panel souborů, 26 commitů |
 | 2026-03-27 | GF-146–GF-164: Energy refund, Three-Layer fixes (CardViewer, PublicProfile, BookReader), Library light mode, sidebar fix, i18n, debug cleanup, CinematicLanding hero-only |
 | 2026-03-26 | GF-141/143/145/148/151: Stripe migrace, Feedback→email, Energy rebalance, IMAGE_COSTS SSoT, daily reward fix + RPC migrace |
 | 2026-03-26 | GF-138 dokončen: Encyklopedie v2 plně propojená (reader, audio, backgrounds, custom SVG ikony, 9 legacy souborů smazáno) |

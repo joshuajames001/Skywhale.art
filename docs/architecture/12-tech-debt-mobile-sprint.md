@@ -133,13 +133,13 @@ Buď downgrade ESLint na 8.x, nebo migrace na flat config (`eslint.config.js`).
 
 ---
 
-## Prioritní pořadí
+## Stav řešení
 
-| Priorita | Item | Effort | Impact |
-|----------|------|--------|--------|
-| 1 | `any` typy (#4) | 15 min | Type safety |
-| 2 | Shared BottomSheet (#2) | 30 min | -30 řádků, konzistence |
-| 3 | useClipboardCopy hook (#3) | 15 min | -10 řádků |
-| 4 | Shared DictionaryResults (#1) | 1h | -120 řádků, single source |
-| 5 | i18n stringy (#5) | 2h | Launch readiness |
-| 6 | ESLint config (#6) | 30 min | CI/CD readiness |
+| # | Item | Stav | Commit |
+|---|------|------|--------|
+| 1 | Slovník 4× duplikace | ✅ 3/4 refaktorováno (shared DictionaryResults) | `2fa7689` |
+| 2 | BottomSheet 3× duplikace | ✅ Extrahován `src/components/BottomSheet.tsx` | `200cdfb` |
+| 3 | Clipboard copy 2× duplikace | ✅ Extrahován `src/hooks/useClipboardCopy.ts` | `200cdfb` |
+| 4 | `any` typy (4 místa) | ✅ Všechny opraveny | `200cdfb` |
+| 5 | i18n stringy (~50+) | ⏳ Backlog — low priority pro CZ-first app |
+| 6 | ESLint nefungční | ⏳ Backlog — ESLint 10 flat config migrace |

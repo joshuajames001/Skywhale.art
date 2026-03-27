@@ -4,12 +4,12 @@
 
 ## Kritické god komponenty (doporučeno rozdělit)
 
-| Soubor | Řádky | Importy | Graph degree | Problém |
-|--------|-------|---------|-------------|---------|
-| `GreetingCardEditor.tsx` | 671 | 12 | 32 | Nejvíc komplexní feature file — 4 těžké interní funkce (`addItem`, `addToHistory`, `generateAI`, `handleAddImage`) |
-| `ToolsDock.tsx` | 547 | 8 | — | Monolitický toolbar pro Card Studio |
-| `useCustomBookEditor.ts` | 485 | 13 | 28 | Nejtěžší hook — state, AI volání, persistence, vše v jednom |
-| `App.tsx` | 258 | 37 | 37 | 37 importů = nejvíc propojený soubor v celém projektu |
+| Soubor | Řádky | Stav | Řešení |
+|--------|-------|------|--------|
+| `GreetingCardEditor.tsx` | ~~671~~ → 120 | ✅ GF-175 | Split: orchestrátor + CardStudioDesktop + CardStudioMobile + mobile/panels/ + mobile/sheets/ |
+| `ToolsDock.tsx` | ~~547~~ → 158 | ✅ GF-13 | Split do 5 tool sections |
+| `useCustomBookEditor.ts` | ~~485~~ → 170 | ✅ GF-11 | Split: useBookEditorAI + useBookEditorPersistence |
+| `App.tsx` | ~~258~~ → 86 | ✅ GF-16 | Split: routes.tsx, lazy imports, code splitting |
 
 ## Velké, ale méně provázané (sledovat)
 
