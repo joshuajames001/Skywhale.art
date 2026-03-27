@@ -77,17 +77,26 @@ export const CardStudioMobile: React.FC<SharedCardStudioProps> = (props) => {
             >
                 {/* Card canvas — small portrait */}
                 <div className="relative">
-                    <div className="bg-white rounded-lg shadow-2xl overflow-hidden border border-white/10"
+                    <div className="bg-[#fffef8] rounded-lg shadow-2xl shadow-[inset_0_1px_3px_rgba(0,0,0,0.04)] overflow-hidden border border-white/10 relative"
                         style={{ width: Math.min(window.innerWidth - 64, 200), height: Math.min(window.innerWidth - 64, 200) * 1.4 }}
                     >
                         <CardCanvas
                             items={currentPage?.items || []}
-                            background={currentPage?.background || '#fffcf5'}
+                            background={currentPage?.background || '#fffef8'}
                             selectedId={selectedId}
                             onSelect={setSelectedId}
                             onUpdate={state.updateItem}
                             domRef={stageRef}
                         />
+                        {/* Decorative empty card hint */}
+                        {(currentPage?.items.length ?? 0) === 0 && (
+                            <div className="absolute inset-[10px] border border-dashed border-gray-200 rounded-lg flex flex-col items-center justify-center gap-2 pointer-events-none">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                    <path d="M12 2L13.8 8.2H20.2L14.9 11.8L16.7 18L12 14.4L7.3 18L9.1 11.8L3.8 8.2H10.2Z" fill="#E2D9F3" stroke="#AFA9EC" strokeWidth="1"/>
+                                </svg>
+                                <span className="text-[10px] text-[#AFA9EC]">Přidej text nebo nálepku</span>
+                            </div>
+                        )}
                     </div>
                     {/* Page label pill */}
                     <div className={`absolute -bottom-6 left-1/2 -translate-x-1/2 bg-[rgba(30,30,40,0.85)] text-white text-[10px] rounded-full px-3 py-1 font-bold uppercase tracking-wider whitespace-nowrap transition-opacity ${currentPage?.items.length > 0 ? 'opacity-0' : 'opacity-100'}`}>
