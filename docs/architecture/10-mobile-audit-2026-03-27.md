@@ -5,7 +5,7 @@
 Kompletní audit mobilního zobrazení (target: 320px–768px) pro všechny feature komponenty.
 Stack: React 18, Tailwind CSS, Framer Motion. Breakpointy: sm (640px), md (768px).
 
-**Stav:** 7 CRITICAL, 17 HIGH, 12 MEDIUM, 4 LOW issues.
+**Stav:** ~~7 CRITICAL, 17 HIGH~~ → **Opraveno 24/24** (Wave 1–3). Zbývá 12 MEDIUM, 4 LOW.
 
 ---
 
@@ -85,9 +85,12 @@ Stack: React 18, Tailwind CSS, Framer Motion. Breakpointy: sm (640px), md (768px
 - Grid layouty většinou kolapsují na menší počet sloupců
 - `overflow-x-auto` na tabs — scroll místo overflow
 
-## Doporučený postup implementace
+## Implementace — stav
 
-1. **Wave 1 — CRITICAL (1h):** Touch targety (#1-2), gridy (#3-4), canvas (#5-6), profile ring (#7)
-2. **Wave 2 — HIGH layout (#8-17, 2h):** Font sizes, fixed widths, button groups, nav arrows
-3. **Wave 3 — HIGH modals (#18-24, 1h):** Modal sizing, tooltips, voice grid
-4. **Wave 4 — MEDIUM (1h):** Padding, gaps, dekorace, keyboard handling
+| Wave | Rozsah | Commit | Stav |
+|------|--------|--------|------|
+| Wave 1 | CRITICAL #1–7 | `78a9bc8` | ✅ Done |
+| Wave 2 | HIGH #8–17 | `2353b90` | ✅ Done |
+| Wave 3 | HIGH #18–24 | `f2f1421` | ✅ Done |
+| Wave 4 | MEDIUM #25–36 | — | ⏳ Backlog |
+| Wave 5 | LOW #37–40 | — | ⏳ Backlog |

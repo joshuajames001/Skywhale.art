@@ -81,3 +81,39 @@ Route definitions live in `src/app/routes.tsx`. App.tsx renders them inside a si
 Non-lazy components (PricingPage, FeedbackBoard, EnergyStore, CardViewer, LegalAgreements) stay in the main bundle due to small size.
 
 Providers wrap their lazy children directly in the route config, not in App.tsx.
+
+## 7. Mobile Responsive Architecture
+
+> Přidáno: 2026-03-27 (GF-166/175)
+
+### Dual-Variant Pattern
+Complex editors use a **Desktop/Mobile split** with a shared orchestrator:
+
+```
+FeatureEditor.tsx          → orchestrátor (hooks, state, logic)
+  ├─ FeatureDesktop.tsx    → desktop layout (beze změny z originálu)
+  └─ FeatureMobile.tsx     → dedicated mobile UI
+```
+
+Detection via `useMediaQuery('(min-width: 768px)')` from `src/hooks/useMediaQuery.ts`.
+
+**Active implementations:**
+- `CustomBookEditor` → `CustomBookEditorDesktop` / `CustomBookEditorMobile`
+- `GreetingCardEditor` → `CardStudioDesktop` / `CardStudioMobile`
+
+### SharedProps Pattern
+Each editor defines a `SharedEditorProps` / `SharedCardStudioProps` interface in its `types.ts`. The orchestrator creates one props object and passes it to whichever variant is active. Zero logic duplication.
+
+### Mobile UI Patterns
+- **Bottom sheets** (Framer Motion slide-up, z-[90]/z-[91]) for pickers, menus, editors
+- **Swipeable views** (`motion.div` with `drag="x"`) for tab-like navigation
+- **Bottom toolbar** with icon+label tabs for tool switching
+- **Page strip** with horizontal scroll thumbnails for page navigation
+- **44px minimum touch targets** (Apple HIG + WCAG compliance)
+- **Overflow menu** (⋯) for secondary actions (save, export, share)
+
+### Tailwind Conventions
+- Mobile-first: base classes = mobile, `sm:` / `md:` for larger screens
+- Touch targets: `min-w-[44px] min-h-[44px]`
+- Canvas sizing: `Math.min(containerWidth, maxPx)` with resize listener
+- Purple accent system: `#534AB7` / `#EEEDFE` / `#AFA9EC`
