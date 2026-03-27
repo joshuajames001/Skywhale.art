@@ -438,7 +438,7 @@ const DictionaryViewContent: React.FC<Pick<SharedEditorProps, 'state' | 'actions
                         {/* Synonyms */}
                         {state.dictionaryResult.synonyms?.length > 0 && (
                             <div>
-                                <h4 className="text-[10px] font-bold uppercase tracking-widest text-stone-400 mb-2 flex items-center gap-1">
+                                <h4 className="text-[10px] font-bold uppercase tracking-widest text-white/70 mb-2 flex items-center gap-1">
                                     <Sparkles size={10} /> {t('library.custom_book_editor.synonyms_label', 'Synonyma')}
                                 </h4>
                                 <div className="flex flex-wrap gap-2">
@@ -459,7 +459,7 @@ const DictionaryViewContent: React.FC<Pick<SharedEditorProps, 'state' | 'actions
                         {/* Adjectives */}
                         {state.dictionaryResult.related_adjectives?.length > 0 && (
                             <div>
-                                <h4 className="text-[10px] font-bold uppercase tracking-widest text-stone-400 mb-2 flex items-center gap-1">
+                                <h4 className="text-[10px] font-bold uppercase tracking-widest text-white/70 mb-2 flex items-center gap-1">
                                     <Star size={10} /> {t('library.custom_book_editor.adjectives_label', 'Přídavná jména')}
                                 </h4>
                                 <div className="flex flex-wrap gap-2">
