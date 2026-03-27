@@ -74,3 +74,10 @@ export interface CardProject {
     pages: any[]; // Specific CardPage type can be defined later if needed
     thumbnailBlob?: Blob;
 }
+
+export interface DictionaryResult {
+    emoji?: string;
+    primary_en?: string;
+    synonyms?: string[];
+    related_adjectives?: string[];
+}

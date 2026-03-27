@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
 import { Search, Loader2, Sparkles, Star, Languages, Check, Copy } from 'lucide-react';
 import { useCardStudio } from '../../CardStudioContext';
+import { useClipboardCopy } from '../../../../hooks/useClipboardCopy';
+import { DictionaryResult } from '../../../../types';
 
 export const DictionaryPanel: React.FC = () => {
     const { onDictionaryLookup } = useCardStudio();
     const [query, setQuery] = useState('');
-    const [result, setResult] = useState<{ emoji?: string; primary_en?: string; synonyms?: string[]; related_adjectives?: string[] } | null>(null);
+    const [result, setResult] = useState<DictionaryResult | null>(null);
     const [isSearching, setIsSearching] = useState(false);
-    const [copied, setCopied] = useState<string | null>(null);
+    const { copied, copy: copyToClipboard } = useClipboardCopy();
 
     const handleSearch = async () => {
         if (!query.trim()) return;
@@ -15,12 +17,6 @@ export const DictionaryPanel: React.FC = () => {
         try { setResult(await onDictionaryLookup(query)); }
         catch { setResult(null); }
         finally { setIsSearching(false); }
-    };
-
-    const copyToClipboard = (word: string) => {
-        navigator.clipboard.writeText(word);
-        setCopied(word);
-        setTimeout(() => setCopied(null), 1500);
     };
 
     return (

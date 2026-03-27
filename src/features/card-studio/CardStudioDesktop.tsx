@@ -5,7 +5,9 @@ import { StarryBackground } from '../../components/StarryBackground';
 import { SKYWHALE_STICKERS } from './data/stickers';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { SharedCardStudioProps } from './types';
+import { SharedCardStudioProps, CardPage, CardItem } from './types';
+import { StickerItem } from './data/stickers';
+import Konva from 'konva';
 import { CardToolbar } from './components/CardToolbar';
 
 const PAGE_COVER = 0, PAGE_BACK = 3;
@@ -16,7 +18,17 @@ const PageLabel = ({ label, hasItems }: { label: string; hasItems: boolean }) =>
     </div>
 );
 
-const GreetingCardPage = ({ page, selectedId, onSelect, onUpdate, onItemDragStart, onItemDragEnd, stageRef }: any) => {
+interface GreetingCardPageProps {
+    page: CardPage | undefined;
+    selectedId: string | null;
+    onSelect: (id: string) => void;
+    onUpdate: (id: string, updates: Partial<CardItem>) => void;
+    onItemDragStart: () => void;
+    onItemDragEnd: () => void;
+    stageRef?: React.RefObject<Konva.Stage>;
+}
+
+const GreetingCardPage = ({ page, selectedId, onSelect, onUpdate, onItemDragStart, onItemDragEnd, stageRef }: GreetingCardPageProps) => {
     if (!page) return <div className="w-full h-full bg-slate-100 animate-pulse" />;
     return <CardCanvas items={page.items || []} background={page.background || "#fffcf5"} selectedId={selectedId}
         onSelect={onSelect} onUpdate={onUpdate} onItemDragStart={onItemDragStart} onItemDragEnd={onItemDragEnd} domRef={stageRef} />;
@@ -87,7 +99,7 @@ export const CardStudioDesktop: React.FC<SharedCardStudioProps> = (props) => {
             </div>
 
             <ToolsDock key={state.focusedPageIndex} isMobile={false} activeTool={activeTool} onToolChange={setActiveTool}
-                onAddSticker={(sticker: any) => { state.addItem({ type: 'sticker', content: sticker.content, rotation: 0 }); }}
+                onAddSticker={(sticker: StickerItem) => { state.addItem({ type: 'sticker', content: sticker.content, rotation: 0 }); }}
                 stickers={SKYWHALE_STICKERS} onGenerateAI={onGenerateAI}
                 isGenerating={ai.isGenerating} onAddText={onAddText} onChangeBackground={state.setBackground}
                 textColor={textColor} onTextColorChange={setTextColor} textFont={textFont} onTextFontChange={setTextFont}

@@ -1,11 +1,12 @@
 import { Book, Loader2, Search, Sparkles, X } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
+import { DictionaryResult } from '../../../../types';
 
 interface DictionaryPanelProps {
     query: string;
     onQueryChange: (q: string) => void;
-    result: any;
+    result: DictionaryResult | null;
     isSearching: boolean;
     onSearch: () => void;
     onInsertWord: (word: string) => void;
@@ -49,11 +50,11 @@ export const DictionaryPanel = ({ query, onQueryChange, result, isSearching, onS
                             <div className="text-2xl font-black text-white uppercase tracking-tighter">{result.primary_en}</div>
                             <div className="text-[10px] text-slate-500 italic mt-2 font-serif">"{query}"</div>
                         </div>
-                        {result.synonyms?.length > 0 && (
+                        {(result.synonyms?.length ?? 0) > 0 && (
                             <div className="space-y-2.5">
                                 <div className="text-[9px] uppercase font-bold text-slate-500 tracking-[0.2em] flex items-center gap-2"><Sparkles size={10} className="text-amber-500" /> {t('dictionary.synonyms')}</div>
                                 <div className="flex flex-wrap gap-2">
-                                    {result.synonyms.map((s: string) => (
+                                    {result.synonyms!.map((s: string) => (
                                         <button key={s} onClick={() => onInsertWord(s)}
                                             className="px-3 py-1.5 bg-white/5 border border-white/10 rounded-xl text-xs text-slate-300 hover:border-amber-500/50 hover:text-amber-400 hover:bg-amber-500/5 transition-all shadow-sm active:scale-95">{s}</button>
                                     ))}

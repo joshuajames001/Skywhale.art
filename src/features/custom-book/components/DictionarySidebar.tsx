@@ -1,8 +1,9 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Book, X, Search, Loader2, Sparkles, Star, Languages } from 'lucide-react';
+import { SharedEditorProps } from '../types';
 
-export const DictionarySidebar = ({ state, actions, t }: any) => {
+export const DictionarySidebar: React.FC<Pick<SharedEditorProps, 'state' | 'actions' | 't'>> = ({ state, actions, t }) => {
     return (
         <motion.div
             initial={{ x: '100%', opacity: 0 }}
