@@ -235,7 +235,7 @@ export const GameHub = ({ onClose, imageUrl, initialGame }: GameHubProps) => {
             <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-20 pointer-events-none" />
 
             {/* Main Container */}
-            <div className="w-full max-w-7xl max-h-[100dvh] md:max-h-[90vh] relative flex flex-col items-center overflow-y-auto no-scrollbar p-6">
+            <div className="w-full max-w-7xl max-h-[100dvh] md:max-h-[90vh] relative flex flex-col items-center overflow-y-auto no-scrollbar p-4 sm:p-6">
                 <style>{`
                     .no-scrollbar::-webkit-scrollbar { display: none; }
                     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }

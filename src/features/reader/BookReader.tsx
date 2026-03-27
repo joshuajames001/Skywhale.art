@@ -294,7 +294,7 @@ export const BookReader: React.FC<BookReaderProps> = ({
                 {[...Array(story.pages.length + 1)].map((_, i) => (
                     <div
                         key={i}
-                        className={`w-2 h-2 rounded-full transition-all duration-300 ${i === currentIndex ? 'bg-white w-4' : 'bg-white/30'}`}
+                        className={`w-2 h-2 min-w-[6px] min-h-[6px] rounded-full transition-all duration-300 ${i === currentIndex ? 'bg-white w-4' : 'bg-white/30'}`}
                     />
                 ))}
             </div>

@@ -319,7 +319,7 @@ const BookCardBase = forwardRef<HTMLDivElement, BookCardProps>(({
                     className="p-5"
                     style={{ transform: "translateZ(10px)" }}
                 >
-                    <h3 className="line-clamp-2 text-lg font-bold text-slate-800 mb-2 leading-tight group-hover:text-violet-600 transition-colors font-title">
+                    <h3 className="line-clamp-2 text-base sm:text-lg font-bold text-slate-800 mb-2 leading-tight group-hover:text-violet-600 transition-colors font-title">
                         {book.title || t('book_card.untitled')}
                     </h3>
 

@@ -142,7 +142,7 @@ export const StorySpread = ({
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ duration: 0.8, delay: 0.2 }}
                 >
-                    <div className="first-letter:text-6xl first-letter:font-serif first-letter:text-purple-300 first-letter:float-left first-letter:mr-3 first-letter:mt-1 font-serif text-lg md:text-xl lg:text-2xl leading-[1.8] md:leading-loose text-indigo-50/90 text-justify tracking-wide selection:bg-purple-900/50 pb-20 md:pb-0">
+                    <div className="first-letter:text-4xl sm:first-letter:text-6xl first-letter:font-serif first-letter:text-purple-300 first-letter:float-left first-letter:mr-3 first-letter:mt-1 font-serif text-lg md:text-xl lg:text-2xl leading-[1.8] md:leading-loose text-indigo-50/90 text-justify tracking-wide selection:bg-purple-900/50 pb-20 md:pb-0">
                         {page.text}
                     </div>
                 </motion.div>
