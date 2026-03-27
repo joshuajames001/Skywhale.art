@@ -112,6 +112,16 @@ Each editor defines a `SharedEditorProps` / `SharedCardStudioProps` interface in
 - **44px minimum touch targets** (Apple HIG + WCAG compliance)
 - **Overflow menu** (⋯) for secondary actions (save, export, share)
 
+### Panel Extraction Pattern (GF-187)
+When a mobile component exceeds ~300 lines, extract into:
+```
+feature/mobile/
+├── types.ts         — Panel type, shared state interfaces
+├── panels/          — one file per fullscreen panel
+└── sheets/          — one file per bottom sheet overlay
+```
+The main `FeatureMobile.tsx` stays as a slim orchestrator (~150 lines): state, hooks, conditional rendering.
+
 ### Tailwind Conventions
 - Mobile-first: base classes = mobile, `sm:` / `md:` for larger screens
 - Touch targets: `min-w-[44px] min-h-[44px]`
