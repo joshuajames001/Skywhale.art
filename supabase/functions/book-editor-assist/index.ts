@@ -1,7 +1,7 @@
 import { corsHeaders } from '../_shared/cors.ts'
 import { callGemini } from '../_shared/ai-clients.ts'
 import { getLanguageName } from '../_shared/lang-utils.ts'
-import { checkRateLimit, rateLimitResponse } from '../_shared/rate-limit.ts'
+import { checkRateLimit, rateLimitResponse, getTextRateLimit } from '../_shared/rate-limit.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const FROG_PROTOCOL = `You are Art Director for children's book illustrations.
@@ -46,9 +46,10 @@ Deno.serve(async (req) => {
             });
         }
 
-        // Rate limit: 20 text requests per hour
+        // Rate limit: tier-based (free 20/6h, paid 150/6h)
         const supabaseAdmin = createClient(Deno.env.get('SUPABASE_URL') ?? '', Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '')
-        const rl = await checkRateLimit(supabaseAdmin, user.id, 'text', 20)
+        const { maxRequests, windowHours } = await getTextRateLimit(supabaseAdmin, user.id)
+        const rl = await checkRateLimit(supabaseAdmin, user.id, 'text', maxRequests, windowHours)
         if (!rl.allowed) return rateLimitResponse(rl.remaining)
 
         const apiKey = Deno.env.get('GEMINI_API_KEY')

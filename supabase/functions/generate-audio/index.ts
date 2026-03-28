@@ -1,6 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
-import { checkRateLimit, rateLimitResponse } from '../_shared/rate-limit.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -48,10 +47,6 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
-
-    // Rate limit: 30 audio requests per hour
-    const rl = await checkRateLimit(supabaseAdmin, user.id, 'audio', 30)
-    if (!rl.allowed) return rateLimitResponse(rl.remaining)
 
     // 4. Calculate Logic & Cost
     // Cost: 1 Energy per 20 characters

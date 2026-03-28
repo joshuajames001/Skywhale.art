@@ -2,7 +2,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { IMAGE_COSTS } from '../_shared/costs.ts'
-import { checkRateLimit, rateLimitResponse } from '../_shared/rate-limit.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -30,15 +29,11 @@ serve(async (req) => {
       return new Response("Unauthorized", { status: 401, headers: corsHeaders });
     }
 
-    // Rate limit: 15 image requests per hour
+    // Energy check + deduction
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
-    const rl = await checkRateLimit(supabaseAdmin, user.id, 'image', 15)
-    if (!rl.allowed) return rateLimitResponse(rl.remaining)
-
-    // Energy check + deduction
     const energyCost = IMAGE_COSTS.FLUX_CARD;
 
     const { data: profile } = await supabaseAdmin

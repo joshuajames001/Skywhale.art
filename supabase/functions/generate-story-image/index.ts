@@ -1,7 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { IMAGE_COSTS } from '../_shared/costs.ts'
-import { checkRateLimit, rateLimitResponse } from '../_shared/rate-limit.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -101,10 +100,6 @@ serve(async (req) => {
         console.error('❌ Auth Error Details:', JSON.stringify(authError));
         throw new Error(`Invalid User Token: ${authError?.message}`);
     }
-
-    // Rate limit: 10 image requests per hour
-    const rl = await checkRateLimit(supabaseAdmin, user.id, 'image', 10)
-    if (!rl.allowed) return rateLimitResponse(rl.remaining)
 
     // 2. Determine Cost
     const cost = (model === 'dev' || model === 'basic') ? IMAGE_COSTS.FLUX_DEV : IMAGE_COSTS.FLUX_PRO;

@@ -2,7 +2,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { corsHeaders } from "../_shared/cors.ts"
 import { callGemini, callAnthropic } from "../_shared/ai-clients.ts"
 import { getLanguageName, getTextFieldName, getTitleFieldName } from "../_shared/lang-utils.ts"
-import { checkRateLimit, rateLimitResponse } from "../_shared/rate-limit.ts"
+import { checkRateLimit, rateLimitResponse, getTextRateLimit } from "../_shared/rate-limit.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 // --- PROMPTS ---
@@ -227,10 +227,11 @@ serve(async (req) => {
         const { action, payload } = await req.json();
         const lang = (payload?.language || 'cs').substring(0, 2).toLowerCase();
 
-        // Rate limit: 10 text requests per hour (for authenticated users)
+        // Rate limit: tier-based (free 20/6h, paid 150/6h)
         if (user) {
             const supabaseAdmin = createClient(Deno.env.get('SUPABASE_URL') ?? '', Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '')
-            const rl = await checkRateLimit(supabaseAdmin, user.id, 'text', 10)
+            const { maxRequests, windowHours } = await getTextRateLimit(supabaseAdmin, user.id)
+            const rl = await checkRateLimit(supabaseAdmin, user.id, 'text', maxRequests, windowHours)
             if (!rl.allowed) return rateLimitResponse(rl.remaining)
         }
 
