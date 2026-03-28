@@ -7,6 +7,7 @@ import { CardViewer } from '../features/card-studio/CardViewer';
 import { CardStudioProvider } from '../features/card-studio/CardStudioContext';
 import { GameHubProvider } from '../features/game-hub/GameHubContext';
 import { LibraryProvider } from '../features/library/LibraryContext';
+import { ProtectedRoute } from '../components/layout/ProtectedRoute';
 import type { CardStudioAdapter } from '../features/card-studio/CardStudioContext';
 import type { GameHubAdapter } from '../features/game-hub/GameHubContext';
 import type { LibraryAdapter } from '../features/library/LibraryContext';
@@ -36,6 +37,7 @@ type HubView = 'intro' | 'landing' | 'library' | 'setup' | 'card_studio' | 'arca
 interface RouteContext {
     navigate: (path: string) => void;
     user: User | null;
+    loading: boolean;
     handleHubNavigate: (target: HubView) => void;
     handleStoryCreated: (story: StoryBook) => Promise<void>;
     handleNewStoryClick: () => void;
@@ -51,6 +53,10 @@ const CardViewerRoute = ({ onClose }: { onClose: () => void }) => {
     const { id } = useParams();
     return <CardViewer cardId={id || null} onClose={onClose} />;
 };
+
+const Protected = ({ ctx, children }: { ctx: RouteContext; children: ReactNode }) => (
+    <ProtectedRoute user={ctx.user} loading={ctx.loading}>{children}</ProtectedRoute>
+);
 
 export const createRoutes = (ctx: RouteContext): RouteConfig[] => [
     { path: '/terms', element: (
@@ -69,12 +75,14 @@ export const createRoutes = (ctx: RouteContext): RouteConfig[] => [
         </div>
     )},
     { path: '/feedback', element: (
+        <Protected ctx={ctx}>
         <div className="w-full h-full relative z-50">
             <div className="absolute inset-0 z-0 opacity-50 pointer-events-none">
                 <LazyLandingPage onEnter={ctx.handleBookFromLanding} onNavigate={ctx.handleHubNavigate} user={ctx.user} onLogin={() => ctx.setShowAuth(true)} hideUI={true} />
             </div>
             <LazyFeedbackForm onClose={() => ctx.navigate('/')} />
         </div>
+        </Protected>
     )},
     { path: '/library', element: (
         <div className="w-full h-[100svh] overflow-y-auto relative">
@@ -85,30 +93,40 @@ export const createRoutes = (ctx: RouteContext): RouteConfig[] => [
         </div>
     )},
     { path: '/arcade', element: (
+        <Protected ctx={ctx}>
         <GameHubProvider adapter={ctx.gameHubAdapter}>
             <LazyGameHub imageUrl={null} onClose={() => ctx.handleHubNavigate('library')} />
         </GameHubProvider>
+        </Protected>
     )},
     { path: '/encyclopedia', element: (
+        <Protected ctx={ctx}>
         <div className="w-full h-screen overflow-hidden relative">
             <LazyDiscoveryHub onClose={() => ctx.navigate('/')} />
         </div>
+        </Protected>
     )},
     { path: '/create', element: (
+        <Protected ctx={ctx}>
         <LazyCreateStoryWrapper onComplete={ctx.handleStoryCreated} onOpenStore={() => ctx.handleHubNavigate('energy_store')} />
+        </Protected>
     )},
     { path: '/custom', element: (
+        <Protected ctx={ctx}>
         <div className="w-full h-[100svh] overflow-y-auto relative">
             <LazyCustomBookEditor onBack={() => ctx.handleHubNavigate('library')} onOpenStore={() => ctx.handleHubNavigate('energy_store')} />
         </div>
+        </Protected>
     )},
-    { path: '/store', element: <EnergyStore onClose={() => ctx.navigate('/')} /> },
-    { path: '/profile', element: <LazyUserProfile user={ctx.user} onBack={() => ctx.navigate('/')} /> },
+    { path: '/store', element: <Protected ctx={ctx}><EnergyStore onClose={() => ctx.navigate('/')} /></Protected> },
+    { path: '/profile', element: <Protected ctx={ctx}><LazyUserProfile user={ctx.user} onBack={() => ctx.navigate('/')} /></Protected> },
     { path: '/card/:id', element: <CardViewerRoute onClose={() => ctx.navigate('/')} /> },
     { path: '/studio', element: (
+        <Protected ctx={ctx}>
         <CardStudioProvider adapter={ctx.cardStudioAdapter}>
             <LazyCardStudioWrapper />
         </CardStudioProvider>
+        </Protected>
     )},
     { path: '/book/:id', element: <LazyBookRouteWrapper /> },
     { path: '/magic', element: <Navigate to="/" replace /> },

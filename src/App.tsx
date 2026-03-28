@@ -31,7 +31,7 @@ function App() {
     const location = useLocation();
     const [currentAchievement, setCurrentAchievement] = useState<Achievement | null>(null);
 
-    const { user, profile, showAuth, setShowAuth } = useAppAuth();
+    const { user, profile, loading, showAuth, setShowAuth } = useAppAuth();
     const { isTransitioning, showFairy, showFlash, triggerMagicTransition, handleFairyTrigger } = useMagicTransition();
     const { showDailyReward, setShowDailyReward, rewardStreak, handleClaimReward } = useDailyReward();
     const { notification, updateBookPublicStatus } = useStory();
@@ -53,7 +53,7 @@ function App() {
     });
 
     const routes = createRoutes({
-        navigate, user, handleHubNavigate, handleStoryCreated, handleNewStoryClick,
+        navigate, user, loading, handleHubNavigate, handleStoryCreated, handleNewStoryClick,
         handleOpenBook, handleBookFromLanding, setShowAuth,
         cardStudioAdapter, gameHubAdapter, libraryAdapter,
     });

@@ -7,6 +7,7 @@ export const useAppAuth = () => {
     const [showAuth, setShowAuth] = useState(false);
     const [user, setUser] = useState<User | null>(null);
     const [profile, setProfile] = useState<UserProfileType | null>(null);
+    const [loading, setLoading] = useState(true);
 
     // Fetch user profile from database
     const fetchUserProfile = async (userId: string) => {
@@ -38,6 +39,7 @@ export const useAppAuth = () => {
             if (session?.user) {
                 fetchUserProfile(session.user.id);
             }
+            setLoading(false);
         });
 
         const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -55,6 +57,7 @@ export const useAppAuth = () => {
     return {
         user,
         profile,
+        loading,
         showAuth,
         setShowAuth,
         refreshProfile: () => user && fetchUserProfile(user.id)
