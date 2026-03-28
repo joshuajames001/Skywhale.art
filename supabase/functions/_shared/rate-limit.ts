@@ -10,7 +10,10 @@ interface RateLimitConfig {
     windowHours: number
 }
 
-const PAID_TIERS = ['sub_start', 'sub_advanced', 'sub_expert', 'sub_master']
+const PAID_TIERS = [
+    'sub_start', 'sub_advanced', 'sub_expert', 'sub_master',
+    'sub_yearly_start', 'sub_yearly_advanced', 'sub_yearly_expert', 'sub_yearly_master',
+]
 
 /**
  * Determine text rate limit based on user's subscription tier.
