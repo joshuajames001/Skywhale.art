@@ -43,7 +43,7 @@ export async function getTextRateLimit(
  * Check rate limit for a user action. Fail open: if DB errors, allows request.
  */
 export async function checkRateLimit(
-    supabaseAdmin: { rpc: (fn: string, params: Record<string, unknown>) => Promise<{ data: RateLimitResult | null; error: unknown }> },
+    supabaseAdmin: { rpc: (fn: string, params: Record<string, unknown>) => Promise<{ data: unknown; error: unknown }> },
     userId: string,
     action: string,
     maxRequests: number,
@@ -58,13 +58,20 @@ export async function checkRateLimit(
         })
 
         if (error || !data) {
-            console.warn('Rate limit check failed, allowing request:', error)
+            console.warn('[rate-limit] RPC failed, allowing request:', error)
             return { allowed: true, remaining: maxRequests }
         }
 
-        return data
+        // Handle both parsed object and string response from Supabase RPC
+        const result = typeof data === 'string' ? JSON.parse(data) : data
+        const allowed = result?.allowed === true
+        const remaining = typeof result?.remaining === 'number' ? result.remaining : maxRequests
+
+        console.log(`[rate-limit] user=${userId.slice(0,8)} action=${action} allowed=${allowed} remaining=${remaining}`)
+
+        return { allowed, remaining }
     } catch (e) {
-        console.warn('Rate limit exception, allowing request:', e)
+        console.warn('[rate-limit] Exception, allowing request:', e)
         return { allowed: true, remaining: maxRequests }
     }
 }
@@ -73,9 +80,11 @@ export async function checkRateLimit(
  * Returns a 429 Response for rate-limited requests.
  */
 export function rateLimitResponse(remaining: number): Response {
+    console.warn(`[rate-limit] BLOCKED — remaining=${remaining}`)
     return new Response(
         JSON.stringify({
-            error: 'Rate limit exceeded. Try again later.',
+            error: 'Příliš mnoho požadavků. Zkus to znovu za chvíli.',
+            error_en: 'Rate limit exceeded. Try again later.',
             remaining,
         }),
         { status: 429, headers: corsHeaders }
