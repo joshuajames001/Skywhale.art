@@ -337,7 +337,7 @@ const BookCardBase = forwardRef<HTMLDivElement, BookCardProps>(({
                         </button>
                     )}
 
-                    <div className="flex items-center justify-between text-slate-500 text-xs font-sans">
+                    <div className="flex items-center justify-between text-slate-500 text-xs font-sans mt-auto">
                         <span className="flex items-center gap-1">
                             <Calendar size={12} />
                             {formatDate(book.created_at)}
