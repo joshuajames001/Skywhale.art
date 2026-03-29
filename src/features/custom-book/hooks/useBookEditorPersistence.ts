@@ -140,15 +140,27 @@ export const useBookEditorPersistence = (bookId: string, _userId: string) => {
             }
 
             // Generate character sheet from DNA for consistent references
+            const dnaToText = (raw: string): string => {
+                try {
+                    const parsed = JSON.parse(raw) as Record<string, unknown>;
+                    return Object.entries(parsed)
+                        .map(([k, v]) => `${k}: ${v}`)
+                        .join(', ');
+                } catch {
+                    return raw;
+                }
+            };
+
             let sheetUrl: string | null = null;
             if (dna) {
                 try {
                     console.log('🎨 Generating character sheet from DNA...');
-                    const sheetPrompt = `${dna}, full body character sheet, consistent outfit, white background, clean reference, front view`;
+                    const sheetPrompt = `${dnaToText(dna)}, full body character sheet, consistent outfit, white background, clean reference, front view`;
                     const sheetResult = await generateImage({
                         prompt: sheetPrompt,
                         style: 'pixar_3d',
                         tier: 'basic',
+                        characterReference: publicUrl,
                     });
                     if (sheetResult.url) {
                         const { data: { user: currentUser } } = await supabase.auth.getUser();
