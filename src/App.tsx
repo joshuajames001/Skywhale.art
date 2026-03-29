@@ -31,7 +31,7 @@ function App() {
     const location = useLocation();
     const [currentAchievement, setCurrentAchievement] = useState<Achievement | null>(null);
 
-    const { user, profile, loading, showAuth, setShowAuth } = useAppAuth();
+    const { user, profile, loading, showAuth, setShowAuth, isNewUser, clearNewUserFlag } = useAppAuth();
     const { isTransitioning, showFairy, showFlash, triggerMagicTransition, handleFairyTrigger } = useMagicTransition();
     const { showDailyReward, setShowDailyReward, rewardStreak, handleClaimReward } = useDailyReward();
     const { notification, updateBookPublicStatus } = useStory();
@@ -62,6 +62,7 @@ function App() {
         <AppLayout
             user={user} profile={profile} location={location}
             showAuth={showAuth} setShowAuth={setShowAuth}
+            isNewUser={isNewUser} clearNewUserFlag={clearNewUserFlag}
             showFairy={showFairy} showFlash={showFlash} handleFairyTrigger={handleFairyTrigger}
             onNavigate={handleHubNavigate}
             onLogout={() => { supabase.auth.signOut(); navigate('/home'); }}

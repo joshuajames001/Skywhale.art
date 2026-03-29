@@ -69,13 +69,13 @@ export const useBookEditorAI = (_bookId: string) => {
                 magicMirror: !!magicMirrorUrl,
                 continuity: !!continuityImageUrl,
                 activeRef: activeReference || 'NONE',
-                tier: activeReference ? 'premium (50⚡)' : 'basic (30⚡)',
+                tier: magicMirrorUrl ? 'premium (40⚡)' : 'basic (25⚡)',
             });
 
             const result = await generateImage({
                 prompt: finalPrompt,
                 style: selectedStyle,
-                tier: activeReference ? 'premium' : 'basic',
+                tier: magicMirrorUrl ? 'premium' : 'basic',
                 characterReference: activeReference || undefined,
                 characterDescription: effectiveDescription,
                 baseSeed: bookSeed,

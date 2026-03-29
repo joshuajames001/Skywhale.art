@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useGuide } from '../../../hooks/useGuide';
 import { useLocalStorage } from '../../../hooks/useLocalStorage';
 import { DEFAULT_VOICE_ID } from '../../../lib/audio-constants';
@@ -16,6 +17,10 @@ const mkPages = (n: number): BookPage[] => [
 
 export const useCustomBookEditor = ({ onOpenStore }: CustomBookEditorProps) => {
     const { t } = useTranslation();
+    const [searchParams] = useSearchParams();
+    const pagesParam = searchParams.get('pages');
+    const initialPages = pagesParam ? Math.max(1, Math.min(25, parseInt(pagesParam, 10) || 10)) : 10;
+
     const [bookId, setBookId] = useState<string>(crypto.randomUUID());
     const [bookSeed, setBookSeed] = useLocalStorage('skywhale_draft_book_seed', Math.floor(Math.random() * 1e9));
     const [bookTitle, setBookTitle] = useLocalStorage('skywhale_draft_book_title', t('library.custom_book_editor.title_default'));
@@ -27,7 +32,7 @@ export const useCustomBookEditor = ({ onOpenStore }: CustomBookEditorProps) => {
     const [showPublishDialog, setShowPublishDialog] = useState(false);
     const [publishBookId, setPublishBookId] = useState<string | null>(null);
     const [currentAchievement, setCurrentAchievement] = useState<any>(null);
-    const [maxPages, setMaxPages] = useState(10);
+    const [maxPages, setMaxPages] = useState(initialPages);
     const [selectedVoice, setSelectedVoice] = useState(DEFAULT_VOICE_ID);
     const [selectedStyle, setSelectedStyle] = useState('Pixar 3D');
     const [continuityImageUrl, setContinuityImageUrl] = useState<string | null>(null);
@@ -43,13 +48,22 @@ export const useCustomBookEditor = ({ onOpenStore }: CustomBookEditorProps) => {
     const persistence = useBookEditorPersistence(bookId, '');
     const { startGuide, hasSeenGroups } = useGuide();
     const activeReference = magicMirrorUrl || continuityImageUrl;
-    const costPerImage = activeReference ? IMAGE_COSTS.FLUX_PRO : IMAGE_COSTS.FLUX_DEV;
+    const costPerImage = magicMirrorUrl ? IMAGE_COSTS.FLUX_PRO : IMAGE_COSTS.FLUX_DEV;
     const hasEnoughEnergy = persistence.userBalance !== null && persistence.userBalance >= costPerImage;
     const currentPage = pages[currentPageIndex];
 
     const updatePage = (idx: number, patch: Partial<BookPage>) => {
         const next = [...pages]; next[idx] = { ...next[idx], ...patch }; setPages(next);
     };
+
+    // Apply ?pages query param on mount — override stored draft page count
+    useEffect(() => {
+        if (pagesParam && initialPages !== 10) {
+            setPages(mkPages(initialPages));
+            setMaxPages(initialPages);
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     useEffect(() => {
         const tm = setTimeout(() => { if (!hasSeenGroups['custom_book_editor_welcome']) startGuide('custom_book_editor_welcome'); }, 800);

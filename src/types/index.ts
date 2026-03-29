@@ -57,6 +57,7 @@ export interface UserProfile {
     energy_balance: number;
     claim_streak?: number;
     last_claim_date?: string;
+    is_new_user?: boolean;
 }
 
 export interface Achievement {

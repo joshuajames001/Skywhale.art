@@ -4,6 +4,8 @@ import { StoryBook, StoryPage } from '../../../types';
 import { supabase } from '../../../lib/supabase';
 import { validateImageFile } from '../../../lib/content-policy';
 import { extractVisualIdentity } from '../../../lib/storyteller';
+import { generateImage } from '../../../lib/ai';
+import { storageService } from '../../../lib/storage-service';
 
 export const useBookEditorPersistence = (bookId: string, _userId: string) => {
     const { saveStory, saving } = useStory();
@@ -137,7 +139,30 @@ export const useBookEditorPersistence = (bookId: string, _userId: string) => {
                 console.error('❌ DNA Extraction failed:', dnaErr);
             }
 
-            return { url: publicUrl, dna };
+            // Generate character sheet from DNA for consistent references
+            let sheetUrl: string | null = null;
+            if (dna) {
+                try {
+                    console.log('🎨 Generating character sheet from DNA...');
+                    const sheetPrompt = `${dna}, full body character sheet, consistent outfit, white background, clean reference, front view`;
+                    const sheetResult = await generateImage({
+                        prompt: sheetPrompt,
+                        style: 'pixar_3d',
+                        tier: 'basic',
+                    });
+                    if (sheetResult.url) {
+                        const { data: { user: currentUser } } = await supabase.auth.getUser();
+                        const userId = currentUser?.id ?? 'anonymous';
+                        const sheetPath = `magic-mirror/${userId}/sheet_${Date.now()}.webp`;
+                        sheetUrl = await storageService.uploadImageFromUrl(sheetResult.url, sheetPath);
+                        console.log('✅ Character sheet stored:', sheetUrl);
+                    }
+                } catch (sheetErr) {
+                    console.error('⚠️ Character sheet generation failed, using original photo:', sheetErr);
+                }
+            }
+
+            return { url: sheetUrl || publicUrl, dna };
         } catch (err) {
             console.error('❌ Kouzelné zrcadlo: Nahrávání selhalo', err);
             alert('Nahrávání fotky selhalo. Zkus to prosím znovu.');

@@ -14,7 +14,7 @@ export const useAppAuth = () => {
         try {
             const { data } = await supabase
                 .from('profiles')
-                .select('nickname, avatar_emoji, energy_balance, username')
+                .select('nickname, avatar_emoji, energy_balance, username, is_new_user')
                 .eq('id', userId)
                 .single();
 
@@ -54,12 +54,20 @@ export const useAppAuth = () => {
         return () => subscription.unsubscribe();
     }, []);
 
+    const clearNewUserFlag = async () => {
+        if (!user) return;
+        await supabase.from('profiles').update({ is_new_user: false }).eq('id', user.id);
+        await fetchUserProfile(user.id);
+    };
+
     return {
         user,
         profile,
         loading,
         showAuth,
         setShowAuth,
+        isNewUser: profile?.is_new_user ?? false,
+        clearNewUserFlag,
         refreshProfile: () => user && fetchUserProfile(user.id)
     };
 };

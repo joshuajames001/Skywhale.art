@@ -11,52 +11,32 @@ export const useDailyReward = () => {
 
         const { data: profile } = await supabase
             .from('profiles')
-            .select('last_claim_date, claim_streak, energy_balance')
+            .select('last_claim_date, claim_streak')
             .eq('id', user.id)
             .single();
 
-        if (profile) {
-            const lastClaim = profile.last_claim_date ? new Date(profile.last_claim_date) : null;
-            const now = new Date();
-            const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        if (!profile) return;
 
-            // If never claimed, or claimed before today
-            if (!lastClaim || lastClaim < startOfToday) {
-                // Check if streak is broken (last claim was before yesterday)
-                const startOfYesterday = new Date(startOfToday);
-                startOfYesterday.setDate(startOfYesterday.getDate() - 1);
+        const lastClaim = profile.last_claim_date ? new Date(profile.last_claim_date) : null;
+        const now = new Date();
+        const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
-                let currentStreak = profile.claim_streak || 0;
+        // Skip client-side check if already claimed today — no modal needed
+        if (lastClaim && lastClaim >= startOfToday) return;
 
-                if (lastClaim && lastClaim < startOfYesterday) {
-                    currentStreak = 0; // Streak broken
-                }
+        // Check if streak is broken (last claim was before yesterday)
+        const startOfYesterday = new Date(startOfToday);
+        startOfYesterday.setDate(startOfYesterday.getDate() - 1);
 
-                setRewardStreak(currentStreak);
-                setShowDailyReward(true);
-            }
+        let currentStreak = profile.claim_streak || 0;
+        if (lastClaim && lastClaim < startOfYesterday) {
+            currentStreak = 0; // Streak broken
         }
-    };
 
-    const handleClaimReward = async () => {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) return;
+        const newStreak = currentStreak + 1;
 
-        // Re-fetch current profile to get latest energy_balance from database
-        const { data: currentProfile } = await supabase
-            .from('profiles')
-            .select('energy_balance')
-            .eq('id', user.id)
-            .single();
-
-        if (!currentProfile) return;
-
-        const newStreak = rewardStreak + 1;
-        const isDay7 = newStreak % 7 === 0;
-        const rewardAmount = isDay7 ? 30 : 10; // Original rewards (no inflation)
-
-        // FIXED: Secure RPC call
-        const { error } = await supabase.rpc('claim_daily_reward', {
+        // Attempt to claim via RPC — only show modal if reward was actually granted
+        const { data, error } = await supabase.rpc('claim_daily_reward', {
             user_id: user.id,
             streak: newStreak
         });
@@ -66,7 +46,15 @@ export const useDailyReward = () => {
             return;
         }
 
+        // RPC returns { success: false, message: "Already claimed today" } if duplicate
+        if (data && typeof data === 'object' && 'success' in data && !data.success) return;
+
         setRewardStreak(newStreak);
+        setShowDailyReward(true);
+    };
+
+    const handleClaimReward = async () => {
+        // Reward already claimed in checkDailyReward — just close the modal
         setShowDailyReward(false);
     };
 

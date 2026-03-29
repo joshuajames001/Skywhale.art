@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, useSpring, useMotionValue, useTransform } from 'framer-motion';
 import { Sparkles, Loader2, BookOpen, PenTool, Globe, GraduationCap, Heart, Rocket, LogIn } from 'lucide-react';
 import { supabase } from '../../../lib/supabase';
@@ -30,6 +30,15 @@ export const LandingPage = ({ onEnter, onNavigate, user, onLogin, hideUI = false
     const [books, setBooks] = useState<ShowcaseBook[]>([]);
     const [loading, setLoading] = useState(true);
     const [profile, setProfile] = useState<any>(null);
+
+    // Auto-open auth modal for unauthenticated users (once per mount)
+    const hasTriggered = useRef(false);
+    useEffect(() => {
+        if (!user && onLogin && !hasTriggered.current) {
+            hasTriggered.current = true;
+            onLogin();
+        }
+    }, [user, onLogin]);
 
     // Optimized Image Helper
     const getOptimizedUrl = (url: string | null) => {

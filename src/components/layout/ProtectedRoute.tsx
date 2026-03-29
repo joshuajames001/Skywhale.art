@@ -12,7 +12,7 @@ export const ProtectedRoute = ({ user, loading, children }: ProtectedRouteProps)
     const location = useLocation();
 
     if (loading) return null;
-    if (!user) return <Navigate to="/" replace state={{ from: location.pathname }} />;
+    if (!user) return <Navigate to="/home" replace state={{ from: location.pathname }} />;
 
     return <>{children}</>;
 };

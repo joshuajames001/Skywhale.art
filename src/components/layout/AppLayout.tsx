@@ -16,7 +16,8 @@ import { MagicFlash } from '../../features/story-builder/components/effects/Magi
 import { ElevenLabsProfile } from '../../features/profile/components/ElevenLabsProfile';
 import { DailyRewardModal } from '../../features/gamification/components/DailyRewardModal';
 import { NavigationHub } from '../../features/navigation/NavigationHub';
-import { Auth } from '../../features/auth/components/Auth';
+import { WhaleLoginModal } from '../../features/auth/components/WhaleLoginModal';
+import { WelcomeModal } from '../../features/auth/components/WelcomeModal';
 import { LegalAgreements } from '../../features/legal/components/LegalAgreements';
 import { AchievementToast } from '../../features/profile/components/AchievementToast';
 import { PublishDialog } from '../../features/custom-book/components/PublishDialog';
@@ -31,6 +32,8 @@ interface AppLayoutProps {
     // UI State
     showAuth: boolean;
     setShowAuth: (show: boolean) => void;
+    isNewUser: boolean;
+    clearNewUserFlag: () => Promise<void>;
 
     // Magic Transition
     showFairy: boolean;
@@ -69,6 +72,8 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
     location,
     showAuth,
     setShowAuth,
+    isNewUser,
+    clearNewUserFlag,
     showFairy,
     showFlash,
     handleFairyTrigger,
@@ -162,7 +167,10 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
             }
 
             {/* GLOBAL AUTH MODAL */}
-            {showAuth && <Auth onLogin={() => setShowAuth(false)} />}
+            {showAuth && <WhaleLoginModal onClose={() => setShowAuth(false)} />}
+
+            {/* WELCOME MODAL (new users only) */}
+            <WelcomeModal isOpen={!!user && isNewUser} onClose={clearNewUserFlag} />
 
             {/* Config Warning */}
             {
