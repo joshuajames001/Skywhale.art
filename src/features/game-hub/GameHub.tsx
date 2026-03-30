@@ -4,6 +4,8 @@ import { Sparkles, X } from 'lucide-react';
 import { useGameHubAdapter } from '../../providers/useGameHubAdapter';
 import { GameAsset } from './GameHubContext';
 
+const GAMEHUB_BG_URL = 'https://gtixrzbgnstqulqvphtx.supabase.co/storage/v1/object/public/book-media/Gamehub-backgrounds/gamehub_bg_01.jpeg';
+
 // Games
 import { PuzzleGame } from './PuzzleGame';
 import { MemoryGame } from './MemoryGame';
@@ -175,9 +177,10 @@ export const GameHub = ({ onClose, imageUrl, initialGame }: GameHubProps) => {
     // RENDER HELPERS - ACTIVE GAMES
     if (view === 'game' && imageUrlState) {
         return (
-            <div className="fixed inset-0 z-[60] flex items-center justify-center bg-gradient-to-br from-blue-100 via-purple-50 to-pink-100">
+            <div className="fixed inset-0 z-[60] flex items-center justify-center bg-cover bg-center bg-no-repeat relative overflow-hidden" style={{ backgroundImage: `url(${GAMEHUB_BG_URL})` }}>
+                <div className="absolute inset-0 bg-white/35 pointer-events-none" />
                 <BackButton onClick={() => setView('difficulty')} />
-                <div className="w-full h-full max-w-7xl max-h-[90vh] p-4">
+                <div className="relative z-10 w-full h-full max-w-7xl max-h-[90vh] p-4">
                     <PuzzleGame imageUrl={imageUrlState} difficulty={difficulty} onClose={() => setView('difficulty')} />
                 </div>
             </div>
@@ -186,9 +189,10 @@ export const GameHub = ({ onClose, imageUrl, initialGame }: GameHubProps) => {
 
     if (view === 'memory-game') {
         return (
-            <div className="fixed inset-0 z-[60] flex items-center justify-center bg-gradient-to-br from-blue-100 via-purple-50 to-pink-100">
+            <div className="fixed inset-0 z-[60] flex items-center justify-center bg-cover bg-center bg-no-repeat relative overflow-hidden" style={{ backgroundImage: `url(${GAMEHUB_BG_URL})` }}>
+                <div className="absolute inset-0 bg-white/35 pointer-events-none" />
                 <BackButton onClick={() => setView('menu')} />
-                <div className="w-full h-full max-w-7xl max-h-[90vh] p-4">
+                <div className="relative z-10 w-full h-full max-w-7xl max-h-[90vh] p-4">
                     <MemoryGame images={memoryImages} onClose={() => setView('menu')} />
                 </div>
             </div>
@@ -197,8 +201,9 @@ export const GameHub = ({ onClose, imageUrl, initialGame }: GameHubProps) => {
 
     if (view === 'coloring-game' && imageUrlState) {
         return (
-            <div className="fixed inset-0 z-[60] flex items-center justify-center bg-gradient-to-br from-blue-100 via-purple-50 to-pink-100">
-                <div className="w-full h-full max-w-[95vw] max-h-[95vh] p-4">
+            <div className="fixed inset-0 z-[60] flex items-center justify-center bg-cover bg-center bg-no-repeat relative overflow-hidden" style={{ backgroundImage: `url(${GAMEHUB_BG_URL})` }}>
+                <div className="absolute inset-0 bg-white/35 pointer-events-none" />
+                <div className="relative z-10 w-full h-full max-w-[95vw] max-h-[95vh] p-4">
                     <ColoringGame
                         imageUrl={imageUrlState}
                         onClose={() => {
@@ -218,19 +223,13 @@ export const GameHub = ({ onClose, imageUrl, initialGame }: GameHubProps) => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-gradient-to-br from-blue-100 via-purple-50 to-pink-100"
+            className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-cover bg-center bg-no-repeat relative overflow-hidden"
+            style={{ backgroundImage: `url(${GAMEHUB_BG_URL})` }}
         >
-            {/* Playful Background Elements (consistent with Profile) */}
-            <div className="fixed inset-0 pointer-events-none overflow-hidden">
-                <div className="hidden sm:block absolute top-12 left-16 text-5xl opacity-30 animate-pulse">⭐</div>
-                <div className="hidden sm:block absolute top-28 right-24 text-4xl opacity-25 animate-pulse" style={{ animationDelay: '0.7s' }}>🧩</div>
-                <div className="absolute bottom-24 left-1/4 text-3xl opacity-30 animate-pulse" style={{ animationDelay: '1.2s' }}>🎨</div>
-                <div className="hidden sm:block absolute bottom-40 right-1/5 text-4xl opacity-20 animate-pulse" style={{ animationDelay: '0.3s' }}>🃏</div>
-                <div className="absolute top-1/2 left-12 text-2xl opacity-20 animate-pulse" style={{ animationDelay: '1.5s' }}>✨</div>
-            </div>
+            <div className="absolute inset-0 bg-white/35 pointer-events-none" />
 
             {/* Main Container */}
-            <div className="w-full max-w-7xl max-h-[100dvh] md:max-h-[90vh] relative flex flex-col items-center overflow-y-auto no-scrollbar p-4 sm:p-6">
+            <div className="w-full max-w-7xl max-h-[100dvh] md:max-h-[90vh] relative z-10 flex flex-col items-center overflow-y-auto no-scrollbar p-4 sm:p-6">
                 <style>{`
                     .no-scrollbar::-webkit-scrollbar { display: none; }
                     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
