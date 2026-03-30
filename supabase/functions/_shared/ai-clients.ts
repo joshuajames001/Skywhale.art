@@ -50,7 +50,8 @@ export async function callAnthropic(
     systemPrompt: string,
     apiKey: string,
     model: string = 'claude-sonnet-4-6',
-    temperature: number = 1.0
+    temperature: number = 1.0,
+    jsonMode: boolean = true
 ): Promise<any> {
     const response = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
@@ -84,5 +85,7 @@ export async function callAnthropic(
         .replace(/[\u0000-\u001F\u007F]/g, ' ')  // strip control characters
         .replace(/,(\s*[}\]])/g, '$1')            // trailing commas
         .trim();
+
+    if (!jsonMode) return content;
     return JSON.parse(content);
 }

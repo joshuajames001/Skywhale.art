@@ -1,5 +1,5 @@
 import { corsHeaders } from '../_shared/cors.ts'
-import { callGemini } from '../_shared/ai-clients.ts'
+import { callGemini, callAnthropic } from '../_shared/ai-clients.ts'
 import { getLanguageName } from '../_shared/lang-utils.ts'
 import { checkRateLimit, rateLimitResponse, getTextRateLimit } from '../_shared/rate-limit.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
@@ -87,7 +87,7 @@ Deno.serve(async (req) => {
             }
 
             case 'generate-image-prompt': {
-                const { storyText, style } = payload
+                const { storyText, style, characterDescription } = payload
 
                 const STYLE_NAMES: Record<string, string> = {
                     pixar_3d: 'Pixar 3D animation',
@@ -108,19 +108,41 @@ Deno.serve(async (req) => {
                     'Pixar 3D': 'Pixar 3D animation',
                     'Watercolor': 'soft watercolor illustration',
                 }
-                const styleName = STYLE_NAMES[style] ?? 'Pixar 3D animation'
-                const styledProtocol = FROG_PROTOCOL.replace(
-                    'Generate the image description strictly in the visual style specified below. Do not add or suggest other styles.',
-                    `Generate the image description strictly in this visual style: ${styleName}. Do not add or suggest other styles.`
+                const normalizedStyle = style ? style.toLowerCase().replace(/\s+/g, '_').replace(/-/g, '_') : 'pixar_3d'
+                const styleName = STYLE_NAMES[normalizedStyle] ?? STYLE_NAMES[style] ?? 'Pixar 3D animation'
+
+                const anthropicKey = Deno.env.get('ANTHROPIC_API_KEY')
+                if (!anthropicKey) {
+                    return new Response(
+                        JSON.stringify({ error: 'ANTHROPIC_API_KEY not configured' }),
+                        { status: 500, headers: corsHeaders }
+                    )
+                }
+
+                const imagePromptSystem = `You generate image prompts for Flux image generation AI.
+Output MUST be a single sentence, max 80 words, in English only.
+Structure: [STYLE]. [SUBJECT with specific visual details - hair color, clothing, expression]. [ACTION or POSE]. [SETTING]. [LIGHTING]. High quality, detailed, cinematic.
+Rules:
+- Style is provided — use it exactly, do not add or change it
+- Be specific about character appearance (hair color, clothing color and type, age)
+- No negative prompts, no parentheses, no markdown
+- No style instructions beyond what is provided`
+
+                const characterHint = characterDescription || 'the main character of this story'
+                const imagePromptUser = `Style: ${styleName}\nStory text: ${storyText}\nCharacter: ${characterHint}\nGenerate one Flux image prompt for this scene.`
+
+                console.log('🎯 [generate-image-prompt] style from request:', style, '→ styleName:', styleName)
+
+                result = await callAnthropic(
+                    imagePromptUser,
+                    imagePromptSystem,
+                    anthropicKey,
+                    'claude-sonnet-4-6',
+                    0.8,
+                    false
                 )
 
-                result = await callGemini(
-                    [{ role: 'user', content: storyText }],
-                    styledProtocol,
-                    false,
-                    apiKey,
-                    'gemini-2.0-flash'
-                )
+                console.log('🎯 [generate-image-prompt] Anthropic response:', result)
 
                 return new Response(
                     JSON.stringify({ choices: [{ message: { content: result } }] }),

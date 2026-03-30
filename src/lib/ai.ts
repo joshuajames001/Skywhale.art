@@ -49,7 +49,10 @@ export const STYLE_PROMPTS: Record<string, string> = {
     "Pixar 3D": "modern 3D animation style, subsurface scattering on skin, soft rim lighting, expressive big-eyed features, cinematic depth of field" // Compatibility
 };
 
-const DEFAULT_STYLE = STYLE_PROMPTS["Watercolor"];
+const DEFAULT_STYLE = STYLE_PROMPTS["pixar_3d"];
+
+const normalizeStyleKey = (style: string): string =>
+    style.toLowerCase().replace(/\s+/g, '_').replace(/-/g, '_');
 
 const sanitizePrompt = (p: string) => p.replace(/(blood|kill|death|weapon|gun)/gi, "mystery");
 const reframePrompt = (p: string) => (p.toLowerCase().includes("shadow") ? `${p}, illuminated by gentle fireflies` : p);
@@ -76,7 +79,13 @@ export const generateImage = async (params: GenerateImageParams): Promise<ImageG
     } = params;
 
     // 1. Sestavení finálních instrukcí - STRICT CLEANUP
-    let styleInstruction = (style && STYLE_PROMPTS[style]) ? STYLE_PROMPTS[style] : (style || DEFAULT_STYLE);
+    console.log('🎯 [generateImage] style param received:', style);
+    const normalizedStyle = style ? normalizeStyleKey(style) : undefined;
+    let styleInstruction = (normalizedStyle && STYLE_PROMPTS[normalizedStyle])
+        ? STYLE_PROMPTS[normalizedStyle]
+        : (style && STYLE_PROMPTS[style])
+            ? STYLE_PROMPTS[style]
+            : DEFAULT_STYLE;
     
     // LUNAR CYBERPUNK OVERRIDE (Protocol 2026.Lunar)
     const isMoonEnvironment = (setting?.toLowerCase().includes("moon") || setting?.toLowerCase().includes("měsíc") || 
@@ -179,6 +188,7 @@ export const generateImage = async (params: GenerateImageParams): Promise<ImageG
              finalPrompt += ", extremely high detail, 8k resolution, cinematic lighting, photorealistic textures, depth of field, masterpiece";
         }
 
+        console.log('🎯 [generateImage] finalPrompt →', finalPrompt?.substring(0, 200));
         if (finalPrompt) body.prompt = finalPrompt;
         else body.prompt = processedPrompt;
     

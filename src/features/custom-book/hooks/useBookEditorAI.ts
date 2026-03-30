@@ -45,7 +45,7 @@ export const useBookEditorAI = (_bookId: string) => {
             let prompt = page.prompt;
 
             if (!prompt || !isExpertMode) {
-                const generated = await geminiPrompt(page.text, selectedStyle);
+                const generated = await geminiPrompt(page.text, selectedStyle, magicMirrorDna || undefined);
                 if (generated) prompt = generated;
             }
 

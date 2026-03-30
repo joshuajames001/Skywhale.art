@@ -71,7 +71,12 @@ Strictness: HIGH for sexual/hate/self-harm. MEDIUM for violence (fantasy violenc
                     throw new Error(`Failed to fetch image: ${imageResponse.statusText}`)
                 }
                 const imageBuffer = await imageResponse.arrayBuffer()
-                const base64 = btoa(String.fromCharCode(...new Uint8Array(imageBuffer)))
+                const bytes = new Uint8Array(imageBuffer)
+                let binary = ''
+                for (let i = 0; i < bytes.length; i++) {
+                    binary += String.fromCharCode(bytes[i])
+                }
+                const base64 = btoa(binary)
                 const mimeType = imageResponse.headers.get('content-type') || 'image/png'
 
                 const systemPrompt = `You are an expert Visual Character Analyst for AI Art generation.

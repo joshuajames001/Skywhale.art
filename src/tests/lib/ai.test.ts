@@ -86,11 +86,11 @@ describe('generateImage', () => {
         expect(body.prompt).toContain('neon-noir');
     });
 
-    it('uses default watercolor style when style is undefined', async () => {
+    it('uses default Pixar 3D style when style is undefined', async () => {
         await generateImage({ prompt: 'A scene' });
 
         const body = mockInvokeEdgeFunction.mock.calls[0][1];
-        expect(body.prompt).toContain('watercolor');
+        expect(body.prompt).toContain('3D animation');
     });
 
     it('activates lunar cyberpunk override for moon + cyberpunk', async () => {

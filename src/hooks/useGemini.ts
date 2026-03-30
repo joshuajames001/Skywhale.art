@@ -50,14 +50,14 @@ export const useGemini = () => {
      * Generates a Visual Prompt from the story text.
      * Used by the "Magic Wand" to tell Flux what to paint.
      */
-    const generateImagePrompt = async (storyText: string, style?: string) => {
+    const generateImagePrompt = async (storyText: string, style?: string, characterDescription?: string) => {
         setLoading(true);
         try {
             console.log("🎨 Gemini Hook: Calling Edge Function (generate-image-prompt)...");
 
             const { data, error } = await invokeEdgeFunction('book-editor-assist', {
                 action: 'generate-image-prompt',
-                payload: { storyText, style }
+                payload: { storyText, style, characterDescription }
             });
 
             if (error) throw error;
