@@ -82,7 +82,7 @@ export const ColoringGame: React.FC<ColoringGameProps> = ({ imageUrl, onClose })
             </div>
 
             {/* Right: Canvas Area */}
-            <div className="flex-1 bg-[url('https://www.transparenttextures.com/patterns/graphy.png')] bg-slate-800 p-8 flex items-center justify-center relative">
+            <div className="flex-1 bg-[url('/textures/graphy.png')] bg-slate-800 p-8 flex items-center justify-center relative">
                 {/* Background Pattern for 'Desk' feel */}
                 <div className="w-full h-full max-w-5xl max-h-[90vh] shadow-[0_0_50px_rgba(0,0,0,0.5)] rounded-3xl overflow-hidden ring-8 ring-white/5">
                     <ColoringCanvas

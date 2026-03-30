@@ -4,6 +4,40 @@ Všechny významné změny projektu Magické Příběhy (SkyWhale).
 
 ## [Unreleased] — 2026-03-30
 
+### Stability & Prompt Tuning Sprint (GF-57–GF-235)
+
+- **GF-57:** pdfGenerator chunk warning suppressed — `chunkSizeWarningLimit: 600` ve vite.config.ts
+  - Komentář vysvětlující rozhodnutí (lazy-loaded, html2canvas+jsPDF, neblokuje initial load)
+  - Nová sekce "Known Large Chunks" v CLAUDE.md
+- **GF-227:** Atomic energy deduction — `deduct_energy_if_sufficient` RPC
+  - Nová migrace `20260330_deduct_energy_if_sufficient.sql`
+  - Eliminuje TOCTOU race condition (SELECT→CHECK→DEDUCT → single atomic UPDATE WHERE balance >= cost)
+  - 3 Edge Functions přepsány: `generate-audio`, `generate-story-image`, `skywhale-flux`
+  - Refund logika (`add_energy`) zachována pro error recovery
+- **GF-194:** ESLint 0 errors ověřeno — žádné změny potřeba (304 warnings)
+- **GF-235:** Story prompt tuning v `generate-story-content` Edge Function
+  - `<naming_rules>`: česká/česky znějící jména (banned: Kevin, Tyler, Ashley...), animal names (Kulička, Puntík), fantasy exception
+  - `<story_arc_rules>`: dynamická struktura (intro → rising action → climax → resolution) s page ranges dle targetLength
+  - Storytelling rule 8: character consistency across pages
+  - Constraint 9: language purity zero tolerance (žádný mix cz/en)
+- **GF-fix:** energyDeducted ReferenceError — hoist proměnných (`energyDeducted`, `supabaseAdmin`, `user`, `cost`) před `try` block
+  - Opraveno v `generate-story-image` + `skywhale-flux` (catch block neviděl `let` z try scope)
+
+### Migrace
+
+- `20260330_deduct_energy_if_sufficient.sql` — atomic energy deduction RPC (GF-227)
+
+### Edge Function Deploys
+
+- `generate-story-content` — story prompt tuning deployed (GF-235)
+- `generate-story-image` — atomic energy + scoping fix deployed (GF-227 + hotfix)
+- `skywhale-flux` — atomic energy + scoping fix deployed (GF-227 + hotfix)
+- `generate-audio` — atomic energy deployed (GF-227)
+
+---
+
+## [Unreleased] — 2026-03-30
+
 ### Freemium & Image Generation Sprint (GF-144a–GF-222)
 
 - **GF-144a:** WhaleLoginModal — animovaná oceánská scéna se spící velrybou místo plain Auth modalu

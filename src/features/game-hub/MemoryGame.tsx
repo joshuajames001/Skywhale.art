@@ -237,7 +237,7 @@ const CardItem = ({ card, onClick }: { card: Card, onClick: () => void }) => {
                         <Brain className="text-white/50" size={32} />
                     </div>
                     {/* Pattern Overlay */}
-                    <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-30 mix-blend-overlay pointer-events-none" />
+                    <div className="absolute inset-0 bg-[url('/textures/stardust.png')] opacity-30 mix-blend-overlay pointer-events-none" />
                 </div>
 
                 {/* FRONT (Image) */}

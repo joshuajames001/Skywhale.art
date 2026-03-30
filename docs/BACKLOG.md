@@ -5,7 +5,7 @@
 ## Stav projektu
 
 - **Linear issues:** 80+ celkem (75 done, 2 canceled, 0 in progress, 2 odložené)
-- **Poslední sprint:** GF-144a–GF-222 (2026-03-30) — Freemium & Image Generation Sprint
+- **Poslední sprint:** GF-57–GF-235 (2026-03-30) — Stability & Prompt Tuning Sprint
 - **Build:** Zelený (tsc 0 errors + vite build pass)
 - **Test coverage:** 298 testů, ~76% statements
 - **Main bundle:** ~186 kB (vendor chunks separated)
@@ -40,7 +40,7 @@
 
 | Oblast | Problém | Zdroj |
 |--------|---------|-------|
-| pdfGenerator chunk | 591 kB — lazy-loaded, kandidát na lighter PDF lib | Build output |
+| pdfGenerator chunk | 591 kB — lazy-loaded, warning suppressed (GF-57), kandidát na lighter PDF lib | Build output |
 | `storyteller.ts` | Legacy TypeScript errors (non-blocking) + fragile response parsing | Audit |
 | Zastaralé buckety | `dino-content`, `card-assets`, `book-images` — kód je nepoužívá | Storage audit |
 
@@ -65,6 +65,7 @@
 
 | Datum | Milestone |
 |-------|-----------|
+| 2026-03-30 | GF-57–GF-235: Stability & Prompt Tuning Sprint — atomic deduct_energy_if_sufficient RPC (TOCTOU race condition fix), story prompt guardrails (Czech names, story arc, character consistency, language purity), pdfGenerator chunk warning suppressed, energyDeducted scoping hotfix |
 | 2026-03-30 | GF-144a–GF-222: Freemium & Image Gen Sprint — WhaleLoginModal, WelcomeModal, is_new_user flag, daily reward claim-first, image tier fix, character sheet gen, style normalization, Gemini→Claude Sonnet for image prompts, content-tools base64 fix |
 | 2026-03-27 | GF-188–GF-194: Tech Debt + Polish — title/maxPages/expert mode/voice preview/charge energy on mobile, Wave 4+5 complete (40/40), shared BottomSheet + useClipboardCopy + DictionaryResults, Discovery audit clean, Hero Mode removed |
 | 2026-03-27 | GF-165–GF-187: Mobile Responsivity Sprint — 40/40 audit fixes, CustomBookEditor mobile (3-view swipe), Card Studio mobile (dark canvas + 6 panels), refaktor do panel souborů, 26 commitů |

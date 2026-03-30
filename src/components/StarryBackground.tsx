@@ -55,7 +55,7 @@ export const StarryBackground = () => {
 
             {/* 2. LAYER: Stardust Pattern (Parallax) */}
             <motion.div
-                className="absolute inset-[-10%] w-[120%] h-[120%] bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-30"
+                className="absolute inset-[-10%] w-[120%] h-[120%] bg-[url('/textures/stardust.png')] opacity-30"
                 style={{ x: finalX, y: finalY }}
             />
 

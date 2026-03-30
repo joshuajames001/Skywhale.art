@@ -53,7 +53,7 @@ export const DailyRewardModal: React.FC<DailyRewardModalProps> = ({ isOpen, onCl
                     >
                         {/* Header */}
                         <div className="bg-gradient-to-br from-yellow-400 to-orange-500 p-8 text-white text-center relative overflow-hidden">
-                            <div className="absolute top-0 left-0 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-20" />
+                            <div className="absolute top-0 left-0 w-full h-full bg-[url('/textures/stardust.png')] opacity-20" />
                             <h2 className="text-3xl font-black uppercase tracking-widest drop-shadow-md mb-2">Denní Odměna</h2>
                             <p className="font-bold opacity-90">Vítej zpátky, tvůrce! Zde je tvá dávka inspirace.</p>
 

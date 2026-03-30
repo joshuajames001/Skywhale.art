@@ -9,7 +9,7 @@ Source of Truth pro aktuální stav vývoje. Aktualizováno: **2026-03-30**.
 | App.tsx | **86 řádků**, 15 importů |
 | Features | **19** v `src/features/` |
 | Edge Functions | **9** v `supabase/functions/` |
-| Sdílené moduly | 3 v `supabase/functions/_shared/` |
+| Sdílené moduly | 5 v `supabase/functions/_shared/` (ai-clients, cors, lang-utils, costs, rate-limit) |
 | Code splitting | 10 lazy-loaded chunks (via `src/app/routes.tsx`) |
 | Main bundle | **185.94 kB** (vendor chunks separated) |
 | Test coverage | **298 testů**, ~76% statements |
@@ -75,6 +75,11 @@ Source of Truth pro aktuální stav vývoje. Aktualizováno: **2026-03-30**.
 | GF-222 | Gemini → Claude Sonnet | Image prompts přes Anthropic, callAnthropic jsonMode |
 | GF-fix | content-tools base64 | Chunked loop místo spread (stack overflow fix) |
 | GF-fix | Style normalization | normalizeStyleKey(), DEFAULT_STYLE → pixar_3d |
+| GF-57 | pdfGenerator chunk warning | chunkSizeWarningLimit: 600, komentář ve vite.config.ts, CLAUDE.md záznam |
+| GF-227 | Atomic energy deduction | deduct_energy_if_sufficient RPC migrace, TOCTOU race condition fix ve 3 EF (generate-audio, generate-story-image, skywhale-flux) |
+| GF-194 | ESLint 0 errors | Ověřeno — 0 errors, 304 warnings, žádné změny potřeba |
+| GF-235 | Story prompt tuning | Czech naming rules, story arc structure, character consistency, language purity guardrails v generate-story-content EF |
+| GF-fix | energyDeducted scoping | Hoist proměnných před try block v generate-story-image + skywhale-flux (ReferenceError v catch) |
 
 ## 3. Strategic Rules (The Constitution)
 
@@ -88,7 +93,7 @@ Source of Truth pro aktuální stav vývoje. Aktualizováno: **2026-03-30**.
 ## 4. Zbývající tech debt
 
 - `src/lib/storyteller.ts` — legacy TypeScript errors (non-blocking, ignorované)
-- `pdfGenerator` chunk — 591 kB (lazy-loaded; html2canvas CORS s cross-origin obrázky stále potenciální issue)
+- `pdfGenerator` chunk — 591 kB (lazy-loaded; warning suppressed GF-57; html2canvas CORS s cross-origin obrázky stále potenciální issue)
 - `process-story-image` Edge Function — legacy, nahrazena `generate-story-image`
 - `style_manifest` + `status` sloupce na books — migrace vytvořena, potřeba spustit v Supabase SQL Editor
 - Zastaralé Storage buckety: `dino-content`, `card-assets`, `book-images` — kód je nepoužívá
@@ -115,7 +120,7 @@ src/
   types/                  ← globální TypeScript typy (+ DictionaryResult)
 
 supabase/functions/
-  _shared/                ← ai-clients, cors, lang-utils
+  _shared/                ← ai-clients, cors, lang-utils, costs, rate-limit
   generate-story-content/ ← story structure (Anthropic) + ideas (Gemini)
   book-editor-assist/     ← 4 akce pro Custom Book Editor
   content-tools/          ← moderace + visual DNA extraction
@@ -128,5 +133,5 @@ supabase/functions/
   cleanup-storage/        ← údržba
 
 supabase/migrations/
-  20260329_add_is_new_user_flag.sql ← nejnovější migrace
+  20260330_deduct_energy_if_sufficient.sql ← nejnovější migrace (GF-227)
 ```

@@ -232,7 +232,7 @@ export const GameHub = ({ onClose, imageUrl, initialGame }: GameHubProps) => {
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/90 backdrop-blur-xl"
         >
-            <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-20 pointer-events-none" />
+            <div className="absolute inset-0 bg-[url('/textures/stardust.png')] opacity-20 pointer-events-none" />
 
             {/* Main Container */}
             <div className="w-full max-w-7xl max-h-[100dvh] md:max-h-[90vh] relative flex flex-col items-center overflow-y-auto no-scrollbar p-4 sm:p-6">

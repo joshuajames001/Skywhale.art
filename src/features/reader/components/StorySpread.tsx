@@ -131,7 +131,7 @@ export const StorySpread = ({
                 <div
                     className="absolute inset-0 opacity-10 pointer-events-none"
                     style={{
-                        backgroundImage: "url('https://www.transparenttextures.com/patterns/stardust.png')",
+                        backgroundImage: "url('/textures/stardust.png')",
                         backgroundRepeat: 'repeat'
                     }}
                 />
