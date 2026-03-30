@@ -174,6 +174,10 @@ All AI text generation enforces Czech output for `text_cz` fields. Art prompts a
 - **Audio (ElevenLabs):** 1 Energy per 20 characters (min 1)
 - **Stripe tiers:** Zvědavec (1k), Spisovatel (3k), Mistr Slova (7.5k), Start (1.6k), Pokročilý (4k), Expert (9k), Mistr (21k)
 
+### Known Large Chunks
+
+- `pdfGenerator` (~591 kB): lazy-loaded, html2canvas+jsPDF, vědomě akceptováno (GF-57)
+
 ### Path Alias
 
 `@` maps to `src/` (configured in both `vite.config.ts` and `vitest.config.ts`).

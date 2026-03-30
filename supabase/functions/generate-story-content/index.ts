@@ -53,7 +53,33 @@ const getStorySystemPrompt = (targetLength: number = 10, langCode: string = 'cs'
         5. CONSISTENCY: Keep the character's appearance and the world's rules consistent (e.g. if it's night, it stays night).
         6. IN MEDIAS RES (ABSOLUTE): Page 1 MUST begin in the middle of action — a discovery, a movement, a question, a sound. FORBIDDEN opening words: "Once upon a time", "There was once", "One day", "Long ago". Drop the reader directly into the scene.
         7. NO CLICHÉS: BANNED resolutions: magic saves the day without consequence, hero wakes up and it was a dream, villain is evil for no reason, magical item appears from nowhere, happy ending via random luck. The resolution MUST follow logically from the hero's own choices and actions.
+        8. CHARACTER CONSISTENCY (ABSOLUTE): A character's personality, abilities, and knowledge MUST remain consistent across all pages. If a character is shy on page 1, they cannot suddenly be bold on page 5 without a clear story reason (e.g., they found courage through an event on page 4). Track character traits and do not contradict them.
     </storytelling_rules>
+
+    <naming_rules>
+        1. CZECH NAMES (ABSOLUTE): All character names in ${textField} MUST be Czech or Czech-sounding.
+           - GOOD: Tomáš, Anežka, Marek, Petra, Kuba, Eliška, Vojtěch, Bára, Honzík, Růženka
+           - BANNED: Kevin, Tyler, Ashley, Brandon, Madison, Jayden, any English-origin name
+        2. FANTASY/SCI-FI EXCEPTION: Invented names are allowed ONLY if the setting is explicitly fantasy or sci-fi. Even then, they must sound Czech-compatible (Azurin, Šedovous, Lumíra — not Xander, Blaze, Sparkle).
+        3. ANIMAL NAMES: Animal characters get Czech pet-like names (Kulička, Puntík, Kvído, Bublinka) or descriptive Czech names (Šedivka, Chlupatka). NEVER English names for animals.
+        4. NAME CONSISTENCY: Once a character is named, use EXACTLY that name on every page. No nicknames, no alternate spellings, no sudden name changes.
+    </naming_rules>
+
+    <story_arc_rules>
+        EVERY story MUST follow this arc structure regardless of length:
+
+        FOR ${targetLength}-PAGE STORIES:
+        - PAGES 1–2 (INTRO): Establish the hero, their world, and a hint of what's coming. The hero has a clear desire or need.
+        - PAGES 3–${Math.floor(targetLength * 0.4)} (RISING ACTION): A problem or conflict appears. Obstacles grow. The hero tries and struggles.
+        - PAGES ${Math.floor(targetLength * 0.4) + 1}–${Math.floor(targetLength * 0.8)} (CLIMAX): The tension peaks. The hero faces the biggest challenge. The outcome is uncertain.
+        - PAGES ${Math.floor(targetLength * 0.8) + 1}–${targetLength} (RESOLUTION): The hero resolves the conflict through their own actions/growth. The ending feels earned, not random.
+
+        RULES:
+        1. CONFLICT IS MANDATORY: Every story needs a clear problem/obstacle. No "everything is fine and stays fine" stories.
+        2. EARNED RESOLUTION: The ending MUST logically follow from the hero's choices and actions during the story. No deus ex machina.
+        3. CAUSE AND EFFECT: Each page must connect to the next. Ask: "Why does this happen?" If the answer is "randomly" — rewrite it.
+        4. EMOTIONAL ARC: The hero's emotional state must change across the story (scared→brave, lonely→connected, confused→understanding).
+    </story_arc_rules>
 
     <art_prompt_rules>
         A) CHARACTER SHEET (DNA):
@@ -107,6 +133,7 @@ const getStorySystemPrompt = (targetLength: number = 10, langCode: string = 'cs'
         6. FORMAT: Output must be pure JSON only.
         7. DUAL LANGUAGE: '${textField}' in ${langName.toUpperCase()}, 'art_prompt_en' in ENGLISH, 'visual_dna' in ENGLISH.
         8. ANATOMY RULE: NO ANTHROPOMORPHISM. Animals must look exactly like real animals. NO human hands, NO human feet, NO human body proportions, NO human faces. A dog must look like a dog, a bug like a bug. Do not mix human and animal traits.
+        9. LANGUAGE PURITY (ZERO TOLERANCE): In '${textField}' fields: every single word must be in ${langName}. No English words, no untranslated terms, no code-switching. In 'text_en' fields: every single word must be in English. Cross-contamination = critical failure.
     </constraints>
 
     <output_format>

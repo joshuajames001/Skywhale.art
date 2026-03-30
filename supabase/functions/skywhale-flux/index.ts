@@ -12,6 +12,11 @@ serve(async (req) => {
   // CORS Preflight
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
+  let energyDeducted = false;
+  let supabaseAdmin: any;
+  let user: any;
+  const energyCost = IMAGE_COSTS.FLUX_CARD;
+
   try {
     // --- AUTHENTICATION CHECK ---
     const authHeader = req.headers.get('Authorization')!;
@@ -22,40 +27,36 @@ serve(async (req) => {
     );
 
     const {
-      data: { user },
+      data: { user: authUser },
     } = await supabaseClient.auth.getUser();
+    user = authUser;
 
     if (!user) {
       return new Response("Unauthorized", { status: 401, headers: corsHeaders });
     }
 
     // Energy check + deduction
-    const supabaseAdmin = createClient(
+    supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
-    const energyCost = IMAGE_COSTS.FLUX_CARD;
 
-    const { data: profile } = await supabaseAdmin
-      .from('profiles')
-      .select('energy_balance')
-      .eq('id', user.id)
-      .single();
+    // Atomic check & deduct energy (GF-227: prevents TOCTOU race condition)
+    const { data: deductResult, error: deductError } = await supabaseAdmin
+      .rpc('deduct_energy_if_sufficient', {
+        p_user_id: user.id,
+        p_amount: energyCost
+      });
 
-    const currentBalance = profile?.energy_balance || 0;
+    if (deductError) throw new Error('Failed to deduct energy');
 
-    if (currentBalance < energyCost) {
+    if (!deductResult.success) {
       return new Response(
         JSON.stringify({ error: "Insufficient Energy", code: "INSUFFICIENT_ENERGY" }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 402 }
       );
     }
-
-    await supabaseAdmin.rpc('add_energy', {
-      p_user_id: user.id,
-      p_amount: -energyCost
-    });
-    let energyDeducted = true;
+    energyDeducted = true;
 
     const body = await req.json();
     const { prompt, mode, user_id, image_prompt } = body;

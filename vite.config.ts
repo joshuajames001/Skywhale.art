@@ -5,6 +5,9 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   build: {
+    // pdfGenerator chunk (~591 kB) je lazy-loaded — stahuje se jen při exportu PDF.
+    // html2canvas + jsPDF jsou objemné ale neblokují initial load. Vědomé rozhodnutí.
+    chunkSizeWarningLimit: 600,
     target: 'es2015',
     sourcemap: true,
     rollupOptions: {

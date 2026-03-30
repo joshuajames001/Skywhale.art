@@ -84,7 +84,7 @@ export const MagicLoading = ({ status, style = 'Watercolor', className, isCover 
 
         // PAGE STRATEGIES
         let initialMsg = "";
-        let queue = themedQueue;
+        const queue = themedQueue;
         let queueIndex = 0;
 
         if (isCover) {

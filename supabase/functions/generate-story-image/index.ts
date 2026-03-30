@@ -11,6 +11,11 @@ serve(async (req) => {
   // CORS Preflight
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
+  let energyDeducted = false;
+  let supabaseAdmin: any;
+  let user: any;
+  let cost = 0;
+
   try {
     const body = await req.json();
 
@@ -88,13 +93,14 @@ serve(async (req) => {
     );
 
     // 2. Admin client (for RPC and balance update)
-    const supabaseAdmin = createClient(
+    supabaseAdmin = createClient(
         Deno.env.get('SUPABASE_URL') ?? '',
         Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
     // Validate Token Explicitly
-    const { data: { user }, error: authError } = await supabaseUser.auth.getUser(token);
+    const { data: { user: authUser }, error: authError } = await supabaseUser.auth.getUser(token);
+    user = authUser;
     
     if (authError || !user) {
         console.error('❌ Auth Error Details:', JSON.stringify(authError));
@@ -102,32 +108,24 @@ serve(async (req) => {
     }
 
     // 2. Determine Cost
-    const cost = (model === 'dev' || model === 'basic') ? IMAGE_COSTS.FLUX_DEV : IMAGE_COSTS.FLUX_PRO;
-    let energyDeducted = false;
+    cost = (model === 'dev' || model === 'basic') ? IMAGE_COSTS.FLUX_DEV : IMAGE_COSTS.FLUX_PRO;
 
-    // 3. Check Balance
-    const { data: profile } = await supabaseAdmin
-        .from('profiles')
-        .select('energy_balance')
-        .eq('id', user.id)
-        .single();
-    
-    const currentBalance = profile?.energy_balance || 0;
-    
-    if (currentBalance < cost) {
-        console.warn(`⛔ INSUFFICIENT ENERGY: User ${user.id} has ${currentBalance}, needs ${cost}`);
-        return new Response(JSON.stringify({ error: "Insufficient Energy", code: "INSUFFICIENT_ENERGY" }), { 
+    // 3. Atomic check & deduct energy (GF-227: prevents TOCTOU race condition)
+    const { data: deductResult, error: deductError } = await supabaseAdmin
+        .rpc('deduct_energy_if_sufficient', {
+          p_user_id: user.id,
+          p_amount: cost
+        });
+
+    if (deductError) throw new Error('Failed to deduct energy');
+
+    if (!deductResult.success) {
+        console.warn(`⛔ INSUFFICIENT ENERGY: User ${user.id} has ${deductResult.new_balance}, needs ${cost}`);
+        return new Response(JSON.stringify({ error: "Insufficient Energy", code: "INSUFFICIENT_ENERGY" }), {
             headers: { ...corsHeaders, "Content-Type": "application/json" },
-            status: 402 // Payment Required
+            status: 402
         });
     }
-
-    // 4. Deduct Energy (Optimistic Locking not strictly needed for this scale, atomic update is fine)
-    // We use the same 'add_energy' function but with negative value
-    await supabaseAdmin.rpc('add_energy', {
-        p_user_id: user.id,
-        p_amount: -cost
-    });
     energyDeducted = true;
 
     // ------------------------------

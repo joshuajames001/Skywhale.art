@@ -53,33 +53,25 @@ serve(async (req) => {
     // Example: 200 chars = 10 Energy, 600 chars = 30 Energy
     const cost = Math.max(1, Math.ceil(text.length / 20));
 
-    // 5. Check Profile Energy
-    const { data: profile, error: profileError } = await supabaseAdmin
-      .from('profiles')
-      .select('energy_balance')
-      .eq('id', user.id)
-      .single()
-    
-    if (profileError || !profile) throw new Error('Profile not found')
-    
-    if (profile.energy_balance < cost) {
-      return new Response(JSON.stringify({ 
-        error: 'Not enough energy', 
-        required: cost, 
-        current: profile.energy_balance 
+    // 5. Atomic check & deduct energy (GF-227: prevents TOCTOU race condition)
+    const { data: deductResult, error: deductError } = await supabaseAdmin
+      .rpc('deduct_energy_if_sufficient', {
+        p_user_id: user.id,
+        p_amount: cost
+      })
+
+    if (deductError) throw new Error('Failed to deduct energy')
+
+    if (!deductResult.success) {
+      return new Response(JSON.stringify({
+        error: 'Not enough energy',
+        required: cost,
+        current: deductResult.new_balance
       }), {
         status: 402,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       })
     }
-
-    // 6. Deduct Energy
-    const { error: deductError } = await supabaseAdmin
-      .from('profiles')
-      .update({ energy_balance: profile.energy_balance - cost })
-      .eq('id', user.id)
-    
-    if (deductError) throw new Error('Failed to deduct energy')
 
     // 7. Call ElevenLabs API
     const ELEVEN_LABS_API_KEY = Deno.env.get('ELEVEN_LABS_API_KEY')
@@ -153,7 +145,7 @@ serve(async (req) => {
       success: true, 
       audioUrl: publicUrl,
       energyCost: cost,
-      remainingEnergy: profile.energy_balance - cost
+      remainingEnergy: deductResult.new_balance
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
