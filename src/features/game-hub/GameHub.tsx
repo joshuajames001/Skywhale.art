@@ -46,14 +46,6 @@ export const GameHub = ({ onClose, imageUrl, initialGame }: GameHubProps) => {
     const [difficulty, setDifficulty] = useState<3 | 4 | 5>(3);
     const [loading, setLoading] = useState(false);
 
-    // DEBUG LOGGING
-    useEffect(() => {
-        console.log(`🕹️ GameHub View Changed: ${view}`);
-        console.log(`   Selected Game: ${selectedGame}`);
-        console.log(`   Image URL: ${imageUrlState ? 'Set' : 'Null'}`);
-        console.log(`   Book Pages: ${bookPages.length}`);
-    }, [view, selectedGame, imageUrlState, bookPages]);
-
     // Initialize (if props provided)
     useEffect(() => {
         if (initialGame) setSelectedGame(initialGame);
@@ -79,19 +71,16 @@ export const GameHub = ({ onClose, imageUrl, initialGame }: GameHubProps) => {
     // Fetch Pages for a Book
     const fetchPagesForBook = async (book: GameAsset) => {
         setLoading(true);
-        console.log(`📚 Fetching pages for book: ${book.title} (${book.id})`);
         try {
             const urls = await onFetchPages(book.id);
 
             // If no pages found but we have a cover
             if (urls.length === 0 && book.coverUrl) {
-                console.log("   No pages found, using cover.");
                 const cover = [book.coverUrl];
                 setBookPages(cover);
                 return cover;
             }
 
-            console.log(`   Found ${urls.length} pages.`);
             setBookPages(urls);
             return urls;
         } catch (e) {
@@ -105,7 +94,6 @@ export const GameHub = ({ onClose, imageUrl, initialGame }: GameHubProps) => {
 
     // Handle Game Selection
     const handleGameSelect = async (type: 'puzzle' | 'pexeso' | 'coloring') => {
-        console.log(`Select Game: ${type}`);
         if (type === 'puzzle') {
             if (imageUrlState) {
                 setView('difficulty');
@@ -187,7 +175,7 @@ export const GameHub = ({ onClose, imageUrl, initialGame }: GameHubProps) => {
     // RENDER HELPERS - ACTIVE GAMES
     if (view === 'game' && imageUrlState) {
         return (
-            <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/95 backdrop-blur-xl">
+            <div className="fixed inset-0 z-[60] flex items-center justify-center bg-gradient-to-br from-blue-100 via-purple-50 to-pink-100">
                 <BackButton onClick={() => setView('difficulty')} />
                 <div className="w-full h-full max-w-7xl max-h-[90vh] p-4">
                     <PuzzleGame imageUrl={imageUrlState} difficulty={difficulty} onClose={() => setView('difficulty')} />
@@ -198,7 +186,7 @@ export const GameHub = ({ onClose, imageUrl, initialGame }: GameHubProps) => {
 
     if (view === 'memory-game') {
         return (
-            <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/95 backdrop-blur-xl">
+            <div className="fixed inset-0 z-[60] flex items-center justify-center bg-gradient-to-br from-blue-100 via-purple-50 to-pink-100">
                 <BackButton onClick={() => setView('menu')} />
                 <div className="w-full h-full max-w-7xl max-h-[90vh] p-4">
                     <MemoryGame images={memoryImages} onClose={() => setView('menu')} />
@@ -209,7 +197,7 @@ export const GameHub = ({ onClose, imageUrl, initialGame }: GameHubProps) => {
 
     if (view === 'coloring-game' && imageUrlState) {
         return (
-            <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/95 backdrop-blur-xl">
+            <div className="fixed inset-0 z-[60] flex items-center justify-center bg-gradient-to-br from-blue-100 via-purple-50 to-pink-100">
                 <div className="w-full h-full max-w-[95vw] max-h-[95vh] p-4">
                     <ColoringGame
                         imageUrl={imageUrlState}
@@ -230,9 +218,16 @@ export const GameHub = ({ onClose, imageUrl, initialGame }: GameHubProps) => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/90 backdrop-blur-xl"
+            className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-gradient-to-br from-blue-100 via-purple-50 to-pink-100"
         >
-            <div className="absolute inset-0 bg-[url('/textures/stardust.png')] opacity-20 pointer-events-none" />
+            {/* Playful Background Elements (consistent with Profile) */}
+            <div className="fixed inset-0 pointer-events-none overflow-hidden">
+                <div className="hidden sm:block absolute top-12 left-16 text-5xl opacity-30 animate-pulse">⭐</div>
+                <div className="hidden sm:block absolute top-28 right-24 text-4xl opacity-25 animate-pulse" style={{ animationDelay: '0.7s' }}>🧩</div>
+                <div className="absolute bottom-24 left-1/4 text-3xl opacity-30 animate-pulse" style={{ animationDelay: '1.2s' }}>🎨</div>
+                <div className="hidden sm:block absolute bottom-40 right-1/5 text-4xl opacity-20 animate-pulse" style={{ animationDelay: '0.3s' }}>🃏</div>
+                <div className="absolute top-1/2 left-12 text-2xl opacity-20 animate-pulse" style={{ animationDelay: '1.5s' }}>✨</div>
+            </div>
 
             {/* Main Container */}
             <div className="w-full max-w-7xl max-h-[100dvh] md:max-h-[90vh] relative flex flex-col items-center overflow-y-auto no-scrollbar p-4 sm:p-6">
@@ -248,7 +243,7 @@ export const GameHub = ({ onClose, imageUrl, initialGame }: GameHubProps) => {
                         <motion.div
                             initial={{ y: -20, opacity: 0 }}
                             animate={{ y: 0, opacity: 1 }}
-                            className="inline-flex items-center gap-2 px-4 py-1 rounded-full bg-white/5 border border-white/10 text-indigo-300 text-sm font-medium uppercase tracking-widest mb-2"
+                            className="inline-flex items-center gap-2 px-4 py-1 rounded-full bg-white/60 border border-purple-200 text-purple-600 text-sm font-medium uppercase tracking-widest mb-2"
                         >
                             <Sparkles size={14} className="text-amber-400" />
                             <span>Síň Zázraků</span>
@@ -257,7 +252,7 @@ export const GameHub = ({ onClose, imageUrl, initialGame }: GameHubProps) => {
                             key={view}
                             initial={{ scale: 0.9, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
-                            className="text-4xl md:text-6xl font-title font-bold text-transparent bg-clip-text bg-gradient-to-br from-white via-indigo-200 to-indigo-400 drop-shadow-2xl"
+                            className="text-4xl md:text-6xl font-title font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600 drop-shadow-sm"
                         >
                             {view === 'menu' ? 'Jak si budeme hrát?' :
                                 view === 'book-select' ? 'Vyber příběh' :
@@ -299,7 +294,7 @@ export const GameHub = ({ onClose, imageUrl, initialGame }: GameHubProps) => {
                     {view !== 'menu' && (
                         <button
                             onClick={goBack}
-                            className="bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white px-6 py-3 rounded-full font-medium transition-colors border border-white/5 backdrop-blur mt-4"
+                            className="bg-white/60 hover:bg-white/80 text-slate-600 hover:text-slate-800 px-6 py-3 rounded-full font-medium transition-colors border border-purple-200 backdrop-blur mt-4"
                         >
                             Zpět
                         </button>
@@ -314,7 +309,7 @@ export const GameHub = ({ onClose, imageUrl, initialGame }: GameHubProps) => {
 const BackButton = ({ onClick }: { onClick: () => void }) => (
     <button
         onClick={onClick}
-        className="absolute top-4 right-4 z-50 p-4 rounded-full bg-white/5 hover:bg-white/10 text-white transition-colors"
+        className="absolute top-4 right-4 z-50 p-4 rounded-full bg-white/60 hover:bg-white/80 text-slate-600 hover:text-slate-800 transition-colors shadow-sm"
     >
         <X size={24} />
         <span className="sr-only">Zavřít</span>

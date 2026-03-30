@@ -12,6 +12,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useEnergy } from '../../hooks/useEnergy';
 import { useAudioGeneration } from './hooks/useAudioGeneration';
+import { usePrefetchNextPage } from './hooks/usePrefetchNextPage';
 
 interface BookReaderProps {
     story: StoryBook;
@@ -56,6 +57,9 @@ export const BookReader: React.FC<BookReaderProps> = ({
         const result = await generateAudio(fullText, voiceId);
         if (result) setIsAudioDialogOpen(false);
     };
+
+    // GF-236: Prefetch next page image in background
+    usePrefetchNextPage(story, currentIndex, onUploadImage, onUpdatePage);
 
     const isCover = currentIndex === 0;
 

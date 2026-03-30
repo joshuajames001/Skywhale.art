@@ -22,7 +22,7 @@ export const PageSelector = ({ bookPages, onSelectImage }: PageSelectorProps) =>
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ delay: i * 0.05 }}
                         onClick={() => onSelectImage(url)}
-                        className="relative group w-full aspect-square rounded-xl overflow-hidden border-2 border-white/10 hover:border-fuchsia-400 hover:shadow-[0_0_30px_rgba(232,121,249,0.3)] transition-all"
+                        className="relative group w-full aspect-square rounded-xl overflow-hidden border-2 border-purple-200 hover:border-fuchsia-400 hover:shadow-[0_0_30px_rgba(232,121,249,0.3)] transition-all"
                     >
                         <img
                             src={url}

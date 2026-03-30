@@ -242,13 +242,13 @@ const CardItem = ({ card, onClick }: { card: Card, onClick: () => void }) => {
 
                 {/* FRONT (Image) */}
                 <div
-                    className="absolute inset-0 w-full h-full backface-hidden rounded-xl overflow-hidden border-2 border-cyan-400/50 shadow-cyan-500/20 shadow-xl bg-slate-800"
+                    className="absolute inset-0 w-full h-full backface-hidden rounded-xl overflow-hidden border-2 border-cyan-400/50 shadow-cyan-500/20 shadow-xl"
                     style={{ transform: 'rotateY(180deg)' }}
                 >
                     <img
                         src={card.image}
                         alt="memory card"
-                        className={`w-full h-full object-contain p-2 bg-slate-900 transition-all duration-500 ${card.isMatched ? 'grayscale-0 brightness-110' : ''}`}
+                        className={`w-full h-full object-cover transition-all duration-500 ${card.isMatched ? 'grayscale-0 brightness-110' : ''}`}
                     />
                     {card.isMatched && (
                         <div className="absolute inset-0 flex items-center justify-center bg-green-500/20 backdrop-blur-[2px]">

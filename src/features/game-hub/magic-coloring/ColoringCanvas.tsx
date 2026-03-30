@@ -152,7 +152,7 @@ export const ColoringCanvas: React.FC<ColoringCanvasProps> = ({
             // Mismatch Visual Feedback?
             // Maybe shake animation later.
             // For now, console log or ignore.
-            console.log("Wrong Color! Needed:", region.label, "Got:", activeColorIndex + 1);
+            // Wrong color — no action (visual feedback could be added later)
         }
     };
 

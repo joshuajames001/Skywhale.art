@@ -17,12 +17,12 @@ export const GameMenu = ({ onClose, onSelectGame }: GameMenuProps) => {
         >
             <button
                 onClick={onClose}
-                className="absolute top-6 right-6 p-3 bg-white/10 hover:bg-white/20 rounded-full text-white backdrop-blur transition-all active:scale-95 z-50"
+                className="absolute top-6 right-6 p-3 bg-white/60 hover:bg-white/80 rounded-full text-slate-600 hover:text-slate-800 backdrop-blur transition-all active:scale-95 z-50 shadow-sm"
             >
                 <X size={24} />
             </button>
 
-            <h2 className="text-4xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-amber-400 mb-12 drop-shadow-lg text-center font-title">
+            <h2 className="text-4xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-600 via-pink-500 to-amber-500 mb-12 drop-shadow-sm text-center font-title">
                 Herna
             </h2>
 
@@ -62,15 +62,16 @@ export const GameMenu = ({ onClose, onSelectGame }: GameMenuProps) => {
 };
 
 const GameCard = ({ title, icon: Icon, color, description, onClick, delay, locked }: any) => {
-    const colorStyles: any = {
-        amber: 'group-hover:text-amber-400 from-amber-500/20 to-amber-500/5 hover:border-amber-500/50',
-        cyan: 'group-hover:text-cyan-400 from-cyan-500/20 to-cyan-500/5 hover:border-cyan-500/50',
-        fuchsia: 'group-hover:text-fuchsia-400 from-fuchsia-500/20 to-fuchsia-500/5 hover:border-fuchsia-500/50',
-        violet: 'group-hover:text-indigo-400 from-indigo-500/20 to-indigo-500/5 hover:border-indigo-500/50', // Fixed missing 'violet' key mapping to indigo styles
-        indigo: 'group-hover:text-indigo-400 from-indigo-500/20 to-indigo-500/5 hover:border-indigo-500/50',
+    const colorStyles: Record<string, { card: string; orbital: string }> = {
+        amber: { card: 'group-hover:text-amber-400 from-amber-500/20 to-amber-500/5 hover:border-amber-500/50', orbital: 'border-amber-400/30' },
+        cyan: { card: 'group-hover:text-cyan-400 from-cyan-500/20 to-cyan-500/5 hover:border-cyan-500/50', orbital: 'border-cyan-400/30' },
+        fuchsia: { card: 'group-hover:text-fuchsia-400 from-fuchsia-500/20 to-fuchsia-500/5 hover:border-fuchsia-500/50', orbital: 'border-fuchsia-400/30' },
+        violet: { card: 'group-hover:text-indigo-400 from-indigo-500/20 to-indigo-500/5 hover:border-indigo-500/50', orbital: 'border-indigo-400/30' },
+        indigo: { card: 'group-hover:text-indigo-400 from-indigo-500/20 to-indigo-500/5 hover:border-indigo-500/50', orbital: 'border-indigo-400/30' },
     };
 
-    const activeStyle = colorStyles[color] || colorStyles.indigo;
+    const styles = colorStyles[color] || colorStyles.indigo;
+    const activeStyle = styles.card;
 
     return (
         <motion.button
@@ -81,37 +82,37 @@ const GameCard = ({ title, icon: Icon, color, description, onClick, delay, locke
             whileTap={!locked ? { scale: 0.95 } : {}}
             onClick={onClick}
             disabled={locked}
-            className={`group relative w-full h-80 md:w-72 md:h-96 rounded-[32px] bg-white/5 border border-white/10 backdrop-blur-md flex flex-col items-center justify-between p-8 transition-all duration-500 ${!locked ? activeStyle : 'opacity-60 grayscale cursor-not-allowed'}`}
+            className={`group relative w-full h-80 md:w-72 md:h-96 rounded-[32px] bg-white/70 border border-purple-200 backdrop-blur-md shadow-lg flex flex-col items-center justify-between p-8 transition-all duration-500 ${!locked ? activeStyle : 'opacity-60 grayscale cursor-not-allowed'}`}
         >
             {/* Background Glow */}
             <div className={`absolute inset-0 bg-gradient-to-b ${activeStyle.split(' ')[1]} opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-[32px]`} />
 
             {/* Icon Floating */}
             <div className="relative mt-8">
-                <div className={`w-24 h-24 rounded-full bg-white/5 border border-white/10 flex items-center justify-center shadow-2xl group-hover:scale-110 transition-transform duration-500 ${locked ? '' : 'animate-float'}`}>
-                    <Icon size={40} className="text-white group-hover:text-white transition-colors" />
+                <div className={`w-24 h-24 rounded-full bg-purple-50 border border-purple-200 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-500 ${locked ? '' : 'animate-float'}`}>
+                    <Icon size={40} className="text-slate-600 group-hover:text-purple-600 transition-colors" />
                 </div>
                 {/* Orbital Ring */}
                 {!locked && (
-                    <div className={`absolute inset-0 rounded-full border border-${color}-400/30 scale-125 opacity-0 group-hover:opacity-100 transition-all duration-700 animate-spin-slow`} />
+                    <div className={`absolute inset-0 rounded-full border ${styles.orbital} scale-125 opacity-0 group-hover:opacity-100 transition-all duration-700 animate-spin-slow`} />
                 )}
             </div>
 
             <div className="relative text-center z-10 hidden md:block">
-                <h3 className="text-2xl font-bold text-white mb-2">{title}</h3>
-                <p className="text-indigo-200/60 text-sm leading-relaxed">{description}</p>
+                <h3 className="text-2xl font-bold text-slate-800 mb-2">{title}</h3>
+                <p className="text-slate-500 text-sm leading-relaxed">{description}</p>
             </div>
             <div className="relative text-center z-10 md:hidden">
-                <h3 className="text-xl font-bold text-white mb-2">{title}</h3>
+                <h3 className="text-xl font-bold text-slate-800 mb-2">{title}</h3>
             </div>
 
             <div className="relative pt-4">
                 {locked ? (
-                    <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-white/20">
+                    <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-slate-400">
                         <Lock size={12} /> Brzy
                     </div>
                 ) : (
-                    <div className="w-12 h-1 bg-white/10 rounded-full group-hover:w-24 group-hover:bg-white transition-all duration-500" />
+                    <div className="w-12 h-1 bg-purple-200 rounded-full group-hover:w-24 group-hover:bg-purple-400 transition-all duration-500" />
                 )}
             </div>
         </motion.button>

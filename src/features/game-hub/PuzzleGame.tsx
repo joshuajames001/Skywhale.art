@@ -170,7 +170,7 @@ export const PuzzleGame = ({ imageUrl, difficulty, onClose }: PuzzleGameProps) =
             </div>
 
             {/* Reference Image (Small preview) */}
-            <div className="absolute -bottom-16 left-1/2 -translate-x-1/2 md:bottom-8 md:left-8 md:translate-x-0 w-20 h-20 md:w-24 md:h-24 rounded-lg overflow-hidden border-2 border-white/20 shadow-lg opacity-60 hover:opacity-100 transition-opacity">
+            <div className="absolute bottom-4 left-4 w-32 h-32 md:w-48 md:h-48 rounded-xl overflow-hidden border-2 border-white/30 shadow-xl opacity-80 hover:opacity-100 transition-opacity">
                 <img src={imageUrl} className="w-full h-full object-cover" alt="Nápověda" />
             </div>
         </motion.div>

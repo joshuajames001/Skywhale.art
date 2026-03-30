@@ -32,7 +32,7 @@ const DifficultyCard = ({ level, label, grid, color, onClick }: any) => {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={onClick}
-            className="w-48 h-64 bg-slate-800 border-2 border-white/20 rounded-3xl p-6 flex flex-col items-center justify-center gap-4 relative overflow-hidden group shadow-2xl z-10"
+            className="w-48 h-64 bg-white/70 border-2 border-purple-200 rounded-3xl p-6 flex flex-col items-center justify-center gap-4 relative overflow-hidden group shadow-lg z-10"
         >
             {/* Always visible background gradient */}
             <div className={`absolute inset-0 ${bgColors[color]} opacity-20 group-hover:opacity-30 transition-opacity`} />
@@ -42,11 +42,11 @@ const DifficultyCard = ({ level, label, grid, color, onClick }: any) => {
             </div>
 
             <div className="text-center relative z-10">
-                <h4 className="text-xl font-bold text-white mb-2">
+                <h4 className="text-xl font-bold text-slate-800 mb-2">
                     {label}
                 </h4>
-                <div className="bg-black/40 px-3 py-1 rounded-full border border-white/10">
-                    <p className="text-indigo-200 font-mono text-sm">{grid}</p>
+                <div className="bg-white/60 px-3 py-1 rounded-full border border-purple-200">
+                    <p className="text-purple-600 font-mono text-sm">{grid}</p>
                 </div>
             </div>
         </motion.button>
