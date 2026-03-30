@@ -2,6 +2,54 @@
 
 Všechny významné změny projektu Magické Příběhy (SkyWhale).
 
+## [Unreleased] — 2026-03-30
+
+### Freemium & Image Generation Sprint (GF-144a–GF-222)
+
+- **GF-144a:** WhaleLoginModal — animovaná oceánská scéna se spící velrybou místo plain Auth modalu
+  - Framer Motion float animace, JS-generované hvězdy, plovoucí emoji rybky
+  - Klik na velrybu → probuzení (glow, bubliny) → fade-in Auth formulář
+  - Desktop: flex-row (velryba vlevo, formulář vpravo), mobile: flex-col
+- **GF-209:** WelcomeModal pro nové uživatele — oceánský styl, 160⚡ energy badge, CTA → `/custom?pages=3`
+  - DB migrace: `is_new_user` boolean na profiles + handle_new_user() update
+  - useAppAuth: `isNewUser` + `clearNewUserFlag()` (update profiles → refreshProfile)
+- **GF-213:** WhaleLoginModal desktop layout — flex-row na md+ breakpointu
+- **GF-214:** Fix X button re-open loop — useRef guard v LandingPage (efekt jen jednou)
+- **GF-207:** Auth gate rozšíření — ProtectedRoute redirect `/ → /home`
+- **GF-215:** Daily reward fix — claim-first-show-after pattern
+  - RPC `claim_daily_reward` se volá v checkDailyReward(), ne v handleClaimReward()
+  - `{ success: false }` → modal se nezobrazí, tiše ignorovat
+  - Testy aktualizovány (7 testů, nový test pro "Already claimed" scénář)
+- **GF-216:** CustomBookEditor image generation opravy
+  - Tier logika: `continuityImageUrl` nepromuje na premium (jen magicMirrorUrl)
+  - costPerImage konzistentní s tier logikou
+  - Character sheet generování z DNA po magic mirror uploadu (Flux Dev + storageService)
+  - Zastaralý log 50⚡/30⚡ → 40⚡/25⚡
+- **GF-209:** CustomBookEditor `?pages` query param — useSearchParams override na mountu
+- **GF-219:** Magic mirror sheet — originální fotka jako img2img reference + dnaToText JSON→text parser
+- **GF-221:** FROG_PROTOCOL — selectedStyle se předává do generate-image-prompt edge function
+  - STYLE_NAMES lookup mapa (16 stylů + compatibility keys)
+  - Gemini prompt instrukce nahrazena dynamickým stylem
+- **GF-222:** generate-image-prompt přepnut z Gemini na Claude Sonnet (claude-sonnet-4-6)
+  - Nový strukturovaný systém prompt: `[STYLE]. [SUBJECT]. [ACTION]. [SETTING]. [LIGHTING]`
+  - characterDescription (magicMirrorDna) se předává do edge function
+  - callAnthropic: přidán `jsonMode` parametr (default true, image prompt false)
+- **GF-fix:** content-tools base64 stack overflow — `String.fromCharCode(...spread)` → chunked loop
+- **GF-fix:** Style key normalizace — `normalizeStyleKey()` (lowercase + underscore)
+  - DEFAULT_STYLE změněn z watercolor na pixar_3d
+  - Stejná normalizace v book-editor-assist STYLE_NAMES lookup
+
+### Migrace
+
+- `20260329_add_is_new_user_flag.sql` — is_new_user boolean + handle_new_user() update
+
+### Edge Function Deploys
+
+- `content-tools` — base64 fix deployed
+- `book-editor-assist` — Anthropic switch + jsonMode + style normalizace deployed
+
+---
+
 ## [Unreleased] — 2026-03-27
 
 ### Mobile Responsivity Sprint (GF-165–GF-187)

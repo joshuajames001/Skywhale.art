@@ -79,7 +79,6 @@ export const generateImage = async (params: GenerateImageParams): Promise<ImageG
     } = params;
 
     // 1. Sestavení finálních instrukcí - STRICT CLEANUP
-    console.log('🎯 [generateImage] style param received:', style);
     const normalizedStyle = style ? normalizeStyleKey(style) : undefined;
     let styleInstruction = (normalizedStyle && STYLE_PROMPTS[normalizedStyle])
         ? STYLE_PROMPTS[normalizedStyle]
@@ -188,7 +187,6 @@ export const generateImage = async (params: GenerateImageParams): Promise<ImageG
              finalPrompt += ", extremely high detail, 8k resolution, cinematic lighting, photorealistic textures, depth of field, masterpiece";
         }
 
-        console.log('🎯 [generateImage] finalPrompt →', finalPrompt?.substring(0, 200));
         if (finalPrompt) body.prompt = finalPrompt;
         else body.prompt = processedPrompt;
     

@@ -131,8 +131,6 @@ Rules:
                 const characterHint = characterDescription || 'the main character of this story'
                 const imagePromptUser = `Style: ${styleName}\nStory text: ${storyText}\nCharacter: ${characterHint}\nGenerate one Flux image prompt for this scene.`
 
-                console.log('🎯 [generate-image-prompt] style from request:', style, '→ styleName:', styleName)
-
                 result = await callAnthropic(
                     imagePromptUser,
                     imagePromptSystem,
@@ -141,8 +139,6 @@ Rules:
                     0.8,
                     false
                 )
-
-                console.log('🎯 [generate-image-prompt] Anthropic response:', result)
 
                 return new Response(
                     JSON.stringify({ choices: [{ message: { content: result } }] }),

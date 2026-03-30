@@ -1,6 +1,6 @@
 # DEVELOPMENT STATE
 
-Source of Truth pro aktuální stav vývoje. Aktualizováno: **2026-03-28**.
+Source of Truth pro aktuální stav vývoje. Aktualizováno: **2026-03-30**.
 
 ## 1. Aktuální metriky
 
@@ -64,6 +64,17 @@ Source of Truth pro aktuální stav vývoje. Aktualizováno: **2026-03-28**.
 | GF-196 | ESLint migrace | Flat config (9.39.4), 0 errors, hooks violations fixed |
 | GF-195b | Library scroll-hide | useScrollDirection + ScrollDirectionContext, auto-hide header+nav |
 | GF-196b | Library grid alignment | BookCard h-full flex-col, grid bez auto-rows-max |
+| GF-144a | WhaleLoginModal | Animovaný oceánský login místo plain Auth modalu |
+| GF-209 | WelcomeModal + is_new_user | Welcome modal pro nové uživatele, DB migrace, ?pages query param |
+| GF-213–214 | Whale modal fixes | Desktop flex-row layout, X button re-open guard |
+| GF-207 | Auth gate | ProtectedRoute → /home, LandingPage auto-open |
+| GF-215 | Daily reward fix | Claim-first-show-after, testy aktualizovány |
+| GF-216 | Image gen tier fix | continuity ≠ premium, character sheet gen, cost log fix |
+| GF-219 | Magic mirror sheet | img2img reference + dnaToText parser |
+| GF-221 | FROG_PROTOCOL style | selectedStyle předáván do edge function |
+| GF-222 | Gemini → Claude Sonnet | Image prompts přes Anthropic, callAnthropic jsonMode |
+| GF-fix | content-tools base64 | Chunked loop místo spread (stack overflow fix) |
+| GF-fix | Style normalization | normalizeStyleKey(), DEFAULT_STYLE → pixar_3d |
 
 ## 3. Strategic Rules (The Constitution)
 
@@ -81,9 +92,10 @@ Source of Truth pro aktuální stav vývoje. Aktualizováno: **2026-03-28**.
 - `process-story-image` Edge Function — legacy, nahrazena `generate-story-image`
 - `style_manifest` + `status` sloupce na books — migrace vytvořena, potřeba spustit v Supabase SQL Editor
 - Zastaralé Storage buckety: `dino-content`, `card-assets`, `book-images` — kód je nepoužívá
-- ~~Discovery Three-Layer~~ — ✅ audit čistý (GF-194)
 - Card Studio mobile: translation tool, reset bg to black, bg category grouping
 - ESLint: 304 warnings (mostly no-explicit-any + unused-vars) — nízká priorita
+- `FROG_PROTOCOL` v book-editor-assist — dead code (akce generate-image-prompt používá Anthropic), kandidát na smazání
+- EditorToolbar dropdown `"illustration"` — nemá STYLE_PROMPTS entry, fallback na pixar_3d
 
 ## 5. Architektura (quick reference)
 
@@ -116,5 +128,5 @@ supabase/functions/
   cleanup-storage/        ← údržba
 
 supabase/migrations/
-  20260325_add_shared_cards.sql  ← nejnovější migrace
+  20260329_add_is_new_user_flag.sql ← nejnovější migrace
 ```

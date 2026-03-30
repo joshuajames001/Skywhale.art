@@ -1,16 +1,18 @@
 # Backlog & Roadmap
 
-> Aktualizováno: 2026-03-27 (evening) | Zdroj: Linear (Skywhale.art) + audity
+> Aktualizováno: 2026-03-30 | Zdroj: Linear (Skywhale.art) + audity
 
 ## Stav projektu
 
-- **Linear issues:** 65+ celkem (61 done, 2 canceled, 0 in progress, 2 odložené)
-- **Poslední sprint:** GF-165–GF-194 (2026-03-27) — Mobile + Tech Debt Sprint
+- **Linear issues:** 80+ celkem (75 done, 2 canceled, 0 in progress, 2 odložené)
+- **Poslední sprint:** GF-144a–GF-222 (2026-03-30) — Freemium & Image Generation Sprint
 - **Build:** Zelený (tsc 0 errors + vite build pass)
 - **Test coverage:** 298 testů, ~76% statements
-- **Main bundle:** 185.94 kB (vendor chunks separated)
+- **Main bundle:** ~186 kB (vendor chunks separated)
 - **Platební brána:** Stripe (migrace z Gumroad dokončena GF-141)
 - **Mobile editory:** CustomBookEditor + CardStudio — dual-variant (Desktop/Mobile)
+- **Auth flow:** WhaleLoginModal + WelcomeModal (oceánský styl)
+- **Image prompts:** Claude Sonnet (claude-sonnet-4-6) místo Gemini
 
 ## In Progress
 
@@ -56,13 +58,14 @@
 | Community Library | Veřejná knihovna s hodnocením | Planned |
 | Parent Hub | Rodičovský dashboard (GF-136) | Odloženo |
 | AI Voiceover v2 | Vylepšené TTS s výběrem hlasů | Částečně (4 hlasy ElevenLabs) |
-| Magic Mirror v2 | Vylepšená face reference konzistence | Partial (Visual DNA extraction) |
+| Magic Mirror v2 | Vylepšená face reference konzistence | Partial (Visual DNA + character sheet gen) |
 | Offline mode | PWA + service worker | Not started |
 
 ## Dokončené milestones
 
 | Datum | Milestone |
 |-------|-----------|
+| 2026-03-30 | GF-144a–GF-222: Freemium & Image Gen Sprint — WhaleLoginModal, WelcomeModal, is_new_user flag, daily reward claim-first, image tier fix, character sheet gen, style normalization, Gemini→Claude Sonnet for image prompts, content-tools base64 fix |
 | 2026-03-27 | GF-188–GF-194: Tech Debt + Polish — title/maxPages/expert mode/voice preview/charge energy on mobile, Wave 4+5 complete (40/40), shared BottomSheet + useClipboardCopy + DictionaryResults, Discovery audit clean, Hero Mode removed |
 | 2026-03-27 | GF-165–GF-187: Mobile Responsivity Sprint — 40/40 audit fixes, CustomBookEditor mobile (3-view swipe), Card Studio mobile (dark canvas + 6 panels), refaktor do panel souborů, 26 commitů |
 | 2026-03-27 | GF-146–GF-164: Energy refund, Three-Layer fixes (CardViewer, PublicProfile, BookReader), Library light mode, sidebar fix, i18n, debug cleanup, CinematicLanding hero-only |
