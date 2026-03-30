@@ -16,7 +16,7 @@ FOCUS on:
 
 ANATOMY: All animals must be biologically accurate. No anthropomorphic features unless explicitly requested. A frog has four legs, webbed feet, and sits on a log — not standing upright wearing clothes.
 
-STYLE: Choose either Pixar-quality 3D render OR soft watercolor storybook illustration. Never mix styles.
+STYLE: Generate the image description strictly in the visual style specified below. Do not add or suggest other styles.
 
 EXAMPLES:
 - INPUT: "A tiny dragon discovers he can't breathe fire, only warm air that makes flowers bloom"
@@ -87,11 +87,36 @@ Deno.serve(async (req) => {
             }
 
             case 'generate-image-prompt': {
-                const { storyText } = payload
+                const { storyText, style } = payload
+
+                const STYLE_NAMES: Record<string, string> = {
+                    pixar_3d: 'Pixar 3D animation',
+                    watercolor: 'soft watercolor illustration',
+                    ghibli_anime: 'Studio Ghibli animation',
+                    futuristic: 'futuristic sci-fi',
+                    sketch: 'pencil sketch',
+                    cyberpunk: 'cyberpunk',
+                    felted_wool: 'felted wool stop-motion',
+                    paper_cutout: 'paper cutout collage',
+                    claymation: 'claymation',
+                    pop_art: 'pop art comic',
+                    dark_oil: 'dark oil painting',
+                    vintage_parchment: 'vintage parchment illustration',
+                    pixel_art: 'pixel art',
+                    frozen_crystal: 'frozen crystal fantasy',
+                    happy_cloud: 'kawaii pastel',
+                    'Pixar 3D': 'Pixar 3D animation',
+                    'Watercolor': 'soft watercolor illustration',
+                }
+                const styleName = STYLE_NAMES[style] ?? 'Pixar 3D animation'
+                const styledProtocol = FROG_PROTOCOL.replace(
+                    'Generate the image description strictly in the visual style specified below. Do not add or suggest other styles.',
+                    `Generate the image description strictly in this visual style: ${styleName}. Do not add or suggest other styles.`
+                )
 
                 result = await callGemini(
                     [{ role: 'user', content: storyText }],
-                    FROG_PROTOCOL,
+                    styledProtocol,
                     false,
                     apiKey,
                     'gemini-2.0-flash'
