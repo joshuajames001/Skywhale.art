@@ -74,7 +74,7 @@ export const WhaleLoginModal = ({ onClose }: WhaleLoginModalProps) => {
 
     return (
         <motion.div
-            className="fixed inset-0 z-[100] flex flex-col items-center justify-center overflow-hidden"
+            className="fixed inset-0 z-[100] flex flex-col items-center justify-center overflow-y-auto overflow-x-hidden"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -134,7 +134,7 @@ export const WhaleLoginModal = ({ onClose }: WhaleLoginModalProps) => {
             </button>
 
             {/* Main Container — col on mobile, row on md+ */}
-            <div className="relative z-10 flex flex-col md:flex-row items-center md:items-center md:gap-12 px-4">
+            <div className="relative z-10 flex flex-col md:flex-row items-center md:items-center md:gap-12 px-4 py-8">
                 {/* Whale Section */}
                 <div className="flex flex-col items-center flex-shrink-0">
                     {/* Hint Text */}
