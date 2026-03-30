@@ -1,6 +1,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { Book, Home, Sparkles, Palette, Gamepad2, Compass, PenTool, Zap, MessageSquare, LogIn, User, LogOut, Shield, Languages } from 'lucide-react';
+import { Book, Home, Sparkles, Palette, Gamepad2, Compass, PenTool, Zap, MessageSquare, LogIn, User, LogOut, Shield, Languages, Menu } from 'lucide-react';
 import { ScrollableRow } from '../../components/ui/ScrollableRow';
+import { BottomSheet } from '../../components/BottomSheet';
 import { useState, useEffect } from 'react';
 import { PricingPage } from '../store/components/PricingPage';
 import { useTranslation } from 'react-i18next';
@@ -19,6 +20,7 @@ export const NavigationHub = ({ onNavigate, currentView, user, onLogin, onLogout
     const { t, i18n } = useTranslation();
     const [isExpanded, setIsExpanded] = useState(false);
     const [showProfileMenu, setShowProfileMenu] = useState(false);
+    const [showMobileMenu, setShowMobileMenu] = useState(false);
     const { direction: scrollDir } = useScrollDirectionContext();
     const hideNav = scrollDir === 'down';
 
@@ -39,17 +41,22 @@ export const NavigationHub = ({ onNavigate, currentView, user, onLogin, onLogout
     const homeItem = navItems.find(i => i.id === 'landing')!;
     const mainItems = navItems.filter(i => i.id !== 'landing');
 
-    const mobileNavItems = [
+    const mobileMainItems = [
         homeItem,
-        { id: 'profile', icon: User, label: t('nav.profile') } as any,
         navItems.find(i => i.id === 'library')!,
         navItems.find(i => i.id === 'create_custom')!,
+        navItems.find(i => i.id === 'arcade')!,
+    ];
+
+    const mobileMenuItems = [
         navItems.find(i => i.id === 'setup')!,
-        navItems.find(i => i.id === 'card_studio')!,
-        navItems.find(i => i.id === 'energy_store') || { id: 'energy_store', icon: Zap, label: t('nav.store') } as any,
         navItems.find(i => i.id === 'discovery')!,
-        { id: 'terms', icon: MessageSquare, label: t('nav.terms') } as any,
-        { id: 'privacy', icon: Shield, label: t('nav.privacy') } as any
+        { id: 'profile', icon: User, label: t('nav.profile') },
+        navItems.find(i => i.id === 'card_studio')!,
+        navItems.find(i => i.id === 'energy_store')!,
+        navItems.find(i => i.id === 'feedback_board')!,
+        { id: 'terms', icon: Shield, label: t('nav.terms') },
+        { id: 'privacy', icon: Shield, label: t('nav.privacy') },
     ];
 
     return (
@@ -208,28 +215,20 @@ export const NavigationHub = ({ onNavigate, currentView, user, onLogin, onLogout
                 </div>
             )}
 
-            {/* MOBILE BOTTOM NAVIGATION BAR */}
+            {/* MOBILE BOTTOM NAVIGATION BAR (4 + burger) */}
             {currentView !== 'card_studio' && currentView !== 'create_custom' && currentView !== 'game-hub' && (
                 <motion.div
                     animate={{ y: hideNav ? 100 : 0 }}
                     transition={{ duration: 0.3, ease: 'easeInOut' }}
                     className="sm:hidden fixed bottom-0 left-0 w-full z-[9999] pb-safe bg-black/90 backdrop-blur-xl border-t border-white/10 pointer-events-auto">
-                    <ScrollableRow className="px-2 py-3" itemClassName="gap-6 px-2 justify-between min-w-full">
-                        {mobileNavItems.map((item) => {
+                    <div className="flex items-center justify-around px-2 py-3">
+                        {mobileMainItems.map((item) => {
                             const isActive = currentView === item.id;
-
                             return (
                                 <motion.button
                                     key={item.id}
-                                    onClick={() => {
-                                        if (item.id === ('login_action' as any)) {
-                                            if (user) onNavigate('profile');
-                                            else onLogin();
-                                        } else {
-                                            onNavigate(item.id as any);
-                                        }
-                                    }}
-                                    className={`relative flex flex-col items-center gap-1 shrink-0 ${isActive ? 'text-purple-400' : 'text-white/50'}`}
+                                    onClick={() => onNavigate(item.id as any)}
+                                    className={`relative flex flex-col items-center gap-1 ${isActive ? 'text-purple-400' : 'text-white/50'}`}
                                     whileTap={{ scale: 0.9 }}
                                 >
                                     <div className="p-2">
@@ -237,11 +236,51 @@ export const NavigationHub = ({ onNavigate, currentView, user, onLogin, onLogout
                                     </div>
                                     <span className="text-[9px] font-medium whitespace-nowrap">{item.label}</span>
                                 </motion.button>
-                            )
+                            );
                         })}
-                    </ScrollableRow>
+                        {/* Burger / More button */}
+                        <motion.button
+                            onClick={() => setShowMobileMenu(true)}
+                            className={`relative flex flex-col items-center gap-1 ${showMobileMenu ? 'text-purple-400' : 'text-white/50'}`}
+                            whileTap={{ scale: 0.9 }}
+                        >
+                            <div className="p-2">
+                                <Menu size={22} strokeWidth={2} />
+                            </div>
+                            <span className="text-[9px] font-medium whitespace-nowrap">{t('nav.more', 'Více')}</span>
+                        </motion.button>
+                    </div>
                 </motion.div>
             )}
+
+            {/* MOBILE BURGER MENU (BottomSheet) */}
+            <AnimatePresence>
+                {showMobileMenu && (
+                    <BottomSheet onClose={() => setShowMobileMenu(false)}>
+                        {mobileMenuItems.map((item) => {
+                            const isActive = currentView === item.id;
+                            return (
+                                <button
+                                    key={item.id}
+                                    onClick={() => {
+                                        onNavigate(item.id as any);
+                                        setShowMobileMenu(false);
+                                    }}
+                                    className={`flex items-center gap-3 w-full px-5 py-3.5 text-left hover:bg-gray-50 active:bg-gray-100 ${isActive ? 'bg-purple-50' : ''}`}
+                                >
+                                    <item.icon size={18} className={isActive ? 'text-purple-500' : 'text-gray-500'} />
+                                    <span className={`text-sm font-medium ${isActive ? 'text-purple-700' : 'text-gray-800'}`}>{item.label}</span>
+                                    {(item as any).badge && (
+                                        <span className="text-[10px] bg-sky-500 text-white px-1.5 py-0.5 rounded-full uppercase tracking-wider font-bold">
+                                            {(item as any).badge}
+                                        </span>
+                                    )}
+                                </button>
+                            );
+                        })}
+                    </BottomSheet>
+                )}
+            </AnimatePresence>
         </>
     );
 };
