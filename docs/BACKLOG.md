@@ -66,7 +66,7 @@
 
 | Datum | Milestone |
 |-------|-----------|
-| 2026-03-31 | GF-233–GF-238: GameHub & UX Sprint — GameHub vizuální overhaul (ilustrační bg, light mode, statický wrapper), MemoryGame full-bleed, PuzzleGame větší předloha, dead code cleanup, PDF CORS fix, AiChat removed, BookReader prefetch, mobile nav 4+burger |
+| 2026-03-31 | GF-233–GF-238: GameHub & UX Sprint — GameHub vizuální overhaul (ilustrační bg, light mode, statický wrapper), MemoryGame full-bleed, PuzzleGame větší předloha + tap-to-swap touch, dead code cleanup, PDF CORS fix, AiChat removed, BookReader prefetch, mobile nav 4+burger, burger z-index fix, GameHub mobile optimalizace |
 | 2026-03-30 | GF-57–GF-235: Stability & Prompt Tuning Sprint — atomic deduct_energy_if_sufficient RPC (TOCTOU race condition fix), story prompt guardrails (Czech names, story arc, character consistency, language purity), pdfGenerator chunk warning suppressed, energyDeducted scoping hotfix |
 | 2026-03-30 | GF-144a–GF-222: Freemium & Image Gen Sprint — WhaleLoginModal, WelcomeModal, is_new_user flag, daily reward claim-first, image tier fix, character sheet gen, style normalization, Gemini→Claude Sonnet for image prompts, content-tools base64 fix |
 | 2026-03-27 | GF-188–GF-194: Tech Debt + Polish — title/maxPages/expert mode/voice preview/charge energy on mobile, Wave 4+5 complete (40/40), shared BottomSheet + useClipboardCopy + DictionaryResults, Discovery audit clean, Hero Mode removed |

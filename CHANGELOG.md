@@ -24,6 +24,11 @@ Všechny významné změny projektu Magické Příběhy (SkyWhale).
   - Bottom bar: Home, Knihovna, Vlastní kniha, Herna + Více (Menu ikona)
   - Více → BottomSheet s 8 položkami (Příběh, Encyklopedie, Profil, Ateliér, Obchod, Feedback, Podmínky, Soukromí)
   - Nahrazuje ScrollableRow s 10 položkami
+  - Fix: nav bar skryt při otevřeném burgeru (z-index conflict z-[9999] vs z-[90/91])
+- **GF-233b:** GameHub mobile optimalizace
+  - PuzzleGame: tap-to-swap pattern pro touch zařízení (tap A → amber highlight, tap B → swap)
+  - MemoryGame: `grid-cols-3 sm:grid-cols-4` — větší karty na malých obrazovkách
+  - ColoringToolbar: back button `p-2` → `p-3` (44px tap target minimum)
 
 ---
 

@@ -87,6 +87,8 @@ Source of Truth pro aktuální stav vývoje. Aktualizováno: **2026-03-31**.
 | GF-236 | BookReader prefetch | usePrefetchNextPage hook — tiché generování N+1 po dokončení N |
 | GF-233 | GameHub overhaul | Dead code (useEdgeDetection), console.log cleanup, Tailwind dynamic class fix, light mode bg, ilustrační background ze Supabase, statický root wrapper, MemoryGame full-bleed, PuzzleGame větší předloha |
 | GF-233 | Mobile nav 4+burger | NavigationHub: ScrollableRow 10 položek → 4 hlavní + BottomSheet burger menu |
+| GF-233 | Burger menu z-index fix | Nav bar skryt při otevřeném BottomSheet (z-[9999] vs z-[90/91]) |
+| GF-233b | GameHub mobile | PuzzleGame tap-to-swap, MemoryGame grid-cols-3 sm:4, ColoringToolbar 44px targets |
 
 ## 3. Strategic Rules (The Constitution)
 

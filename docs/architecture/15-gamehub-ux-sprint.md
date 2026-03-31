@@ -71,10 +71,29 @@ Vizuální overhaul GameHub (light mode, ilustrační background, herní karty),
 | `src/features/story-builder/components/shared/StoryChat.tsx` | 233 | Závislost AiChatMode |
 | `src/features/story-builder/hooks/useStoryChat.ts` | 55 | chat-turn + ask-architect API volání |
 
+### Mobile Optimalizace (GF-233b)
+| Issue | Popis | Soubory |
+|-------|-------|---------|
+| GF-233b | PuzzleGame tap-to-swap: tap A (amber highlight) → tap B → swap | `PuzzleGame.tsx` |
+| GF-233b | MemoryGame responsive grid: `grid-cols-3 sm:grid-cols-4` | `MemoryGame.tsx` |
+| GF-233b | ColoringToolbar back button: `p-2` → `p-3` (44px min) | `ColoringToolbar.tsx` |
+| GF-233 | Burger menu z-index fix: nav bar skryt při otevřeném BottomSheet | `NavigationHub.tsx` |
+
+### 5. PuzzleGame tap-to-swap (GF-233b)
+
+**Problém:** HTML5 DragEvent nefunguje na touch zařízeních — puzzle na mobilu nehratelný.
+
+**Řešení:** Tap-to-swap pattern místo drag-and-drop:
+1. Tap na piece A → `selectedPiece = index`, amber ring highlight (`ring-2 ring-amber-400`)
+2. Tap na piece B → `handleSwap(A, B)`, `selectedPiece = null`
+3. Tap na stejný piece → deselect
+4. Drag-and-drop zůstává funkční pro desktop
+
+Jednoduchý, intuitivní pattern — uživatel vidí vybraný dílek a klikne kam ho chce přesunout.
+
 ## Zbývající GameHub tech debt
 
-- PuzzleGame: HTML5 DragEvent nefunguje na touch — potřeba touch drag implementace
-- ColoringCanvas: `onTouchStart` bez `onTouchMove`/`onTouchEnd` — nelze malovat tahem
+- ColoringCanvas: paint-by-number tap funguje, freehand kreslení by vyžadovalo `onTouchMove`
 - GameHub: 12× `any` typy (ColoringCanvas, BookSelector, GameMenu, DifficultySelector)
 - GameHub: 0 testů — potřeba test suite
 - `FROG_PROTOCOL` v book-editor-assist — stále dead code, kandidát na smazání
