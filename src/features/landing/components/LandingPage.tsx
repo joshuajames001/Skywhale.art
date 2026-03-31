@@ -452,6 +452,12 @@ export const LandingPage = ({ onEnter, onNavigate, user, onLogin, hideUI = false
                     >
                         {t('landing.footer.privacy')}
                     </button>
+                    <button
+                        onClick={() => onNavigate?.('cookies')}
+                        className="hover:text-purple-400 transition-colors uppercase tracking-widest"
+                    >
+                        Zásady cookies
+                    </button>
                     <a
                         href="mailto:support@skywhale.art"
                         className="hover:text-purple-400 transition-colors uppercase tracking-widest"

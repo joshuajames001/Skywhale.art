@@ -71,7 +71,7 @@ export const useAppNavigation = (
         navigate(`/book/${book.book_id}`);
     };
 
-    const handleHubNavigate = (view: 'intro' | 'landing' | 'library' | 'setup' | 'card_studio' | 'arcade' | 'discovery' | 'create_custom' | 'energy_store' | 'terms' | 'privacy' | 'feedback_board' | 'profile' | 'pricing') => {
+    const handleHubNavigate = (view: 'intro' | 'landing' | 'library' | 'setup' | 'card_studio' | 'arcade' | 'discovery' | 'create_custom' | 'energy_store' | 'terms' | 'privacy' | 'cookies' | 'refund' | 'feedback_board' | 'profile' | 'pricing') => {
         // ROUTE MIGRATION: Simple Views
         if (view === 'terms') {
             navigate('/terms');
@@ -83,6 +83,14 @@ export const useAppNavigation = (
         }
         if (view === 'privacy') {
             navigate('/privacy');
+            return;
+        }
+        if (view === 'cookies') {
+            navigate('/cookies');
+            return;
+        }
+        if (view === 'refund') {
+            navigate('/refund');
             return;
         }
         if (view === 'pricing') {

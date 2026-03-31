@@ -32,7 +32,7 @@ export interface RouteConfig {
     element: ReactNode;
 }
 
-type HubView = 'intro' | 'landing' | 'library' | 'setup' | 'card_studio' | 'arcade' | 'discovery' | 'create_custom' | 'energy_store' | 'terms' | 'privacy' | 'feedback_board' | 'profile' | 'pricing';
+type HubView = 'intro' | 'landing' | 'library' | 'setup' | 'card_studio' | 'arcade' | 'discovery' | 'create_custom' | 'energy_store' | 'terms' | 'privacy' | 'cookies' | 'refund' | 'feedback_board' | 'profile' | 'pricing';
 
 interface RouteContext {
     navigate: (path: string) => void;
@@ -67,6 +67,16 @@ export const createRoutes = (ctx: RouteContext): RouteConfig[] => [
     { path: '/privacy', element: (
         <div className="fixed inset-0 z-[200]">
             <LegalAgreements onBack={() => ctx.navigate('/')} defaultTab="privacy" />
+        </div>
+    )},
+    { path: '/cookies', element: (
+        <div className="fixed inset-0 z-[200]">
+            <LegalAgreements onBack={() => ctx.navigate('/')} defaultTab="cookies" />
+        </div>
+    )},
+    { path: '/refund', element: (
+        <div className="fixed inset-0 z-[200]">
+            <LegalAgreements onBack={() => ctx.navigate('/')} defaultTab="refund" />
         </div>
     )},
     { path: '/pricing', element: (
