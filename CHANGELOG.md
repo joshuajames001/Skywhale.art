@@ -2,6 +2,31 @@
 
 Všechny významné změny projektu Magické Příběhy (SkyWhale).
 
+## [Unreleased] — 2026-03-31
+
+### GameHub & UX Sprint (GF-233, GF-236, GF-237, GF-238)
+
+- **GF-238:** PDF export CORS fix — stardust.png + graphy.png staženy do `public/textures/`, nahrazeno 7 transparenttextures.com URL
+- **GF-237:** AiChat mode removed — smazány AiChatMode.tsx, StoryChat.tsx, useStoryChat.ts (chat-turn akce neexistuje v EF)
+  - StorySetup: 4 módy → 3 (Magic, Hero, Custom)
+- **GF-236:** BookReader prefetch — `usePrefetchNextPage` hook, po dokončení stránky N tiše generuje N+1
+  - Deduplikace přes prefetchedRef Set, max 1 in-flight, non-fatal error handling
+- **GF-233:** GameHub kompletní vizuální overhaul:
+  - Dead code: smazán `useEdgeDetection.ts` (217 řádků), 7× console.log odstraněno
+  - Fix: Tailwind dynamic class bug v GameMenu (`border-${color}` → statická mapa)
+  - Light mode: Profile gradient (`from-blue-100 via-purple-50 to-pink-100`) → ilustrační background ze Supabase Storage
+  - Statický background: jeden root wrapper, žádné blikání při view změnách
+  - MemoryGame: karty full-bleed (`object-contain p-2` → `object-cover`)
+  - PuzzleGame: referenční obrázek zvětšen (`w-20/w-24` → `w-32/w-48`)
+  - Kontrast: všechny texty, karty, tlačítka aktualizovány pro light bg
+  - MagicMirrorGame placeholder: light mode styl
+- **Mobile nav:** 4+burger pattern
+  - Bottom bar: Home, Knihovna, Vlastní kniha, Herna + Více (Menu ikona)
+  - Více → BottomSheet s 8 položkami (Příběh, Encyklopedie, Profil, Ateliér, Obchod, Feedback, Podmínky, Soukromí)
+  - Nahrazuje ScrollableRow s 10 položkami
+
+---
+
 ## [Unreleased] — 2026-03-30
 
 ### Stability & Prompt Tuning Sprint (GF-57–GF-235)

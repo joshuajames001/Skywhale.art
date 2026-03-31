@@ -1,6 +1,6 @@
 # DEVELOPMENT STATE
 
-Source of Truth pro aktuální stav vývoje. Aktualizováno: **2026-03-30**.
+Source of Truth pro aktuální stav vývoje. Aktualizováno: **2026-03-31**.
 
 ## 1. Aktuální metriky
 
@@ -17,6 +17,8 @@ Source of Truth pro aktuální stav vývoje. Aktualizováno: **2026-03-30**.
 | ESLint | **0 errors**, 304 warnings (eslint 9.39.4, flat config) |
 | Mobile audit | **40/40** issues opraveno (GF-165) |
 | Mobile editory | CustomBookEditor + CardStudio — dual-variant (Desktop/Mobile) |
+| Mobile nav | **4+burger** pattern (Home, Knihovna, Vlastní kniha, Herna + BottomSheet) |
+| GameHub | Ilustrační bg ze Supabase, light mode, statický wrapper |
 
 ## 2. Dokončené refaktory (GF-10 → GF-138)
 
@@ -80,6 +82,11 @@ Source of Truth pro aktuální stav vývoje. Aktualizováno: **2026-03-30**.
 | GF-194 | ESLint 0 errors | Ověřeno — 0 errors, 304 warnings, žádné změny potřeba |
 | GF-235 | Story prompt tuning | Czech naming rules, story arc structure, character consistency, language purity guardrails v generate-story-content EF |
 | GF-fix | energyDeducted scoping | Hoist proměnných před try block v generate-story-image + skywhale-flux (ReferenceError v catch) |
+| GF-238 | PDF CORS fix | stardust.png + graphy.png do public/textures/, 7 souborů aktualizováno |
+| GF-237 | AiChat mode removed | AiChatMode, StoryChat, useStoryChat smazány; StorySetup 4→3 módy |
+| GF-236 | BookReader prefetch | usePrefetchNextPage hook — tiché generování N+1 po dokončení N |
+| GF-233 | GameHub overhaul | Dead code (useEdgeDetection), console.log cleanup, Tailwind dynamic class fix, light mode bg, ilustrační background ze Supabase, statický root wrapper, MemoryGame full-bleed, PuzzleGame větší předloha |
+| GF-233 | Mobile nav 4+burger | NavigationHub: ScrollableRow 10 položek → 4 hlavní + BottomSheet burger menu |
 
 ## 3. Strategic Rules (The Constitution)
 
@@ -93,7 +100,7 @@ Source of Truth pro aktuální stav vývoje. Aktualizováno: **2026-03-30**.
 ## 4. Zbývající tech debt
 
 - `src/lib/storyteller.ts` — legacy TypeScript errors (non-blocking, ignorované)
-- `pdfGenerator` chunk — 591 kB (lazy-loaded; warning suppressed GF-57; html2canvas CORS s cross-origin obrázky stále potenciální issue)
+- `pdfGenerator` chunk — 591 kB (lazy-loaded; warning suppressed GF-57; CORS fix GF-238 — textury lokální)
 - `process-story-image` Edge Function — legacy, nahrazena `generate-story-image`
 - `style_manifest` + `status` sloupce na books — migrace vytvořena, potřeba spustit v Supabase SQL Editor
 - Zastaralé Storage buckety: `dino-content`, `card-assets`, `book-images` — kód je nepoužívá

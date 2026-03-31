@@ -216,7 +216,7 @@ export const NavigationHub = ({ onNavigate, currentView, user, onLogin, onLogout
             )}
 
             {/* MOBILE BOTTOM NAVIGATION BAR (4 + burger) */}
-            {currentView !== 'card_studio' && currentView !== 'create_custom' && currentView !== 'game-hub' && (
+            {currentView !== 'card_studio' && currentView !== 'create_custom' && currentView !== 'game-hub' && !showMobileMenu && (
                 <motion.div
                     animate={{ y: hideNav ? 100 : 0 }}
                     transition={{ duration: 0.3, ease: 'easeInOut' }}
