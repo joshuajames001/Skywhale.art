@@ -13,6 +13,7 @@ export const PuzzleGame = ({ imageUrl, difficulty, onClose }: PuzzleGameProps) =
     const [tiles, setTiles] = useState<number[]>([]);
     const [isSolved, setIsSolved] = useState(false);
     const [moves, setMoves] = useState(0);
+    const [selectedPiece, setSelectedPiece] = useState<number | null>(null); // Touch: tap-to-swap
 
     // Initialize Game
     useEffect(() => {
@@ -37,6 +38,7 @@ export const PuzzleGame = ({ imageUrl, difficulty, onClose }: PuzzleGameProps) =
         setTiles(shuffled);
         setIsSolved(false);
         setMoves(0);
+        setSelectedPiece(null);
     };
 
     // Check Win Condition
@@ -67,6 +69,19 @@ export const PuzzleGame = ({ imageUrl, difficulty, onClose }: PuzzleGameProps) =
 
         setTiles(newTiles);
         setMoves(m => m + 1);
+    };
+
+    // Touch: tap first piece to select, tap second to swap
+    const handleTapSwap = (index: number) => {
+        if (isSolved) return;
+        if (selectedPiece === null) {
+            setSelectedPiece(index);
+        } else {
+            if (selectedPiece !== index) {
+                handleSwap(selectedPiece, index);
+            }
+            setSelectedPiece(null);
+        }
     };
 
     return (
@@ -156,14 +171,16 @@ export const PuzzleGame = ({ imageUrl, difficulty, onClose }: PuzzleGameProps) =
 
                     return (
                         <PuzzlePiece
-                            key={`index-${currentIndex}`} // Index key because positions are static, content moves
+                            key={`index-${currentIndex}`}
                             index={currentIndex}
                             imageUrl={imageUrl}
                             bgPosition={`${xPos}% ${yPos}%`}
                             bgSize={bgSize}
                             onDrop={(targetIndex) => handleSwap(currentIndex, targetIndex)}
+                            onTap={() => handleTapSwap(currentIndex)}
                             isCorrect={tileId === currentIndex}
                             isSolved={isSolved}
+                            isSelected={selectedPiece === currentIndex}
                         />
                     );
                 })}
@@ -184,11 +201,13 @@ interface PuzzlePieceProps {
     bgPosition: string;
     bgSize: string;
     onDrop: (targetIndex: number) => void;
+    onTap: () => void;
     isCorrect: boolean;
     isSolved: boolean;
+    isSelected: boolean;
 }
 
-const PuzzlePiece = ({ index, imageUrl, bgPosition, bgSize, onDrop, isCorrect, isSolved }: PuzzlePieceProps) => {
+const PuzzlePiece = ({ index, imageUrl, bgPosition, bgSize, onDrop, onTap, isCorrect, isSolved, isSelected }: PuzzlePieceProps) => {
     const handleDragStart = (e: React.DragEvent) => {
         e.dataTransfer.setData('text/plain', index.toString());
         e.dataTransfer.effectAllowed = "move";
@@ -218,9 +237,10 @@ const PuzzlePiece = ({ index, imageUrl, bgPosition, bgSize, onDrop, isCorrect, i
             onDragOver={!isSolved ? handleDragOver : undefined}
             onDrop={!isSolved ? handleDrop : undefined}
             whileHover={!isSolved ? { scale: 0.98, filter: 'brightness(1.1)', zIndex: 10 } : {}}
+            onClick={!isSolved ? onTap : undefined}
             whileTap={!isSolved ? { scale: 0.95 } : {}}
             transition={{ type: "spring", stiffness: 300, damping: 25 }}
-            className={`w-full h-full rounded-sm relative shadow-inner overflow-hidden cursor-grab active:cursor-grabbing ${isCorrect && !isSolved ? 'ring-1 ring-white/20' : ''}`}
+            className={`w-full h-full rounded-sm relative shadow-inner overflow-hidden cursor-grab active:cursor-grabbing ${isCorrect && !isSolved ? 'ring-1 ring-white/20' : ''} ${isSelected ? 'ring-2 ring-amber-400 scale-95 brightness-110 z-10' : ''}`}
         >
             <div
                 className="w-full h-full transition-all duration-300"

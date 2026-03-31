@@ -158,7 +158,7 @@ export const MemoryGame = ({ images, onClose }: MemoryGameProps) => {
             </div>
 
             {/* Game Grid */}
-            <div className="grid grid-cols-4 gap-3 md:gap-4 w-full max-w-4xl aspect-square md:aspect-video mx-auto p-2 perspective-1000">
+            <div className="grid grid-cols-3 sm:grid-cols-4 gap-3 md:gap-4 w-full max-w-4xl aspect-square md:aspect-video mx-auto p-2 perspective-1000">
                 <AnimatePresence>
                     {cards.map((card) => (
                         <CardItem

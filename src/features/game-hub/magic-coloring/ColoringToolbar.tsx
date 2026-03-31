@@ -39,7 +39,7 @@ export const ColoringToolbar: React.FC<ColoringToolbarProps> = ({
 
             {/* Header / Nav */}
             <div className="flex items-center justify-between mb-2">
-                <button onClick={onBack} className="p-2 hover:bg-white/10 rounded-full text-white/70 hover:text-white transition-colors">
+                <button onClick={onBack} className="p-3 hover:bg-white/10 rounded-full text-white/70 hover:text-white transition-colors">
                     <ArrowLeft size={24} />
                 </button>
                 <h3 className="text-xl font-bold text-white font-title">Ateliér</h3>
