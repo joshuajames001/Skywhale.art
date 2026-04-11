@@ -86,13 +86,7 @@ const BookCardBase = forwardRef<HTMLDivElement, BookCardProps>(({
         });
     };
 
-    const getOptimizedUrl = (url: string | null) => {
-        if (!url) return null;
-        if (url.includes('supabase.co')) {
-            return `${url}?width=400&quality=80&format=webp`;
-        }
-        return url;
-    };
+    const getOptimizedUrl = (url: string | null) => url;
 
     // Image Loader State
     const [imageLoaded, setImageLoaded] = useState(false);

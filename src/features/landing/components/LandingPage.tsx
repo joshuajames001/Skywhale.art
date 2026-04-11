@@ -41,13 +41,7 @@ export const LandingPage = ({ onEnter, onNavigate, user, onLogin, hideUI = false
     }, [user, onLogin]);
 
     // Optimized Image Helper
-    const getOptimizedUrl = (url: string | null) => {
-        if (!url) return null;
-        if (url.includes('supabase.co')) {
-            return `${url}?width=400&quality=80&format=webp`;
-        }
-        return url;
-    };
+    const getOptimizedUrl = (url: string | null) => url;
 
     useEffect(() => {
         // Handle Hash Navigation (from Cinematic Landing)
