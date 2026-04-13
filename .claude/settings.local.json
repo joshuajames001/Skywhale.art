@@ -71,7 +71,8 @@
       "Bash(find . -type f -name \"*.ts\" ! -path \"*/node_modules/*\" ! -path \"*/dist/*\" -exec grep -l \"generateImagePrompt\\\\|selectedStyle\" {})",
       "Bash(supabase functions:*)",
       "Bash(find /c/sky-whale/ann/src/tests -type f -name *.ts* -o -name *.test.* -o -name *.spec.*)",
-      "Bash(find /c/sky-whale/ann/src -name *[Tt]erms* -o -name *[Pp]rivacy*)"
+      "Bash(find /c/sky-whale/ann/src -name *[Tt]erms* -o -name *[Pp]rivacy*)",
+      "Bash(deno check:*)"
     ]
   }
 }

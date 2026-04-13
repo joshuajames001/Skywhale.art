@@ -1,11 +1,11 @@
 # Backlog & Roadmap
 
-> Aktualizováno: 2026-03-31 | Zdroj: Linear (Skywhale.art) + audity
+> Aktualizováno: 2026-04-13 | Zdroj: Linear (Skywhale.art) + audity
 
 ## Stav projektu
 
 - **Linear issues:** 80+ celkem (75 done, 2 canceled, 0 in progress, 2 odložené)
-- **Poslední sprint:** GF-233–GF-238 (2026-03-31) — GameHub & UX Sprint
+- **Poslední sprint:** Sprint 16 (2026-04-13) — Bugfix Sprint (illustration fallback, audio refund)
 - **Mobile nav:** 4+burger pattern (Home, Knihovna, Vlastní kniha, Herna + BottomSheet)
 - **Build:** Zelený (tsc 0 errors + vite build pass)
 - **Test coverage:** 298 testů, ~76% statements
@@ -66,6 +66,7 @@
 
 | Datum | Milestone |
 |-------|-----------|
+| 2026-04-13 | Sprint 16 Bugfix: illustration styl pridan do STYLE_PROMPTS (fix silent fallback na pixar_3d), generate-audio EF energy refund pri ElevenLabs API selhani (konzistentni pattern s generate-story-image a skywhale-flux) |
 | 2026-04-01 | Legal sekce: LegalAgreements rozšířen na 4 taby (Podmínky, Soukromí, Cookies, Platby), nové CookiePolicy.tsx + RefundPolicy.tsx, routy /cookies + /refund, odkaz "Zásady cookies" ve footeru |
 | 2026-03-31 | GF-233–GF-238: GameHub & UX Sprint — GameHub vizuální overhaul (ilustrační bg, light mode, statický wrapper), MemoryGame full-bleed, PuzzleGame větší předloha + tap-to-swap touch, dead code cleanup, PDF CORS fix, AiChat removed, BookReader prefetch, mobile nav 4+burger, burger z-index fix, GameHub mobile optimalizace |
 | 2026-03-30 | GF-57–GF-235: Stability & Prompt Tuning Sprint — atomic deduct_energy_if_sufficient RPC (TOCTOU race condition fix), story prompt guardrails (Czech names, story arc, character consistency, language purity), pdfGenerator chunk warning suppressed, energyDeducted scoping hotfix |

@@ -45,6 +45,7 @@ export const STYLE_PROMPTS: Record<string, string> = {
     "pixel_art": "nostalgic 16-bit pixel art, crisp square pixels, limited color palette, retro video game aesthetic, stylized dithered shading",
     "frozen_crystal": "crystalline ice textures, refracted sub-zero lighting, glowing frost patterns, iridescent winter sparkle, translucent blue tones",
     "happy_cloud": "ultra-soft kawaii pastel aesthetic, puffy rounded shapes, dreamy gradients, joyful and innocent atmosphere, minimal soft outlines",
+    "illustration": "gentle storybook illustration, soft ink linework, delicate watercolor wash, hand-drawn charm, warm muted palette, children's book art aesthetic",
     "Watercolor": "soft watercolor aesthetic, bleeding pigment edges, wet-on-wet technique, visible paper grain, ethereal translucent layers", // Compatibility
     "Pixar 3D": "modern 3D animation style, subsurface scattering on skin, soft rim lighting, expressive big-eyed features, cinematic depth of field" // Compatibility
 };

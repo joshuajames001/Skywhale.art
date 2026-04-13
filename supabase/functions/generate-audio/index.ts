@@ -12,6 +12,11 @@ serve(async (req) => {
     return new Response('ok', { headers: corsHeaders })
   }
 
+  let energyDeducted = false;
+  let supabaseAdmin: any;
+  let user: any;
+  let cost = 0;
+
   try {
     const { bookId, text, voiceId } = await req.json()
 
@@ -29,7 +34,8 @@ serve(async (req) => {
     )
 
     // 2. Get User
-    const { data: { user }, error: authError } = await supabaseClient.auth.getUser()
+    const { data: { user: authUser }, error: authError } = await supabaseClient.auth.getUser()
+    user = authUser;
 
     if (authError || !user) {
       return new Response(JSON.stringify({
@@ -43,7 +49,7 @@ serve(async (req) => {
     }
 
     // 3. Service Role Client for Admin actions (Energy deduct, Storage upload)
-    const supabaseAdmin = createClient(
+    supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
@@ -51,7 +57,7 @@ serve(async (req) => {
     // 4. Calculate Logic & Cost
     // Cost: 1 Energy per 20 characters
     // Example: 200 chars = 10 Energy, 600 chars = 30 Energy
-    const cost = Math.max(1, Math.ceil(text.length / 20));
+    cost = Math.max(1, Math.ceil(text.length / 20));
 
     // 5. Atomic check & deduct energy (GF-227: prevents TOCTOU race condition)
     const { data: deductResult, error: deductError } = await supabaseAdmin
@@ -72,6 +78,7 @@ serve(async (req) => {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       })
     }
+    energyDeducted = true;
 
     // 7. Call ElevenLabs API
     const ELEVEN_LABS_API_KEY = Deno.env.get('ELEVEN_LABS_API_KEY')
@@ -151,9 +158,21 @@ serve(async (req) => {
     })
 
   } catch (error: any) {
+    console.error("❌ generate-audio error:", error.message);
+
+    // Refund energy if it was deducted before the failure
+    if (energyDeducted) {
+      try {
+        await supabaseAdmin.rpc('add_energy', { p_user_id: user.id, p_amount: cost });
+        console.log(`♻️ Refunded ${cost} energy to ${user.id} after error: ${error.message}`);
+      } catch (refundErr) {
+        console.error(`🚨 CRITICAL: Energy refund FAILED for user ${user.id}, amount ${cost}:`, refundErr);
+      }
+    }
+
     return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: 400,
+      status: 500,
     })
   }
 })
