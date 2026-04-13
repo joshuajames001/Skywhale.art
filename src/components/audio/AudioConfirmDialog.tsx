@@ -1,4 +1,5 @@
 import React from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Zap, Mic, X, Loader2 } from 'lucide-react';
 
@@ -37,7 +38,7 @@ export const AudioConfirmDialog = ({
 
     const canAfford = currentEnergy >= cost;
 
-    return (
+    return createPortal(
         <AnimatePresence>
             <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
                 <motion.div
@@ -180,6 +181,7 @@ export const AudioConfirmDialog = ({
                     </div>
                 </motion.div>
             </div>
-        </AnimatePresence>
+        </AnimatePresence>,
+        document.body
     );
 };
