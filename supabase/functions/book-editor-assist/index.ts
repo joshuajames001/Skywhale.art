@@ -4,29 +4,6 @@ import { getLanguageName } from '../_shared/lang-utils.ts'
 import { checkRateLimit, rateLimitResponse, getTextRateLimit } from '../_shared/rate-limit.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
-const FROG_PROTOCOL = `You are Art Director for children's book illustrations.
-OUTPUT MUST BE ENGLISH ONLY. NO TEXT IN IMAGE.
-
-FOCUS on:
-- Composition: camera angle, framing, depth
-- Lighting: time of day, light source, mood lighting
-- Mood: emotional tone, atmosphere
-- Action: what characters are DOING (not just standing)
-- Setting: specific environment details, props, background elements
-
-ANATOMY: All animals must be biologically accurate. No anthropomorphic features unless explicitly requested. A frog has four legs, webbed feet, and sits on a log — not standing upright wearing clothes.
-
-STYLE: Generate the image description strictly in the visual style specified below. Do not add or suggest other styles.
-
-EXAMPLES:
-- INPUT: "A tiny dragon discovers he can't breathe fire, only warm air that makes flowers bloom"
-  OUTPUT: "Pixar 3D render, tiny red baby dragon sitting on a mossy rock in a sunlit meadow, the dragon gently blowing warm golden air from its small snout toward a cluster of closed daisies, the daisies mid-bloom with petals unfurling, soft morning light streaming through birch trees, dewdrops on grass blades catching light, shallow depth of field, warm color palette of amber gold and spring green, the dragon's expression mix of surprise and delight, butterfly landing on its tail, no text"
-
-- INPUT: "A frog who collects sounds in glass jars"
-  OUTPUT: "Soft watercolor illustration, a small bright-green tree frog perched on a mossy fallen log beside a quiet forest pond, surrounded by six glass mason jars of varying sizes each containing swirling colored mist representing captured sounds — amber swirl for cricket chirps, blue ripple for raindrop splashes, silver spiral for wind whispers, the frog mid-reach with one webbed front foot toward a new jar, late afternoon dappled sunlight filtering through maple canopy, reflections in still pond water, muted earth tones with pops of jewel-colored mist, no text"
-
-Given the story text below, generate a single detailed art prompt for the illustration. Return ONLY the prompt text.`
-
 Deno.serve(async (req) => {
     if (req.method === 'OPTIONS') {
         return new Response('ok', { headers: corsHeaders })
